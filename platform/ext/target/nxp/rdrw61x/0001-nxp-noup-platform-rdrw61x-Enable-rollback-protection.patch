@@ -1,0 +1,80 @@
+From b2d3f28ed20a1410cc8f6938a367c49986ee0397 Mon Sep 17 00:00:00 2001
+From: Stefan Krug <stefan.krug@nxp.com>
+Date: Wed, 15 Nov 2023 18:24:58 +0100
+Subject: [PATCH] [nxp noup] platform: rdrw61x: Enable rollback protection for
+ ITS.
+
+---
+ .../ext/target/nxp/rdrw61x/CMSIS_Driver/Driver_Flash_iap_rw61x_iped.c   | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/platform/ext/target/nxp/rdrw61x/CMSIS_Driver/Driver_Flash_iap_rw61x_iped.c b/platform/ext/target/nxp/rdrw61x/CMSIS_Driver/Driver_Flash_iap_rw61x_iped.c
+index 8b34746d5..fbe544fe9 100644
+--- a/platform/ext/target/nxp/rdrw61x/CMSIS_Driver/Driver_Flash_iap_rw61x_iped.c
++++ b/platform/ext/target/nxp/rdrw61x/CMSIS_Driver/Driver_Flash_iap_rw61x_iped.c
+@@ -168,7 +168,7 @@ static const ARM_FLASH_CAPABILITIES DriverCapabilities = {
+ #if defined (RW61X_IPED_ITS_ROLLBACK_PROTECTION_ENABLE)
+ #define IPED_ROLLBACK_PROTECTION_USER_CONFIG RW61X_IPED_ITS_ROLLBACK_PROTECTION_ENABLE
+ #else
+-#define IPED_ROLLBACK_PROTECTION_USER_CONFIG 0
++#define IPED_ROLLBACK_PROTECTION_USER_CONFIG 1
+ #endif
+ 
+ // To disable certain features (for easier debugging) the following can be adapted. Note, some features
+ .../internal_trusted_storage/tfm_internal_trusted_storage.yaml         | 3 +++
+ 1 file changed, 3 insertions(+)
+
+ platform/ext/target/nxp/rdrw61x/config.cmake | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/platform/ext/target/nxp/rdrw61x/config.cmake b/platform/ext/target/nxp/rdrw61x/config.cmake
+index 08b119fa2..450f0daa4 100644
+--- a/platform/ext/target/nxp/rdrw61x/config.cmake
++++ b/platform/ext/target/nxp/rdrw61x/config.cmake
+@@ -25,6 +25,7 @@ set(CONFIG_TFM_USE_TRUSTZONE            ON              CACHE BOOL      "Enable
+ set(TFM_MULTI_CORE_TOPOLOGY             OFF             CACHE BOOL      "Whether to build for a dual-cpu architecture")
+ 
+ ################################## Platform specific features ################################
++set(PLATFORM_DEFAULT_NV_COUNTERS       OFF         CACHE BOOL      "")
+ set(USE_ELS_PKC_HUK                    ON          CACHE BOOL      "Use HUK for RW61x platform via els_pkc")
+ set(USE_ELS_PKC_IAK                    ON          CACHE BOOL      "Use IAK for RW61x platform via els_pkc")
+ set(USE_HARDENED_PLATFORM_INIT         ON          CACHE BOOL      "Use hardening macros for RW61x platform")
+
+diff --git a/secure_fw/partitions/internal_trusted_storage/tfm_internal_trusted_storage.yaml b/secure_fw/partitions/internal_trusted_storage/tfm_internal_trusted_storage.yaml
+index 173dc34c2..f805aae0f 100644
+--- a/secure_fw/partitions/internal_trusted_storage/tfm_internal_trusted_storage.yaml
++++ b/secure_fw/partitions/internal_trusted_storage/tfm_internal_trusted_storage.yaml
+@@ -24,5 +24,8 @@
+       "version_policy": "STRICT",
+       "mm_iovec": "enable",
+     }
++  ],
++  "dependencies": [
++    "TFM_PLATFORM_SERVICE"
+   ]
+ }
+ secure_fw/partitions/platform/platform_sp.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/secure_fw/partitions/platform/platform_sp.c b/secure_fw/partitions/platform/platform_sp.c
+index 3cc62888c..b4f1070a6 100644
+--- a/secure_fw/partitions/platform/platform_sp.c
++++ b/secure_fw/partitions/platform/platform_sp.c
+@@ -75,6 +75,15 @@ static enum tfm_platform_err_t nv_counter_permissions_check(
+         } else {
+             return TFM_PLATFORM_ERR_NOT_SUPPORTED;
+         }
++#if defined(TFM_PARTITION_INTERNAL_TRUSTED_STORAGE) && !defined(PLATFORM_DEFAULT_NV_COUNTERS)
++    case PLAT_NV_COUNTER_ITS_0:
++    case PLAT_NV_COUNTER_ITS_1:
++        if (client_id == TFM_SP_ITS) {
++            return TFM_PLATFORM_ERR_SUCCESS;
++        } else {
++            return TFM_PLATFORM_ERR_NOT_SUPPORTED;
++        }
++#endif
+     default:
+         return TFM_PLATFORM_ERR_NOT_SUPPORTED;
+     }
+-- 
+2.39.2.windows.1
