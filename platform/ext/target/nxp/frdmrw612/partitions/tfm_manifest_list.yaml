@@ -1,0 +1,29 @@
+#-------------------------------------------------------------------------------
+# Copyright (c) 2022, Arm Limited. All rights reserved.
+# Copyright 2024 NXP
+#
+# SPDX-License-Identifier: BSD-3-Clause
+#
+#----------------------------------------------------------------------------
+{
+  "description": "TF-M secure partition manifests",
+  "type": "manifest_list",
+  "version_major": 0,
+  "version_minor": 1,
+  "manifest_list": [
+    {
+      "description": "TFM Loader Service Partition",
+      "manifest": "loader_service/tfm_loader_service.yaml",
+      "output_path": "secure_fw/partitions/loader_service",
+      "conditional": "TFM_PARTITION_LOADER_SERVICE",
+      "version_major": 0,
+      "version_minor": 1,
+      "pid": 272,
+      "linker_pattern": {
+        "library_list": [
+          "*tfm_*partition_lds.*"
+         ]
+      }
+    },
+  ]
+}
