@@ -18,7 +18,7 @@
 
 /* Heap size for the crypto backend */
 #undef CRYPTO_ENGINE_BUF_SIZE
-#define CRYPTO_ENGINE_BUF_SIZE                 0x4000
+#define CRYPTO_ENGINE_BUF_SIZE                 0x8000
 
 /* Default size of the internal scratch buffer used for PSA FF IOVec allocations */
 #undef CRYPTO_IOVEC_BUFFER_SIZE
