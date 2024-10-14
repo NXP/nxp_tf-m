@@ -29,6 +29,8 @@
 #include "fih.h"
 #include "tfm_spm_log.h"
 
+#include "target_cfg.h"
+
 extern const struct memory_region_limits memory_regions;
 
 /* Define Peripherals NS address range for the platform */
@@ -596,6 +598,8 @@ __attribute__((weak)) void sau_and_idau_cfg(void)
 {
     /* Ensure all memory accesses are completed */
     __DMB();
+
+    TZ_SAU_Enable();
 
     /* Enables SAU Control register: Enable SAU and All Secure (applied only if disabled) */
     SECURE_WRITE_REGISTER(&(SAU->CTRL), ((1U << SAU_CTRL_ENABLE_Pos) & SAU_CTRL_ENABLE_Msk));
