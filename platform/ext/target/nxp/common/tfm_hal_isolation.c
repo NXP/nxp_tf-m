@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2020-2024, Arm Limited. All rights reserved.
- * Copyright 2020-2022 NXP. All rights reserved.
+ * Copyright 2020-2024 NXP
  * Copyright (c) 2024 Cypress Semiconductor Corporation (an Infineon
  * company) or an affiliate of Cypress Semiconductor Corporation. All rights
  * reserved.
@@ -27,6 +27,8 @@
 #include "load/asset_defs.h"
 #include "load/spm_load_api.h"
 #include "fih.h"
+
+#include "target_cfg.h"
 
 extern const struct memory_region_limits memory_regions;
 
@@ -597,40 +599,59 @@ void sau_and_idau_cfg(void)
     __DMB();
 
     /* Enables SAU */
-    TZ_SAU_Enable();
+    //TZ_SAU_Enable();
+
+    /* Enables SAU Control register: Enable SAU and All Secure (applied only if disabled) */
+    SECURE_WRITE_REGISTER(&(SAU->CTRL), ((1U << SAU_CTRL_ENABLE_Pos) & SAU_CTRL_ENABLE_Msk));
 
     /* Configures SAU regions to be non-secure */
-    SAU->RNR  = 0U;
+    SECURE_WRITE_REGISTER(&(SAU->RNR), 0U);
     SAU->RBAR = (memory_regions.non_secure_partition_base
                 & SAU_RBAR_BADDR_Msk);
     SAU->RLAR = (memory_regions.non_secure_partition_limit
                 & SAU_RLAR_LADDR_Msk)
                 | SAU_RLAR_ENABLE_Msk;
 
-    SAU->RNR  = 1U;
-    SAU->RBAR = (NS_DATA_START & SAU_RBAR_BADDR_Msk);
-    SAU->RLAR = (NS_DATA_LIMIT & SAU_RLAR_LADDR_Msk) | SAU_RLAR_ENABLE_Msk;
+    /* Configures Non secure data start region */
+    SECURE_WRITE_REGISTER(&(SAU->RNR), 1U);
+    SECURE_WRITE_REGISTER(&(SAU->RBAR), (NS_DATA_START & SAU_RBAR_BADDR_Msk));
+    SECURE_WRITE_REGISTER(&(SAU->RLAR), ((NS_DATA_LIMIT & SAU_RLAR_LADDR_Msk) | SAU_RLAR_ENABLE_Msk));
 
     /* Configures veneers region to be non-secure callable */
-    SAU->RNR  = 2U;
+    SECURE_WRITE_REGISTER(&(SAU->RNR), 2U);
     SAU->RBAR = (memory_regions.veneer_base  & SAU_RBAR_BADDR_Msk);
     SAU->RLAR = (memory_regions.veneer_limit & SAU_RLAR_LADDR_Msk)
                 | SAU_RLAR_ENABLE_Msk
                 | SAU_RLAR_NSC_Msk;
 
     /* Configure the peripherals space */
-    SAU->RNR  = 3U;
-    SAU->RBAR = (PERIPHERALS_BASE_NS_START & SAU_RBAR_BADDR_Msk);
-    SAU->RLAR = (PERIPHERALS_BASE_NS_END & SAU_RLAR_LADDR_Msk)
-                | SAU_RLAR_ENABLE_Msk;
-
+    SECURE_WRITE_REGISTER(&(SAU->RNR), 3U);
+    SECURE_WRITE_REGISTER(&(SAU->RBAR), (PERIPHERALS_BASE_NS_START & SAU_RBAR_BADDR_Msk));
+    SECURE_WRITE_REGISTER(&(SAU->RLAR), ((PERIPHERALS_BASE_NS_END & SAU_RLAR_LADDR_Msk)
+                                         | SAU_RLAR_ENABLE_Msk));
 #ifdef BL2
     /* Secondary image partition */
-    SAU->RNR  = 4U;
+    SECURE_WRITE_REGISTER(&(SAU->RNR), 4U);
     SAU->RBAR = (memory_regions.secondary_partition_base  & SAU_RBAR_BADDR_Msk);
     SAU->RLAR = (memory_regions.secondary_partition_limit & SAU_RLAR_LADDR_Msk)
                 | SAU_RLAR_ENABLE_Msk;
 #endif /* BL2 */
+
+#ifdef TFM_WIFI_FLASH_REGION
+    /* Wifi Flash region */
+    SECURE_WRITE_REGISTER(&(SAU->RNR), 5U);
+    SAU->RBAR = (memory_regions.wifi_flash_region_base & SAU_RBAR_BADDR_Msk);
+    SAU->RLAR = (memory_regions.wifi_flash_region_limit & SAU_RLAR_LADDR_Msk)
+	            | SAU_RLAR_ENABLE_Msk;
+#endif /* TFM_WIFI_FLASH_REGION */
+
+#ifdef TFM_EL2GO_DATA_IMPORT_REGION
+    /* EL2GO data import region */
+    SECURE_WRITE_REGISTER(&(SAU->RNR), 6U);
+    SAU->RBAR = (memory_regions.el2go_data_import_region_base & SAU_RBAR_BADDR_Msk);
+    SAU->RLAR = (memory_regions.el2go_data_import_region_limit & SAU_RLAR_LADDR_Msk)
+	           | SAU_RLAR_ENABLE_Msk;
+#endif /* TFM_EL2GO_DATA_IMPORT_REGION */
 
     /* Ensure the write is completed and flush pipeline */
     __DSB();
@@ -702,3 +723,15 @@ fih_int tfm_hal_verify_static_boundaries(void)
     FIH_RET(fih_int_encode(result));
 }
 #endif /* TFM_FIH_PROFILE_ON */
+
+/* HARDENING_MACROS_ENABLED is defined*/
+#ifdef HARDENING_MACROS_ENABLED
+
+/* fault_detect handling function
+ */
+__attribute__((used)) static void fault_detect_handling(void)
+{
+    SPMLOG_ERRMSG("fault detected during secure REG write!!\n");
+    tfm_core_panic();
+}
+#endif
