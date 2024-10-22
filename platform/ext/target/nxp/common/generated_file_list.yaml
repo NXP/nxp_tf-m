@@ -1,0 +1,37 @@
+#-------------------------------------------------------------------------------
+# Copyright (c) 2020, Arm Limited. All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+#
+#-------------------------------------------------------------------------------
+
+# The path of "template" can be relative path to TF-M root or absolute path
+# The path of "output" must be relative path to the root for generated files
+# Both can contain environment variables
+
+{
+  "name": "nxp generated file list",
+  "type": "generated_file_list",
+  "version_major": 0,
+  "version_minor": 1,
+  "file_list": [
+    {
+        "name": "secure common linker script",
+        "short_name": "isolation_ld",
+        "template": "platform/ext/target/nxp/common/armgcc/tfm_common_s.ld.template",
+        "output": "platform/ext/target/nxp/common/armgcc/tfm_common_s.ld"
+    },
+    {
+        "name": "secure common linker script",
+        "short_name": "isolation_sct",
+        "template": "platform/ext/target/nxp/common/armclang/tfm_common_s.sct.template",
+        "output": "platform/ext/target/nxp/common/armclang/tfm_common_s.sct"
+    },
+    {
+        "name": "secure common linker script",
+        "short_name": "isolation_icf",
+        "template": "platform/ext/target/nxp/common/iar/tfm_common_s.icf.template",
+        "output": "platform/ext/target/nxp/common/iar/tfm_common_s.icf"
+    }
+  ]
+}

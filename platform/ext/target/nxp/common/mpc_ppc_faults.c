@@ -13,8 +13,10 @@
 
 void C_SEC_VIO_IRQHandler(void)
 {
+#if defined(SEC_VIO_IRQn)
     /* Clear pending IRQ */
     NVIC_ClearPendingIRQ(SEC_VIO_IRQn);
+#endif
 
     /* Print fault message and block execution */
     ERROR_MSG("Platform Exception: MPC/PPC fault!!!");
