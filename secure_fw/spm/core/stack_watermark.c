@@ -5,6 +5,8 @@
  *
  */
 
+#ifdef CONFIG_TFM_STACK_WATERMARKS //NXP Approach without CMAKE
+
 #include <stdint.h>
 #include "ffm/backend.h"
 #include "stack_watermark.h"
@@ -59,3 +61,5 @@ void dump_used_stacks(void)
         SPMLOG_VAL("    Stack bytes used: ", used_stack(p_pt));
     }
 }
+
+#endif /* CONFIG_TFM_STACK_WATERMARKS */ //NXP

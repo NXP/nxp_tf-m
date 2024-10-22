@@ -7,6 +7,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
+#include "psa/framework_feature.h"    //NXP  Approach without CMAKE
+#if PSA_FRAMEWORK_HAS_MM_IOVEC        //NXP 
+
 #include "ffm/psa_api.h"
 #include "spm.h"
 #include "load/service_defs.h"
@@ -280,3 +283,4 @@ void tfm_spm_partition_psa_unmap_outvec(psa_handle_t msg_handle,
     /* Update the write number */
     handle->outvec_written[outvec_idx] = len;
 }
+#endif /* PSA_FRAMEWORK_HAS_MM_IOVEC */       //NXP 
