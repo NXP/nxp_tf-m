@@ -13,7 +13,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-#include "psa/crypto.h"
+#include "psa/tfm/crypto.h"           //NXP to avoid file name conflicts between MbedTLS and TFM.
 #ifdef PLATFORM_DEFAULT_CRYPTO_KEYS
 #include "crypto_keys/tfm_builtin_key_ids.h"
 #else

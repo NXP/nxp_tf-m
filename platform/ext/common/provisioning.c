@@ -11,7 +11,7 @@
 #include "cmsis_compiler.h"
 #include "tfm_plat_otp.h"
 #include "tfm_attest_hal.h"
-#include "psa/crypto.h"
+#include "psa/tfm/crypto.h"          //NXP to avoid file name conflicts between MbedTLS and TFM.
 #include "tfm_spm_log.h"
 
 #include <string.h>

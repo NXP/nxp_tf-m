@@ -10,7 +10,7 @@
 #include "psa/error.h"
 #include "psa/client.h"
 #include "psa/initial_attestation.h"
-#include "psa/crypto.h"
+#include "psa/tfm/crypto.h"          //NXP to avoid file name conflicts between MbedTLS and TFM.
 #include "attest.h"
 
 #include "array.h"

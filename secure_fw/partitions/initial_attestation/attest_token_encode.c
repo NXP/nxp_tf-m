@@ -19,7 +19,7 @@
 #endif
 #include "t_cose_common.h"
 #include "q_useful_buf.h"
-#include "psa/crypto.h"
+#include "psa/tfm/crypto.h"           //NXP to avoid file name conflicts between MbedTLS and TFM.
 #include "attest_key.h"
 #include "tfm_crypto_defs.h"
 

@@ -6,7 +6,7 @@
  */
 
 #include "tfm_crypto_defs.h"
-#include "psa/crypto.h"
+#include "psa/tfm/crypto.h"          //NXP to avoid file name conflicts between MbedTLS and TFM.
 #include "psa/client.h"
 #include "psa_manifest/sid.h"
 
