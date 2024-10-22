@@ -302,31 +302,8 @@ def process_partition_manifests(manifest_lists, configs):
 
     # Parse the manifests
     for i, manifest_item in enumerate(all_manifests):
-        valid_enabled_conditions  = ['1', 'on',  'true',  'enabled']
-        valid_disabled_conditions = ['0', 'off', 'false', 'disabled', '']
-        is_enabled = ''
-
-        if 'conditional' in manifest_item.keys():
-            if manifest_item['conditional'] not in configs.keys():
-                logging.error('Configuration "{}" is not defined!'.format(manifest_item['conditional']))
-                exit(1)
-            is_enabled = configs[manifest_item['conditional']].lower()
-        else:
-            # Partitions without 'conditional' is always on
-            is_enabled = '1'
-
-        if is_enabled in valid_disabled_conditions:
-            logging.info("   {:40s}  OFF".format(manifest_item['description']))
-            continue
-        elif is_enabled in valid_enabled_conditions:
-            logging.info("   {:40s}  ON".format(manifest_item['description']))
-        else:
-            raise Exception('Invalid "conditional" attribute: "{}" for {}. '
-                            'Please set to one of {} or {}, case-insensitive.'\
-                            .format(manifest_item['conditional'],
-                                    manifest_item['description'],
-                                    valid_enabled_conditions, valid_disabled_conditions))
-
+   
+	    #NXP Skip conditional check. 
         # Check if partition ID is manually set
         if 'pid' not in manifest_item.keys():
             no_pid_manifest_idx.append(i)
@@ -689,6 +666,13 @@ def parse_args():
                         , default=False
                         , action='store_true'
                         , help='Reduce log messages')
+    # NXP
+    parser.add_argument('-t', '--tf-m-tests'
+                        , dest='tf_m_tests'
+                        , required=True
+                        , default=None
+                        , metavar='tf-m-tests'
+                        , help='The location of the tf-m-tests directory.')
 
     args = parser.parse_args()
 
@@ -735,7 +719,55 @@ def main():
 
     utilities = {}
     utilities['donotedit_warning'] = donotedit_warning
+    
+    ################################# NXP #################################
+    
+    partition_list = context['partitions']
 
+    global test_dir 
+    test_dir = args.tf_m_tests
+
+    exclude_beginings = ['/', ':', '\(']
+    exclude_extension = "cmake"
+
+    generated_files = []
+    load_info_files = []
+    exclude = None
+    pos = 0
+
+    for partition_num, partition in enumerate(partition_list):
+        dir = os.path.dirname(partition['attr']['manifest']).replace('${TFM_TEST_PATH}', test_dir)
+        path = dir + "/CMakeLists.txt"
+        with open(path) as parsed_file:
+            line = parsed_file.readline()
+            while line:
+                line = parsed_file.readline()
+                result = re.search('(.*)\.c', line)
+                exclude = re.search("(.*)\.%s" % exclude_extension, line)
+                if exclude is not None:
+                    exclude = exclude.group(1)
+
+                if result is not None:
+                    data = result.group(1)
+                    if re.search('#', line) is not None or data == exclude:
+                        continue
+
+                    pos = 0
+                    for exclude in exclude_beginings:
+                        if(pos == 0):
+                            for i in re.finditer(exclude, data):
+                                pos = i.start() + 1
+
+                    generated_files.append(data[pos:].strip())
+                    if 'load_info_' in generated_files[-1]:
+                        load_info_files.append(generated_files[-1].replace('load_info_', ''))
+        
+        partition_list[partition_num]['attr'].update({'libraries': generated_files})
+        partition_list[partition_num]['attr'].update({'load_info': load_info_files})
+        generated_files = []
+        load_info_files = []
+
+    ################################# NXP END #################################
     context['utilities'] = utilities
 
     gen_per_partition_files(context)
