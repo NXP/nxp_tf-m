@@ -20,8 +20,6 @@
 
 #include "flash_layout.h"
 
-#define BL2_HEAP_SIZE           (0x0001000)
-#define BL2_MSP_STACK_SIZE      (0x0001800)
 
 #ifdef ENABLE_HEAP
     #define S_HEAP_SIZE             (0x0000200)
@@ -30,12 +28,10 @@
 #define S_MSP_STACK_SIZE        (0x0000800)
 #define S_PSP_STACK_SIZE        (0x0000800)
 
-#define NS_HEAP_SIZE            (0x0001000)
-#define NS_STACK_SIZE           (0x00001E0)
+#define NS_HEAP_SIZE            (0x0004000)
+#define NS_STACK_SIZE           (0x0002000)
 
-/* eFlash MPC granularity is 4 KB on Musca_B1. Alignment
- * of partitions is defined in accordance with this constraint.
- */
+/* Boot Image is exoected at offset 0 */
 #ifdef BL2
 #ifndef LINK_TO_SECONDARY_PARTITION
 #define S_IMAGE_PRIMARY_PARTITION_OFFSET   (FLASH_AREA_0_OFFSET)
@@ -101,6 +97,8 @@
 #define S_RAM_ALIAS(x)  (S_RAM_ALIAS_BASE + (x))
 #define NS_RAM_ALIAS(x) (NS_RAM_ALIAS_BASE + (x))
 
+#define S_DATA_OFFSET	0
+
 /* Secure regions */
 #define S_IMAGE_PRIMARY_AREA_OFFSET \
              (S_IMAGE_PRIMARY_PARTITION_OFFSET + BL2_HEADER_SIZE)
@@ -108,12 +106,12 @@
 #define S_CODE_SIZE     (IMAGE_S_CODE_SIZE)
 #define S_CODE_LIMIT    (S_CODE_START + S_CODE_SIZE - 1)
 
-#define S_DATA_START    (S_RAM_ALIAS(0x0))
-#define S_DATA_SIZE     (TOTAL_RAM_SIZE / 2)
-#define S_DATA_LIMIT    (S_DATA_START + S_DATA_SIZE - 1)
+#define S_DATA_START                    (S_RAM_ALIAS(S_DATA_OFFSET+RESERVED_RAM_SIZE))
+#define S_DATA_SIZE                     ((TOTAL_RAM_SIZE / 2) - S_DATA_OFFSET)
+#define S_DATA_LIMIT                    (S_DATA_START + S_DATA_SIZE - 1)
 
-/* Size of vector table: 75 interrupt handlers + 4 bytes MPS initial value */
-#define S_CODE_VECTOR_TABLE_SIZE    (0x130)
+/* Size of vector table: 171 interrupt handlers(see g_pfnVectors definition) + 4 bytes MPS initial value ((171*4 + 4) = 688 = 0x2b0) */
+#define S_CODE_VECTOR_TABLE_SIZE    (0x2b0)
 
 /* Non-secure regions */
 #define NS_IMAGE_PRIMARY_AREA_OFFSET \
@@ -122,13 +120,19 @@
 #define NS_CODE_SIZE    (IMAGE_NS_CODE_SIZE)
 #define NS_CODE_LIMIT   (NS_CODE_START + NS_CODE_SIZE - 1)
 
-#define NS_DATA_START   (NS_RAM_ALIAS(S_DATA_SIZE))
-#define NS_DATA_SIZE    (TOTAL_RAM_SIZE - S_DATA_SIZE)
-#define NS_DATA_LIMIT   (NS_DATA_START + NS_DATA_SIZE - 1)
+#define NS_DATA_START                   (NS_RAM_ALIAS(S_DATA_OFFSET + S_DATA_SIZE+RESERVED_RAM_SIZE))
+#define NS_DATA_SIZE                    (TOTAL_RAM_SIZE - S_DATA_SIZE - S_DATA_OFFSET)
+#define NS_DATA_LIMIT                   (NS_DATA_START + NS_DATA_SIZE - 1)
 
 /* Flash is divided into 32 kB sub-regions. Each sub-region can be assigned individual
 security tier by programing corresponding registers in secure AHB controller.*/
 #define FLASH_SUBREGION_SIZE    (0x8000)     /* 32 kB */
+
+#define FLASH_REGION0_SUBREGION_NUMBER          32
+#define FLASH_REGION0_SIZE                      (1024 * 1024)
+                          
+#define FLASH_REGION1_SUBREGION_NUMBER          32
+#define FLASH_REGION1_SIZE                      (1024 * 1024)                           
 
 /* RAM is divided into 4 kB sub-regions. Each sub-region can be assigned individual
 security tier by programing corresponding registers in secure AHB controller. */
@@ -169,5 +173,10 @@ security tier by programing corresponding registers in secure AHB controller. */
 #define BOOT_TFM_SHARED_DATA_SIZE (0x400)
 #define BOOT_TFM_SHARED_DATA_LIMIT (BOOT_TFM_SHARED_DATA_BASE + \
                                     BOOT_TFM_SHARED_DATA_SIZE - 1)
+
+#ifdef TFM_EL2GO_DATA_IMPORT_REGION
+#define EL2GO_DATA_IMPORT_REGION_START		(TFM_EL2GO_NV_DATA_IMPORT_ADDR)
+#define EL2GO_DATA_IMPORT_REGION_SIZE		(TFM_EL2GO_NV_DATA_IMPORT_SIZE)
+#endif /* TFM_EL2GO_DATA_IMPORT_REGION */
 
 #endif /* __REGION_DEFS_H__ */
