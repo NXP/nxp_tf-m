@@ -45,7 +45,7 @@
 
 /* Sector size of the embedded flash hardware (erase/program) */
 #define FLASH_AREA_IMAGE_SECTOR_SIZE        (0x2000)           /* 8 KB. Flash memory erase operation granularity. */
-#define FLASH_AREA_PROGRAM_SIZE             (0x80)                /* Minimum size of program operation */
+#define FLASH_AREA_PROGRAM_SIZE             (0x2000)                /* Minimum size of program operation */
 
 /* FLASH size */
 #define FLASH_TOTAL_SIZE                    (2 * 1024 * 1024)    /* 2 MB */
