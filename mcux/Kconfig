@@ -1,0 +1,454 @@
+#
+# Copyright 2024 NXP
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+menu "tfm"
+    
+    config MCUX_COMPONENT_middleware.tfm.s
+        bool "Component middleware.tfm.s"
+        select MCUX_COMPONENT_middleware.tfm.s.crypto
+        select MCUX_COMPONENT_middleware.tfm.s.its
+        select MCUX_COMPONENT_middleware.tfm.s.board
+        select MCUX_COMPONENT_middleware.tfm.s.platform
+        select MCUX_COMPONENT_middleware.tfm.s.platform_common if (!(MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612))
+        select MCUX_COMPONENT_middleware.tfm.s.platform_rw61x if (MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612)
+        
+        select MCUX_COMPONENT_middleware.tfm.s.initial_attestation.asymmetric if (MCUX_COMPONENT_middleware.tfm.profile_large || MCUX_COMPONENT_middleware.tfm.profile_medium)
+        select MCUX_COMPONENT_middleware.tfm.s.initial_attestation.symmetric if (MCUX_COMPONENT_middleware.tfm.profile_small)
+
+    config MCUX_COMPONENT_middleware.tfm.s.board
+        bool "Component middleware.tfm.s.board"
+
+    config MCUX_COMPONENT_middleware.tfm.s.platform_common
+        bool "Component middleware.tfm.s.platform_common"
+        depends on !(MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612)
+
+    config MCUX_COMPONENT_middleware.tfm.s.loader_service
+        bool "Component middleware.tfm.s.loader_service"
+        select MCUX_COMPONENT_driver.conn_fwloader
+        depends on MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612
+
+    config MCUX_COMPONENT_middleware.tfm.s.platform_rw61x
+        bool "Component middleware.tfm.s.platform_rw61x"
+        select MCUX_COMPONENT_middleware.tfm.s.loader_service
+        depends on MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612
+        
+    config MCUX_COMPONENT_middleware.tfm.flash_iap1
+        bool "Component middleware.tfm.flash_iap1"
+        select MCUX_COMPONENT_driver.iap1
+    
+    config MCUX_COMPONENT_middleware.tfm.flash_iap
+        bool "Component middleware.tfm.flash_iap"
+        select MCUX_COMPONENT_driver.iap
+    
+    config MCUX_COMPONENT_middleware.tfm.flash_iap_n4a
+        bool "Component middleware.tfm.flash_iap_n4a"
+        select MCUX_COMPONENT_driver.flashiap
+    
+    config MCUX_COMPONENT_middleware.tfm.flash_mcxn
+        bool "Component middleware.tfm.flash_mcxn"
+        select MCUX_COMPONENT_driver.romapi_flashiap
+    
+    config MCUX_COMPONENT_middleware.tfm.romapi_rw61x
+        bool "Component middleware.tfm.romapi_rw61x"
+        select MCUX_COMPONENT_driver.romapi
+        select MCUX_COMPONENT_driver.iped_rw61x
+    
+    config MCUX_COMPONENT_middleware.tfm.flash_k4
+        bool "Component middleware.tfm.flash_k4"
+        select MCUX_COMPONENT_driver.flash_k4
+    
+    config MCUX_COMPONENT_middleware.tfm.flash_k4_romapi
+        bool "Component middleware.tfm.flash_k4_romapi"
+        select MCUX_COMPONENT_driver.romapi
+    
+    config MCUX_COMPONENT_middleware.tfm.lpuart
+        bool "Component middleware.tfm.lpuart"
+    
+    config MCUX_COMPONENT_middleware.tfm.usart
+        bool "Component middleware.tfm.usart"
+        select MCUX_COMPONENT_driver.flexcomm_usart
+    
+    config MCUX_COMPONENT_middleware.tfm.s.platform
+        bool "Component middleware.tfm.s.platform"
+        select MCUX_COMPONENT_middleware.tfm.s.platform.sp_common if (!(MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612))
+        select MCUX_COMPONENT_middleware.tfm.s.platform.sp_rw61x if (MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612)
+
+    config MCUX_COMPONENT_middleware.tfm.s.platform.sp_common
+        bool "Component middleware.tfm.s.platform.sp_common"
+        depends on !(MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612)
+    
+    config MCUX_COMPONENT_middleware.tfm.s.platform.sp_rw61x
+        bool "Component middleware.tfm.s.platform.sp_rw61x"
+        depends on MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612
+
+    if MCUX_COMPONENT_middleware.tfm.s || MCUX_COMPONENT_middleware.tfm.ns
+      choice
+        prompt "Middleware profile select"
+        default MCUX_COMPONENT_middleware.tfm.profile_medium
+
+        config MCUX_COMPONENT_middleware.tfm.profile_large
+            bool "Middleware middleware.tfm.profile_large"
+
+        config MCUX_COMPONENT_middleware.tfm.profile_medium
+            bool "Middleware middleware.tfm.profile_medium"
+
+        config MCUX_COMPONENT_middleware.tfm.profile_small
+            bool "Middleware middleware.tfm.profile_small"
+      endchoice
+    endif
+
+   #tfm profile additional configs to support mcu-sdk kex package, No example shall select these manually
+   #----------------------------------------------section for large profile configs----------------------------------
+   config MCUX_COMPONENT_middleware.tfm.profile_large.s_configs
+       bool "MCUX_COMPONENT_middleware.tfm.profile_large.s_configs"
+       default y if (MCUX_COMPONENT_middleware.tfm.profile_large && MCUX_COMPONENT_middleware.tfm.s)
+
+   config MCUX_COMPONENT_middleware.tfm.profile_large.s_test_configs
+       bool "MCUX_COMPONENT_middleware.tfm.profile_large.s_test_configs"
+       default y if (MCUX_COMPONENT_middleware.tfm.profile_large && MCUX_COMPONENT_middleware.tfm.s.test)
+
+   config MCUX_COMPONENT_middleware.tfm.profile_large.ns_configs
+       bool "MCUX_COMPONENT_middleware.tfm.profile_large.ns_configs"
+       default y if (MCUX_COMPONENT_middleware.tfm.profile_large && MCUX_COMPONENT_middleware.tfm.ns)
+
+   config MCUX_COMPONENT_middleware.tfm.profile_large.ns_test_configs
+       bool "MCUX_COMPONENT_middleware.tfm.profile_large.ns_test_configs"
+       default y if (MCUX_COMPONENT_middleware.tfm.profile_large && MCUX_COMPONENT_middleware.tfm.ns.test)
+
+   config MCUX_COMPONENT_middleware.tfm.profile_large.ns_psatest_configs
+       bool "MCUX_COMPONENT_middleware.tfm.profile_large.ns_psatest_configs"
+       default y if (MCUX_COMPONENT_middleware.tfm.profile_large && MCUX_COMPONENT_middleware.psatest.ns.crypto)
+   #----------------------------------------------section for medium profile configs---------------------------------
+   config MCUX_COMPONENT_middleware.tfm.profile_medium.s_configs
+       bool "MCUX_COMPONENT_middleware.tfm.profile_medium.s_configs"
+       default y if (MCUX_COMPONENT_middleware.tfm.profile_medium && MCUX_COMPONENT_middleware.tfm.s)
+
+   config MCUX_COMPONENT_middleware.tfm.profile_medium.s_test_configs
+       bool "MCUX_COMPONENT_middleware.tfm.profile_medium.s_test_configs"
+       default y if (MCUX_COMPONENT_middleware.tfm.profile_medium && MCUX_COMPONENT_middleware.tfm.s.test)
+
+   config MCUX_COMPONENT_middleware.tfm.profile_medium.ns_configs
+       bool "MCUX_COMPONENT_middleware.tfm.profile_medium.ns_configs"
+       default y if (MCUX_COMPONENT_middleware.tfm.profile_medium && MCUX_COMPONENT_middleware.tfm.ns)
+
+   config MCUX_COMPONENT_middleware.tfm.profile_medium.ns_test_configs
+       bool "MCUX_COMPONENT_middleware.tfm.profile_medium.ns_test_configs"
+       default y if (MCUX_COMPONENT_middleware.tfm.profile_medium && MCUX_COMPONENT_middleware.tfm.ns.test)
+
+   config MCUX_COMPONENT_middleware.tfm.profile_medium.ns_psatest_configs
+       bool "MCUX_COMPONENT_middleware.tfm.profile_medium.ns_psatest_configs"
+       default y if (MCUX_COMPONENT_middleware.tfm.profile_medium && MCUX_COMPONENT_middleware.psatest.ns.crypto)
+   #----------------------------------------------section for small profile configs----------------------------------
+   config MCUX_COMPONENT_middleware.tfm.profile_small.s_configs
+       bool "MCUX_COMPONENT_middleware.tfm.profile_small.s_configs"
+       default y if (MCUX_COMPONENT_middleware.tfm.profile_small && MCUX_COMPONENT_middleware.tfm.s)
+
+   config MCUX_COMPONENT_middleware.tfm.profile_small.s_test_configs
+       bool "MCUX_COMPONENT_middleware.tfm.profile_small.s_test_configs"
+       default y if (MCUX_COMPONENT_middleware.tfm.profile_small && MCUX_COMPONENT_middleware.tfm.s.test)
+
+   config MCUX_COMPONENT_middleware.tfm.profile_small.ns_configs
+       bool "MCUX_COMPONENT_middleware.tfm.profile_small.ns_configs"
+       default y if (MCUX_COMPONENT_middleware.tfm.profile_small && MCUX_COMPONENT_middleware.tfm.ns)
+
+   config MCUX_COMPONENT_middleware.tfm.profile_small.ns_test_configs
+       bool "MCUX_COMPONENT_middleware.tfm.profile_small.ns_test_configs"
+       default y if (MCUX_COMPONENT_middleware.tfm.profile_small && MCUX_COMPONENT_middleware.tfm.ns.test)
+
+   config MCUX_COMPONENT_middleware.tfm.profile_small.ns_psatest_configs
+       bool "MCUX_COMPONENT_middleware.tfm.profile_small.ns_psatest_configs"
+       default y if (MCUX_COMPONENT_middleware.tfm.profile_small && MCUX_COMPONENT_middleware.psatest.ns.crypto)
+   #------------------------------------------------End of profile related configs-----------------------------------
+
+    config MCUX_COMPONENT_middleware.tfm.s.crypto
+        bool "Component middleware.tfm.s.crypto"
+        select MCUX_COMPONENT_component.psa_crypto_driver.els_pkc if ((MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612 || MCUX_HW_DEVICE_MCXN235 || MCUX_HW_DEVICE_MCXN236 || MCUX_HW_DEVICE_MCXN546 || MCUX_HW_DEVICE_MCXN547 || MCUX_HW_DEVICE_MCXN946 || MCUX_HW_DEVICE_MCXN947))
+   
+    config MCUX_COMPONENT_middleware.tfm.s.initial_attestation.asymmetric
+        bool "Component middleware.tfm.s.initial_attestation.asymmetric"
+        select MCUX_COMPONENT_middleware.tfm.s.initial_attestation
+
+    config MCUX_COMPONENT_middleware.tfm.s.initial_attestation.symmetric
+        bool "Component middleware.tfm.s.initial_attestation.symmetric"
+        select MCUX_COMPONENT_middleware.tfm.s.initial_attestation
+
+    config MCUX_COMPONENT_middleware.tfm.s.initial_attestation
+        bool "Component middleware.tfm.s.initial_attestation"
+        select MCUX_COMPONENT_middleware.tfm.qcbor
+    config MCUX_COMPONENT_middleware.tfm.qcbor
+        bool "Component middleware.tfm.qcbor"
+    config MCUX_COMPONENT_middleware.tfm.qcbor.test
+        bool "Component middleware.tfm.qcbor.test"
+    config MCUX_COMPONENT_middleware.tfm.s.ps
+        bool "Component middleware.tfm.s.ps"
+
+    config MCUX_COMPONENT_middleware.tfm.s.its
+        bool "Component middleware.tfm.s.its"
+        select MCUX_COMPONENT_middleware.tfm.s.its.load_info_common if (!(MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612))
+        select MCUX_COMPONENT_middleware.tfm.s.its.load_info_rw61x if (MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612)
+
+    config MCUX_COMPONENT_middleware.tfm.s.its.load_info_common
+        bool "Component middleware.tfm.s.its.load_info_common"
+        depends on (!(MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612))
+
+    config MCUX_COMPONENT_middleware.tfm.s.its.load_info_rw61x
+        bool "Component middleware.tfm.s.its.load_info_rw61x"
+        depends on (MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612)
+
+    config MCUX_COMPONENT_middleware.tfm.ns
+        bool "Component middleware.tfm.ns"
+        select MCUX_COMPONENT_middleware.tfm.ns.board
+        if MCUX_COMPONENT_middleware.tfm.ns
+            choice
+                prompt "os_wrapper"
+                default MCUX_COMPONENT_middleware.tfm.ns.os_wrapper.rtos if (MCUX_COMPONENT_CMSIS_RTOS2_NonSecure || MCUX_COMPONENT_middleware.freertos-kernel.tfm_ns)
+
+                config MCUX_COMPONENT_middleware.tfm.ns.os_wrapper.baremetal
+                    bool "baremetal"
+
+                config MCUX_COMPONENT_middleware.tfm.ns.os_wrapper.rtos
+                    bool "rtos"
+            endchoice
+        endif
+
+    config MCUX_COMPONENT_middleware.tfm.ns.board
+        bool "Component middleware.tfm.ns.board"
+
+    config MCUX_COMPONENT_middleware.tfm.ns.loader_service
+        bool "Component middleware.tfm.ns.loader_service"
+        select MCUX_COMPONENT_driver.conn_fwloader_ns
+        depends on MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612
+        default y if MCUX_COMPONENT_middleware.tfm.ns
+    
+    config MCUX_COMPONENT_middleware.tfm.ns.platform_rw61x
+        bool "Component middleware.tfm.ns.platform_rw61x"
+        depends on MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612
+        default y if MCUX_COMPONENT_middleware.tfm.ns
+        
+    config MCUX_COMPONENT_middleware.tfm.ns.mbedtls_compatibility
+        bool "Component middleware.tfm.ns.mbedtls_compatibility"
+        default y if (MCUX_COMPONENT_middleware.tfm.ns && !MCUX_COMPONENT_middleware.tfmtests.ns)
+
+    config MCUX_COMPONENT_middleware.tfmtests.ns
+        bool "Component middleware.tfmtests.ns"
+        select MCUX_COMPONENT_CMSIS_RTOS2_NonSecure
+
+    config MCUX_COMPONENT_middleware.tfm.s.test
+        bool "Component middleware.tfm.s.test"
+        select MCUX_COMPONENT_middleware.tfm.s.test.attestation.asymmetric if (MCUX_COMPONENT_middleware.tfm.profile_large || MCUX_COMPONENT_middleware.tfm.profile_medium)
+        select MCUX_COMPONENT_middleware.tfm.s.test.attestation.symmetric if (MCUX_COMPONENT_middleware.tfm.profile_small)
+        select MCUX_COMPONENT_middleware.tfm.s.test.crypto
+        select MCUX_COMPONENT_middleware.tfm.s.test.its
+
+    config MCUX_COMPONENT_middleware.tfm.s.test.ps
+        bool "Component middleware.tfm.s.test.ps"
+    config MCUX_COMPONENT_middleware.tfm.s.test.its
+        bool "Component middleware.tfm.s.test.its"
+
+    config MCUX_COMPONENT_middleware.tfm.s.test.attestation.asymmetric
+        bool "Component middleware.tfm.s.test.attestation.asymmetric"
+        select MCUX_COMPONENT_middleware.tfm.s.test.attestation
+        select MCUX_COMPONENT_middleware.tfm.t_cose.sign1_verify
+    
+    config MCUX_COMPONENT_middleware.tfm.s.test.attestation.symmetric
+        bool "Component middleware.tfm.s.test.attestation.symmetric"
+        select MCUX_COMPONENT_middleware.tfm.s.test.attestation
+        select MCUX_COMPONENT_middleware.tfm.t_cose.mac0_verify
+
+    config MCUX_COMPONENT_middleware.tfm.s.test.attestation
+        bool "Component middleware.tfm.s.test.attestation"
+    config MCUX_COMPONENT_middleware.tfm.t_cose.sign1_verify
+        bool "Component middleware.tfm.t_cose.sign1_verify"
+    config MCUX_COMPONENT_middleware.tfm.t_cose.mac0_verify
+        bool "Component middleware.tfm.t_cose.mac0_verify"
+
+    config MCUX_COMPONENT_middleware.tfm.s.test.crypto
+        bool "Component middleware.tfm.s.test.crypto"
+
+    config MCUX_COMPONENT_middleware.tfm.platform_test
+        bool "Component middleware.tfm.platform_test"
+    config MCUX_COMPONENT_middleware.tfm.s.test.platform
+        bool "Component middleware.tfm.s.test.platform"
+    config MCUX_COMPONENT_middleware.tfm.s.test.ipc
+        bool "Component middleware.tfm.s.test.ipc"
+    
+    config MCUX_COMPONENT_middleware.tfm.s.test.irq_slih
+        bool "Component middleware.tfm.s.test.irq_slih"
+        select MCUX_COMPONENT_middleware.tfm.platform_test
+    
+    config MCUX_COMPONENT_middleware.tfm.s.test.irq_flih
+        bool "Component middleware.tfm.s.test.irq_flih"
+        select MCUX_COMPONENT_middleware.tfm.platform_test
+
+    config MCUX_COMPONENT_middleware.tfm.ns.test
+        bool "Component middleware.tfm.ns.test"
+        select MCUX_COMPONENT_middleware.tfm.ns.test.its
+        select MCUX_COMPONENT_middleware.tfm.ns.test.attestation.asymmetric if (MCUX_COMPONENT_middleware.tfm.profile_large || MCUX_COMPONENT_middleware.tfm.profile_medium)
+        select MCUX_COMPONENT_middleware.tfm.ns.test.attestation.symmetric if (MCUX_COMPONENT_middleware.tfm.profile_small)
+        select MCUX_COMPONENT_middleware.tfm.ns.test.crypto
+
+    config MCUX_COMPONENT_middleware.tfm.ns.test.ps
+        bool "Component middleware.tfm.ns.test.ps"
+        
+    config MCUX_COMPONENT_middleware.tfm.ns.test.its
+        bool "Component middleware.tfm.ns.test.its"
+
+    config MCUX_COMPONENT_middleware.tfm.ns.test.s
+        bool "Component middleware.tfm.ns.test.s"
+    
+    config MCUX_COMPONENT_middleware.tfm.ns.test.attestation.asymmetric
+        bool "Component middleware.tfm.ns.test.attestation.asymmetric"
+        select MCUX_COMPONENT_middleware.tfm.ns.test.attestation
+        select MCUX_COMPONENT_middleware.tfmtests.ns.test.attestation.asymmetric
+        select MCUX_COMPONENT_middleware.tfm.t_cose.sign1_verify
+    
+    config MCUX_COMPONENT_middleware.tfm.ns.test.attestation.symmetric
+        bool "Component middleware.tfm.ns.test.attestation.symmetric"
+        select MCUX_COMPONENT_middleware.tfm.ns.test.attestation
+        select MCUX_COMPONENT_middleware.tfmtests.ns.test.attestation.symmetric
+        select MCUX_COMPONENT_middleware.tfm.t_cose.mac0_verify
+    
+    config MCUX_COMPONENT_middleware.tfm.ns.test.attestation
+        bool "Component middleware.tfm.ns.test.attestation"
+        select MCUX_COMPONENT_middleware.tfm.qcbor
+        select MCUX_COMPONENT_middleware.tfm.qcbor.test
+        select MCUX_COMPONENT_middleware.tfmtests.ns.test.attestation
+    
+    config MCUX_COMPONENT_middleware.tfmtests.ns.test.attestation.asymmetric
+        bool "Component middleware.tfmtests.ns.test.attestation.asymmetric"
+        select MCUX_COMPONENT_middleware.tfmtests.ns.test.attestation
+    
+    config MCUX_COMPONENT_middleware.tfmtests.ns.test.attestation.symmetric
+        bool "Component middleware.tfmtests.ns.test.attestation.symmetric"
+        select MCUX_COMPONENT_middleware.tfmtests.ns.test.attestation
+    config MCUX_COMPONENT_middleware.tfmtests.ns.test.attestation
+        bool "Component middleware.tfmtests.ns.test.attestation"
+    config MCUX_COMPONENT_middleware.tfm.ns.test.crypto
+        bool "Component middleware.tfm.ns.test.crypto"
+
+    config MCUX_COMPONENT_middleware.tfm.ns.test.qcbor
+        bool "Component middleware.tfm.ns.test.qcbor"
+    config MCUX_COMPONENT_middleware.tfm.ns.test.ipc
+        bool "Component middleware.tfm.ns.test.ipc"
+    
+    config MCUX_COMPONENT_middleware.tfm.ns.test.irq_slih
+        bool "Component middleware.tfm.ns.test.irq_slih"
+        select MCUX_COMPONENT_middleware.tfm.platform_test
+    
+    config MCUX_COMPONENT_middleware.tfm.ns.test.irq_flih
+        bool "Component middleware.tfm.ns.test.irq_flih"
+        select MCUX_COMPONENT_middleware.tfm.platform_test
+    config MCUX_COMPONENT_middleware.tfm.ns.test.platform
+        bool "Component middleware.tfm.ns.test.platform"
+    
+    config MCUX_COMPONENT_middleware.tfm.ns.test.tcose
+        bool "Component middleware.tfm.ns.test.tcose"
+        select MCUX_COMPONENT_middleware.tfmtests.ns.test.tcose
+    config MCUX_COMPONENT_middleware.tfmtests.ns.test.tcose
+        bool "Component middleware.tfmtests.ns.test.tcose"
+
+    config MCUX_COMPONENT_middleware.mbedcrypto
+        bool "Component middleware.mbedcrypto"
+        
+    if MCUX_COMPONENT_middleware.mbedcrypto
+        choice
+            prompt "Component middleware.mbedcrypto anyOf 1"
+            default MCUX_DEPENDENCY_COMPONENT_middleware.mbedcrypto_DEPEND_ANYOF1_OPTION_1
+            
+            config MCUX_DEPENDENCY_COMPONENT_middleware.mbedcrypto_DEPEND_ANYOF1_OPTION_1
+                bool "Component MCUX_DEPENDENCY_COMPONENT_middleware.mbedcrypto_DEPEND_ANYOF1_OPTION_1"
+                select MCUX_COMPONENT_middleware.mbedcrypto.port
+                depends on MCUX_HW_DEVICE_LPC55S06 || MCUX_HW_DEVICE_LPC55S16 || MCUX_HW_DEVICE_LPC55S69 || MCUX_HW_DEVICE_MIMXRT595S || MCUX_HW_DEVICE_MIMXRT685S || MCUX_HW_DEVICE_LPC55S36 || MCUX_HW_DEVICE_KW45B41Z83 || MCUX_HW_DEVICE_K32W1480 || MCUX_HW_DEVICE_MCXW716C
+            
+            config MCUX_DEPENDENCY_COMPONENT_middleware.mbedcrypto_DEPEND_ANYOF1_OPTION_2
+                bool "Component MCUX_DEPENDENCY_COMPONENT_middleware.mbedcrypto_DEPEND_ANYOF1_OPTION_2"
+                select MCUX_COMPONENT_middleware.mbedcrypto.port.config
+                depends on MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612 || MCUX_HW_DEVICE_MCXN235 || MCUX_HW_DEVICE_MCXN236 || MCUX_HW_DEVICE_MCXN546 || MCUX_HW_DEVICE_MCXN547 || MCUX_HW_DEVICE_MCXN946 || MCUX_HW_DEVICE_MCXN947
+        endchoice
+    endif
+    
+    config MCUX_COMPONENT_middleware.mbedcrypto.port
+        bool "Component middleware.mbedcrypto.port"
+        select MCUX_COMPONENT_middleware.mbedcrypto.port.config
+        select MCUX_COMPONENT_middleware.mbedcrypto.port.rng
+        
+        if MCUX_COMPONENT_middleware.mbedcrypto.port
+            choice
+                prompt "Component middleware.mbedcrypto.port anyOf 1"
+                default MCUX_DEPENDENCY_COMPONENT_middleware.mbedcrypto.port_DEPEND_ANYOF1_OPTION_1
+                
+                config MCUX_DEPENDENCY_COMPONENT_middleware.mbedcrypto.port_DEPEND_ANYOF1_OPTION_1
+                    bool "Component MCUX_DEPENDENCY_COMPONENT_middleware.mbedcrypto.port_DEPEND_ANYOF1_OPTION_1"
+                    select MCUX_COMPONENT_driver.rng_1
+                    select MCUX_COMPONENT_driver.casper
+                    select MCUX_COMPONENT_driver.hashcrypt
+                    depends on MCUX_HW_DEVICE_LPC55S06 || MCUX_HW_DEVICE_LPC55S16 || MCUX_HW_DEVICE_LPC55S69
+                
+                config MCUX_DEPENDENCY_COMPONENT_middleware.mbedcrypto.port_DEPEND_ANYOF1_OPTION_2
+                    bool "Component MCUX_DEPENDENCY_COMPONENT_middleware.mbedcrypto.port_DEPEND_ANYOF1_OPTION_2"
+                    select MCUX_COMPONENT_driver.trng
+                    select MCUX_COMPONENT_driver.casper
+                    select MCUX_COMPONENT_driver.hashcrypt
+                    depends on MCUX_HW_DEVICE_MIMXRT595S || MCUX_HW_DEVICE_MIMXRT685S
+                
+                config MCUX_DEPENDENCY_COMPONENT_middleware.mbedcrypto.port_DEPEND_ANYOF1_OPTION_3
+                    bool "Component MCUX_DEPENDENCY_COMPONENT_middleware.mbedcrypto.port_DEPEND_ANYOF1_OPTION_3"
+                    select MCUX_COMPONENT_component.els_pkc.platform.lpc
+                    depends on MCUX_HW_DEVICE_LPC55S36
+                
+                config MCUX_DEPENDENCY_COMPONENT_middleware.mbedcrypto.port_DEPEND_ANYOF1_OPTION_4
+                    bool "Component MCUX_DEPENDENCY_COMPONENT_middleware.mbedcrypto.port_DEPEND_ANYOF1_OPTION_4"
+                    select MCUX_COMPONENT_driver.elemu
+                    depends on MCUX_HW_DEVICE_KW45B41Z83 || MCUX_HW_DEVICE_K32W1480 || MCUX_HW_DEVICE_MCXW716C
+            endchoice
+        endif
+        
+    config MCUX_COMPONENT_middleware.mbedcrypto.port.config
+        bool "Component middleware.mbedcrypto.port.config"
+    config MCUX_COMPONENT_middleware.mbedcrypto.port.rng
+        bool "Component middleware.mbedcrypto.port.rng"
+
+    config MCUX_COMPONENT_middleware.psatest.ns
+        bool "Component middleware.psatest.ns"
+        select MCUX_COMPONENT_middleware.psatest.ns.tgt_dev_apis_nxp
+
+    config MCUX_COMPONENT_middleware.psatest.ns.tgt_dev_apis_nxp
+        bool "middleware.psatest.ns.tgt_dev_apis_nxp"
+
+        if MCUX_COMPONENT_middleware.psatest.ns.tgt_dev_apis_nxp
+            choice
+                default MCUX_DEPENDENCY_COMPONENT_middleware.psatest.ns.tgt_dev_apis_nxp_default
+                prompt "Choice tgt_dev_apis_nxp_rw61x_configs"
+                config MCUX_DEPENDENCY_COMPONENT_middleware.psatest.ns.tgt_dev_apis_nxp_rw61x_configs
+                    bool "RW61x dev apis nxp configs"
+                    select MCUX_COMPONENT_middleware.psatest.ns.tgt_dev_apis_nxp_rw61x_configs
+                    depends on (MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612)
+                config MCUX_DEPENDENCY_COMPONENT_middleware.psatest.ns.tgt_dev_apis_nxp_default
+                    bool "MCUX_DEPENDENCY_COMPONENT_middleware.psatest.ns.tgt_dev_apis_nxp_default"
+                    depends on !(MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612)
+            endchoice
+        endif
+
+    config MCUX_COMPONENT_middleware.psatest.ns.tgt_dev_apis_nxp_rw61x_configs
+        bool "Component middleware.psatest.ns.tgt_dev_apis_nxp_rw61x_configs"
+        depends on (MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612)
+
+    config MCUX_COMPONENT_middleware.psatest.ns.crypto
+        bool "middleware.psatest.ns.crypto"
+    
+    config MCUX_COMPONENT_middleware.psatest.ns.initial_attestation
+        bool "middleware.psatest.ns.initial_attestation"
+        select MCUX_COMPONENT_middleware.tfm.qcbor
+        select MCUX_COMPONENT_middleware.psatest.ns.t_cose
+
+    config MCUX_COMPONENT_middleware.psatest.ns.t_cose
+        bool "Component middleware.psatest.ns.t_cose"
+
+    config MCUX_COMPONENT_middleware.psatest.ns.protected_storage
+        bool "middleware.psatest.ns.protected_storage"
+    
+    config MCUX_COMPONENT_middleware.psatest.ns.internal_trusted_storage
+        bool "middleware.psatest.ns.internal_trusted_storage"
+endmenu
