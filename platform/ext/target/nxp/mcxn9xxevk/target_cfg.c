@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2022 Arm Limited. All rights reserved.
- * Copyright 2019-2023 NXP. All rights reserved.
+ * Copyright 2019-2024 NXP. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,26 +37,27 @@ struct platform_data_t tfm_peripheral_timer0 = {
         CTIMER2_BASE,
         CTIMER2_BASE + 0xFFF
 };
+
 void enable_mem_rule_for_partition(uint32_t memory_region_base, uint32_t memory_region_limit)
 {
     uint32_t ns_region_id       = 0;
     uint32_t ns_region_start_id = 0;
     uint32_t ns_region_end_id   = 0;
         
-    ns_region_start_id = (memory_region_base - NS_ROM_ALIAS_BASE)/FLASH_SUBREGION_SIZE;
-    ns_region_end_id = (memory_region_limit - NS_ROM_ALIAS_BASE + 1)/FLASH_SUBREGION_SIZE;
+    ns_region_start_id = (memory_region_base - NS_ROM_ALIAS_BASE) / FLASH_SUBREGION_SIZE;
+    ns_region_end_id = (memory_region_limit - NS_ROM_ALIAS_BASE / FLASH_SUBREGION_SIZE) + 1;
 
     /* Set to non-secure and non-privileged user access allowed */
     for(ns_region_id = ns_region_start_id; ns_region_id < ns_region_end_id; ns_region_id++) /* == Region 0 == */
     {
         if(ns_region_id < 8)
         {
-            /* Set regions in the AHB controller for flash memory 0x00000000 – 0x0003FFFF */
+            /* Set regions in the AHB controller for flash memory 0x00000000 - 0x0003FFFF */
             AHBSC->FLASH00_MEM_RULE[0] &= ~(0xF << (ns_region_id * 4));
         }
         else if((ns_region_id >= 8) && (ns_region_id < 16))
         {
-            /* Set regions in the AHB controller for flash memory 0x00040000 – 0x0007FFFF */
+            /* Set regions in the AHB controller for flash memory 0x00040000 - 0x0007FFFF */
             AHBSC->FLASH00_MEM_RULE[1] &= ~(0xF << ((ns_region_id - 8) * 4));
         }
         else if((ns_region_id >= 16) && (ns_region_id < 24))
@@ -73,25 +74,25 @@ void enable_mem_rule_for_partition(uint32_t memory_region_base, uint32_t memory_
         {
             if(ns_region_start_id > FLASH_REGION0_SUBREGION_NUMBER)
             {
-                ns_region_start_id = (memory_region_base - NS_ROM_ALIAS_BASE - FLASH_REGION0_SIZE )/FLASH_SUBREGION_SIZE;
+                ns_region_start_id = (memory_region_base - NS_ROM_ALIAS_BASE - FLASH_REGION0_SIZE ) / FLASH_SUBREGION_SIZE;
             }
             else
             {
                 ns_region_start_id = 0;
             }
 
-            ns_region_end_id = (memory_region_limit - NS_ROM_ALIAS_BASE - FLASH_REGION0_SIZE + 1)/FLASH_SUBREGION_SIZE;
+            ns_region_end_id = ((memory_region_limit - NS_ROM_ALIAS_BASE - FLASH_REGION0_SIZE) / FLASH_SUBREGION_SIZE) + 1;
 
             for(ns_region_id = ns_region_start_id; ns_region_id < ns_region_end_id; ns_region_id++)
             {
                 if(ns_region_id < 8)
                 {
-                    /* Set regions in the AHB controller for flash memory 0x00100000 – 0x0013FFFF */
+                    /* Set regions in the AHB controller for flash memory 0x00100000 - 0x0013FFFF */
                     AHBSC->FLASH01_MEM_RULE[0] &= ~(0xF << (ns_region_id*4));
                 }
                 else if((ns_region_id >= 8) && (ns_region_id < 16))
                 {
-                    /* Set regions in the AHB controller for flash memory 0x00140000 – 0x0017FFFF */
+                    /* Set regions in the AHB controller for flash memory 0x00140000 - 0x0017FFFF */
                     AHBSC->FLASH01_MEM_RULE[1] &= ~(0xF << ((ns_region_id-8)*4));
                 }
                 else if((ns_region_id >= 16) && (ns_region_id < 24))
@@ -149,73 +150,9 @@ int32_t mpc_init_cfg(void)
     /* == Region 0 == */
     /* The regions have to be alligned to FLASH_SUBREGION_SIZE to cover the AHB Flash Region. */
     SPM_ASSERT(((memory_regions.non_secure_partition_base - NS_ROM_ALIAS_BASE) % FLASH_SUBREGION_SIZE) == 0);
-    SPM_ASSERT(((memory_regions.non_secure_partition_limit - NS_ROM_ALIAS_BASE +1) % FLASH_SUBREGION_SIZE) == 0);
+    SPM_ASSERT(((memory_regions.non_secure_partition_limit - NS_ROM_ALIAS_BASE + 1) % FLASH_SUBREGION_SIZE) == 0);
 
-    ns_region_start_id = (memory_regions.non_secure_partition_base - NS_ROM_ALIAS_BASE)/FLASH_SUBREGION_SIZE;
-    ns_region_end_id = (memory_regions.non_secure_partition_limit - NS_ROM_ALIAS_BASE + 1)/FLASH_SUBREGION_SIZE;
-
-    /* Set to non-secure and non-privileged user access allowed */
-    for(ns_region_id = ns_region_start_id; ns_region_id < ns_region_end_id; ns_region_id++) /* == Region 0 == */
-    {
-        if(ns_region_id < 8)
-        {
-            /* Set regions in the AHB controller for flash memory 0x00000000 – 0x0003FFFF */
-            AHBSC->FLASH00_MEM_RULE[0] &= ~(0xF << (ns_region_id * 4));
-        }
-        else if((ns_region_id >= 8) && (ns_region_id < 16))
-        {
-            /* Set regions in the AHB controller for flash memory 0x00040000 – 0x0007FFFF */
-            AHBSC->FLASH00_MEM_RULE[1] &= ~(0xF << ((ns_region_id - 8) * 4));
-        }
-        else if((ns_region_id >= 16) && (ns_region_id < 24))
-        {
-            /* Set regions the AHB controller for flash memory 0x00080000 - 0x000BFFFF */
-            AHBSC->FLASH00_MEM_RULE[2] &= ~(0xF << ((ns_region_id - 16) * 4));
-        }
-        else if((ns_region_id >= 24) && (ns_region_id < 32))
-        {
-            /* Set regions the AHB controller for flash memory 0x000C0000 -  0x000FFFFF */
-            AHBSC->FLASH00_MEM_RULE[3] &= ~(0xF << ((ns_region_id - 32) * 4));
-        }
-        else /* == Region 1 == */
-        {
-            if(ns_region_start_id > FLASH_REGION0_SUBREGION_NUMBER)
-            {
-                ns_region_start_id = (memory_regions.non_secure_partition_base - NS_ROM_ALIAS_BASE - FLASH_REGION0_SIZE )/FLASH_SUBREGION_SIZE;
-            }
-            else
-            {
-                ns_region_start_id = 0;
-            }
-
-            ns_region_end_id = (memory_regions.non_secure_partition_limit - NS_ROM_ALIAS_BASE - FLASH_REGION0_SIZE + 1)/FLASH_SUBREGION_SIZE;
-
-            for(ns_region_id = ns_region_start_id; ns_region_id < ns_region_end_id; ns_region_id++)
-            {
-                if(ns_region_id < 8)
-                {
-                    /* Set regions in the AHB controller for flash memory 0x00100000 – 0x0013FFFF */
-                    AHBSC->FLASH01_MEM_RULE[0] &= ~(0xF << (ns_region_id*4));
-                }
-                else if((ns_region_id >= 8) && (ns_region_id < 16))
-                {
-                    /* Set regions in the AHB controller for flash memory 0x00140000 – 0x0017FFFF */
-                    AHBSC->FLASH01_MEM_RULE[1] &= ~(0xF << ((ns_region_id-8)*4));
-                }
-                else if((ns_region_id >= 16) && (ns_region_id < 24))
-                {
-                    /* Set regions the AHB controller for flash memory 0x00180000 - 0x001BFFFF */
-                    AHBSC->FLASH01_MEM_RULE[2] &= ~(0xF << ((ns_region_id-16)*4));
-                }
-                else if((ns_region_id >= 24) && (ns_region_id < 32))
-                {
-                    /* Set regions the AHB controller for flash memory 0x001C0000 -  0x001FFFFF */
-                    AHBSC->FLASH01_MEM_RULE[3] &= ~(0xF << ((ns_region_id-32)*4));
-                } 
-            }
-        }
-    }
-    
+    enable_mem_rule_for_partition(memory_regions.non_secure_partition_base, memory_regions.non_secure_partition_limit);
 
 #ifdef TFM_EL2GO_DATA_IMPORT_REGION
 	enable_mem_rule_for_partition(memory_regions.el2go_data_import_region_base, memory_regions.el2go_data_import_region_limit);
@@ -252,19 +189,19 @@ int32_t mpc_init_cfg(void)
     AHBSC->RAMC_MEM_RULE[0] = 0x33333333U; /* 0x2001_0000 - 0x2001_7FFF */
     AHBSC->RAMC_MEM_RULE[1] = 0x33333333U; /* 0x2001_8000 - 0x2001_FFFF */
     AHBSC->RAMD_MEM_RULE[0] = 0x33333333U; /* 0x2002_0000 - 0x2002_7FFF */
-    AHBSC->RAMD_MEM_RULE[1] = 0x33333333U; /* 0x2002_0000 - 0x2002_FFFF */
+    AHBSC->RAMD_MEM_RULE[1] = 0x33333333U; /* 0x2002_8000 - 0x2002_FFFF */
     AHBSC->RAME_MEM_RULE[0] = 0x33333333U; /* 0x2003_0000 - 0x2003_7FFF */
-    AHBSC->RAME_MEM_RULE[1] = 0x33333333U; /* 0x2003_0000 - 0x2003_FFFF */
+    AHBSC->RAME_MEM_RULE[1] = 0x33333333U; /* 0x2003_8000 - 0x2003_FFFF */
     AHBSC->RAMF_MEM_RULE[0] = 0x33333333U; /* 0x2004_0000 - 0x2004_7FFF */
-    AHBSC->RAMF_MEM_RULE[1] = 0x33333333U; /* 0x2004_0000 - 0x2004_FFFF */
+    AHBSC->RAMF_MEM_RULE[1] = 0x33333333U; /* 0x2004_8000 - 0x2004_FFFF */
     AHBSC->RAMG_MEM_RULE[0] = 0x33333333U; /* 0x2005_0000 - 0x2005_7FFF */
-    AHBSC->RAMG_MEM_RULE[1] = 0x33333333U; /* 0x2005_0000 - 0x2005_FFFF */
-    AHBSC->RAMH_MEM_RULE = 0x33333333U; /* 0x2006_0000 - 0x2007_7FFF */
+    AHBSC->RAMG_MEM_RULE[1] = 0x33333333U; /* 0x2005_8000 - 0x2005_FFFF */
+    AHBSC->RAMH_MEM_RULE = 0x33333333U; /* 0x2006_0000 - 0x2006_7FFF */
 
     /* SRAM memory configuration (set according to region_defs.h and flash_layout.h) */
     /* == SRAM Region 0 (0-32KB) == */
-    ns_region_start_id = S_DATA_SIZE/DATA_SUBREGION_SIZE; /* NS starts after S */
-    ns_region_end_id = (S_DATA_SIZE + NS_DATA_SIZE)/DATA_SUBREGION_SIZE;
+    ns_region_start_id  = (NS_DATA_START - NS_RAM_ALIAS_BASE) / DATA_SUBREGION_SIZE; /* NS starts after S */
+    ns_region_end_id  = (NS_DATA_START - NS_RAM_ALIAS_BASE + NS_DATA_SIZE) / DATA_SUBREGION_SIZE;
 
     for(ns_region_id = ns_region_start_id; ns_region_id < ns_region_end_id; ns_region_id++)
     {
