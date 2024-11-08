@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2017-2023 Arm Limited. All rights reserved.
- * Copyright 2019-2023 NXP. All rights reserved.
+ * Copyright 2019-2024 NXP. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,8 +106,8 @@
 #define S_CODE_SIZE     (IMAGE_S_CODE_SIZE)
 #define S_CODE_LIMIT    (S_CODE_START + S_CODE_SIZE - 1)
 
-#define S_DATA_START                    (S_RAM_ALIAS(S_DATA_OFFSET+RESERVED_RAM_SIZE))
-#define S_DATA_SIZE                     ((TOTAL_RAM_SIZE / 2) - S_DATA_OFFSET)
+#define S_DATA_START                    (S_RAM_ALIAS(S_DATA_OFFSET + RESERVED_RAM_SIZE))
+#define S_DATA_SIZE                     (((TOTAL_RAM_SIZE - RESERVED_RAM_SIZE) / 2) - S_DATA_OFFSET)
 #define S_DATA_LIMIT                    (S_DATA_START + S_DATA_SIZE - 1)
 
 /* Size of vector table: 171 interrupt handlers(see g_pfnVectors definition) + 4 bytes MPS initial value ((171*4 + 4) = 688 = 0x2b0) */
@@ -120,8 +120,8 @@
 #define NS_CODE_SIZE    (IMAGE_NS_CODE_SIZE)
 #define NS_CODE_LIMIT   (NS_CODE_START + NS_CODE_SIZE - 1)
 
-#define NS_DATA_START                   (NS_RAM_ALIAS(S_DATA_OFFSET + S_DATA_SIZE+RESERVED_RAM_SIZE))
-#define NS_DATA_SIZE                    (TOTAL_RAM_SIZE - S_DATA_SIZE - S_DATA_OFFSET)
+#define NS_DATA_START                   (NS_RAM_ALIAS(S_DATA_OFFSET + RESERVED_RAM_SIZE + S_DATA_SIZE))
+#define NS_DATA_SIZE                    (TOTAL_RAM_SIZE - RESERVED_RAM_SIZE - S_DATA_SIZE - S_DATA_OFFSET)
 #define NS_DATA_LIMIT                   (NS_DATA_START + NS_DATA_SIZE - 1)
 
 /* Flash is divided into 32 kB sub-regions. Each sub-region can be assigned individual
