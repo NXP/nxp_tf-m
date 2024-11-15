@@ -203,7 +203,7 @@ menu "tfm"
         if MCUX_COMPONENT_middleware.tfm.ns
             choice
                 prompt "os_wrapper"
-                default MCUX_COMPONENT_middleware.tfm.ns.os_wrapper.rtos if (MCUX_COMPONENT_CMSIS_RTOS2_NonSecure || MCUX_COMPONENT_middleware.freertos-kernel.tfm_ns)
+                default MCUX_COMPONENT_middleware.tfm.ns.os_wrapper.rtos if (MCUX_COMPONENT_CMSIS_RTOS2_RTX || MCUX_COMPONENT_middleware.freertos-kernel.tfm_ns)
 
                 config MCUX_COMPONENT_middleware.tfm.ns.os_wrapper.baremetal
                     bool "baremetal"
@@ -233,7 +233,7 @@ menu "tfm"
 
     config MCUX_COMPONENT_middleware.tfmtests.ns
         bool "Component middleware.tfmtests.ns"
-        select MCUX_COMPONENT_CMSIS_RTOS2_NonSecure
+        select MCUX_COMPONENT_CMSIS_RTOS2_RTX
 
     config MCUX_COMPONENT_middleware.tfm.s.test
         bool "Component middleware.tfm.s.test"

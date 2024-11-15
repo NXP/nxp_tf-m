@@ -43,12 +43,12 @@ extern uint64_t __STACK_SEAL;
 
 typedef void(*VECTOR_TABLE_Type)(void);
 
-extern void __PROGRAM_START(void) __NO_RETURN;
+extern __NO_RETURN void __PROGRAM_START(void);
 
 /*----------------------------------------------------------------------------
   Internal References
  *----------------------------------------------------------------------------*/
-void Reset_Handler  (void) __NO_RETURN;
+__NO_RETURN void Reset_Handler(void);
 
 /*----------------------------------------------------------------------------
   Exception / Interrupt Handler
