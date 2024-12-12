@@ -24,6 +24,10 @@
 #undef CRYPTO_IOVEC_BUFFER_SIZE
 #define CRYPTO_IOVEC_BUFFER_SIZE               0x9000
 
+/* The stack size of the Protected Storage Secure Partition */
+#undef PS_STACK_SIZE
+#define PS_STACK_SIZE                          0x780
+
 /* The maximum asset size to be stored in the Internal Trusted Storage */
 #undef ITS_MAX_ASSET_SIZE
 #define ITS_MAX_ASSET_SIZE                     0xB80
