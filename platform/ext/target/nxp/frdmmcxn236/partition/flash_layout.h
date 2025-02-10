@@ -23,7 +23,7 @@
  *
  * 0x0000_0000 Primary image area(1 MB):
  *    0x0000_0000 Secure     image primary (288 kB)
- *    0x0008_0000 Non-secure image primary (416 kB)
+ *    0x0004_8000 Non-secure image primary (416 kB)
  * Reserved area:
  * 0xXXXX_XXXX Secure Binary tail Area (8 KB), if SB is used.
  * 0xXXXX_XXXX Protected Storage Area (16 KB)
@@ -162,10 +162,9 @@
 #define TFM_OTP_NV_COUNTERS_BACKUP_AREA_ADDR (TFM_OTP_NV_COUNTERS_AREA_ADDR + \
                                               TFM_OTP_NV_COUNTERS_AREA_SIZE)
 
-/* Flash Area to keep the EL2GO blobs initially - hardcoding last 256K for this*/
-//TODO - adjust while enabling el2go-examples for this platform
-//#define TFM_EL2GO_NV_DATA_IMPORT_ADDR  (0x001C0000)
-//#define TFM_EL2GO_NV_DATA_IMPORT_SIZE  (0x00040000)
+/* Flash Area to keep the EL2GO blobs initially - hardcoding last 224K for this*/
+#define TFM_EL2GO_NV_DATA_IMPORT_ADDR  (0x000C4000)
+#define TFM_EL2GO_NV_DATA_IMPORT_SIZE  (0x00038000)
 
 /* Use Flash memory to store Code data */
 #define S_ROM_ALIAS_BASE    (0x10000000)
