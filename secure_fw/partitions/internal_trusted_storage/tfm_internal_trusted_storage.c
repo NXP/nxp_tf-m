@@ -312,7 +312,10 @@ psa_status_t tfm_its_init(void)
      * when it is the first time in the device life that the ITS service is
      * executed.
      */
-     if (status != PSA_SUCCESS) {
+#ifndef ITS_WIPE_ALL     //NXP Wipe Flash FS. Used only for PSA and Regression tests.
+    if (status != PSA_SUCCESS) 
+#endif        
+    {
         /* Remove all data in the ITS memory area and create a valid ITS flash
          * layout in that area.
          */
@@ -359,7 +362,10 @@ psa_status_t tfm_its_init(void)
      * when it is the first time in the device life that the PS service is
      * executed.
      */
-     if (status != PSA_SUCCESS) {
+#ifndef PS_WIPE_ALL     //NXP Wipe Flash FS. Used only for PSA and Regression tests.
+     if (status != PSA_SUCCESS)
+#endif         
+     {
         /* Remove all data in the PS memory area and create a valid PS flash
          * layout in that area.
          */
