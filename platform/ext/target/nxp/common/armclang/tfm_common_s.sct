@@ -35,6 +35,9 @@ LR_FLASH_CONFIG M_BOOT_FLASH_CONF_START {
 // --------- NXP end --------------
   
 LR_CODE S_CODE_START S_CODE_SIZE {
+    PT_RO_START +0 ALIGN TFM_LINKER_PT_RO_ALIGNMENT EMPTY 0x0 {
+        /* Position tag: code + RO-data */
+    }
 
     /****  This initial section contains common code for secure binary */
     ER_VECTORS S_CODE_START S_CODE_VECTOR_TABLE_SIZE {
@@ -67,7 +70,6 @@ LR_CODE S_CODE_START S_CODE_SIZE {
 
     /**** Unprivileged Secure code start here */
     TFM_UNPRIV_CODE_START +0 ALIGN TFM_LINKER_UNPRIV_CODE_ALIGNMENT {
-        *(SFN)
         * (+RO)
     }
 
@@ -84,10 +86,10 @@ LR_CODE S_CODE_START S_CODE_SIZE {
      * The first loaded partition will be inited at last in SFN model.
      */
     TFM_SP_LOAD_LIST +0 ALIGN 4 {
-        *(.part_load_priority_lowest)
-        *(.part_load_priority_low)
-        *(.part_load_priority_normal)
-        *(.part_load_priority_high)
+        *(.part_load_priority_00)
+        *(.part_load_priority_01)
+        *(.part_load_priority_02)
+        *(.part_load_priority_03)
     }
 
     /**** PSA RoT RO part (CODE + RODATA) start here */
@@ -187,6 +189,10 @@ LR_CODE S_CODE_START S_CODE_SIZE {
                   S_RAM_CODE_START + S_RAM_CODE_SIZE)
 #endif
 
+    PT_RO_END +0 ALIGN TFM_LINKER_PT_RO_ALIGNMENT EMPTY 0x0 {
+        /* Position tag */
+    }
+
     /**** Base address of secure data area */
     TFM_SECURE_DATA_START S_DATA_START EMPTY 0x0{                 //NXP
     }
@@ -229,6 +235,12 @@ LR_CODE S_CODE_START S_CODE_SIZE {
 #if defined(CONFIG_TFM_PARTITION_META)
     TFM_SP_META_PTR +0 ALIGN TFM_LINKER_SP_META_PTR_ALIGNMENT {
         *(.bss.SP_META_PTR_SPRTL_INST)
+    }
+    /*
+     * This empty, zero long execution region is here to mark the end address
+     * of TFM partition metadata pointer region.
+     */
+    TFM_SP_META_PTR_END +0 ALIGN TFM_LINKER_SP_META_PTR_ALIGNMENT EMPTY 0x0 {
     }
 #endif
 
@@ -327,18 +339,18 @@ LR_CODE S_CODE_START S_CODE_SIZE {
 
     /**** The runtime partition placed order is same as load partition */
     ER_PART_RT_POOL +0 ALIGN 4 {
-        *(.bss.part_runtime_priority_lowest)
-        *(.bss.part_runtime_priority_low)
-        *(.bss.part_runtime_priority_normal)
-        *(.bss.part_runtime_priority_high)
+        *(.bss.part_runtime_priority_00)
+        *(.bss.part_runtime_priority_01)
+        *(.bss.part_runtime_priority_02)
+        *(.bss.part_runtime_priority_03)
     }
 
     /**** The runtime service placed order is same as load partition */
     ER_SERV_RT_POOL +0 ALIGN 4 {
-        *(.bss.serv_runtime_priority_lowest)
-        *(.bss.serv_runtime_priority_low)
-        *(.bss.serv_runtime_priority_normal)
-        *(.bss.serv_runtime_priority_high)
+        *(.bss.serv_runtime_priority_00)
+        *(.bss.serv_runtime_priority_01)
+        *(.bss.serv_runtime_priority_02)
+        *(.bss.serv_runtime_priority_03)
     }
 
     /**** PSA RoT DATA start here */

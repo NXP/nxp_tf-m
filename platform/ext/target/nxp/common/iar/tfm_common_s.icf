@@ -26,6 +26,9 @@
  * default values if needed. */
 #include "tfm_s_linker_alignments.h"
 
+/* position tag block : code + RO-data */
+define block PT_RO_START with alignment = TFM_LINKER_PT_RO_ALIGNMENT, size = 0 { };
+define block PT_RO_END with alignment = TFM_LINKER_PT_RO_ALIGNMENT, size = 0 { };
 // --------- NXP --------------
 #ifdef M_BOOT_FLASH_CONF_START
 /* Flash configuration block(FCB) is used to configure the FlexSPI interface during the boot process. */
@@ -56,7 +59,6 @@ define block ER_TFM_CODE with fixed order, alignment = 8, maximum size = S_CODE_
 };
 
 define block TFM_UNPRIV_CODE_START with alignment = TFM_LINKER_UNPRIV_CODE_ALIGNMENT {
-       section SFN,
        readonly
        };
 
@@ -72,10 +74,10 @@ define block TFM_UNPRIV_CODE_END with alignment = TFM_LINKER_UNPRIV_CODE_ALIGNME
      * The first loaded partition will be inited at last in SFN model.
      */
 define block TFM_SP_LOAD_LIST with alignment = 4 {
-    ro section .part_load_priority_lowest object load_info_*.o,
-    ro section .part_load_priority_low object load_info_*.o,
-    ro section .part_load_priority_normal object load_info_*.o,
-    ro section .part_load_priority_high object load_info_*.o,
+    ro section .part_load_priority_00 object load_info_*.o,
+    ro section .part_load_priority_01 object load_info_*.o,
+    ro section .part_load_priority_02 object load_info_*.o,
+    ro section .part_load_priority_03 object load_info_*.o,
 };
 
     /**** PSA RoT RO part (CODE + RODATA) start here */
@@ -179,6 +181,12 @@ keep {block TFM_SHARED_DATA, block ARM_LIB_STACK};
 define block TFM_SP_META_PTR with alignment = TFM_LINKER_SP_META_PTR_ALIGNMENT {
     zi section .bss.SP_META_PTR_SPRTL_INST
        };
+
+    /*
+     * This empty, zero long execution region is here to mark the end address
+     * of TFM partition metadata pointer region.
+     */
+define block TFM_SP_META_PTR_END with alignment = TFM_LINKER_SP_META_PTR_ALIGNMENT, size = 0 { };
 #endif
 
 define block TFM_APP_RW_STACK_START with alignment = TFM_LINKER_APP_ROT_LINKER_DATA_ALIGNMENT, size = 0 { };
@@ -259,18 +267,18 @@ define block ER_TFM_DATA          with alignment = 8 {readwrite};
 
 /* The runtime partition placed order is same as load partition */
 define block ER_PART_RT_POOL      with alignment = 4 {
-    zi section .bss.part_runtime_priority_lowest,
-    zi section .bss.part_runtime_priority_low,
-    zi section .bss.part_runtime_priority_normal,
-    zi section .bss.part_runtime_priority_high,
+    zi section .bss.part_runtime_priority_00,
+    zi section .bss.part_runtime_priority_01,
+    zi section .bss.part_runtime_priority_02,
+    zi section .bss.part_runtime_priority_03,
 };
 
 /* The runtime service placed order is same as load partition */
 define block ER_SERV_RT_POOL      with alignment = 4 {
-    zi section .bss.serv_runtime_priority_lowest,
-    zi section .bss.serv_runtime_priority_low,
-    zi section .bss.serv_runtime_priority_normal,
-    zi section .bss.serv_runtime_priority_high,
+    zi section .bss.serv_runtime_priority_00,
+    zi section .bss.serv_runtime_priority_01,
+    zi section .bss.serv_runtime_priority_02,
+    zi section .bss.serv_runtime_priority_03,
 };
 
 keep {block ER_PART_RT_POOL, block ER_SERV_RT_POOL};
@@ -321,6 +329,7 @@ define block LR_CODE with fixed order, maximum size = S_CODE_SIZE {
        block ER_VENEER,
        block VENEER_ALIGN,
 #endif
+       block PT_RO_START,
        block ER_TFM_CODE,
        block TFM_UNPRIV_CODE_START,
        block TFM_UNPRIV_CODE_END,
@@ -349,13 +358,18 @@ define block LR_CODE with fixed order, maximum size = S_CODE_SIZE {
      * of APP RoT code.
      */
        block TFM_APP_CODE_END,
+       block PT_RO_END,
        };
 
 do not initialize  {
    section .noinit,
    rw section .ramvec
    };
-
+initialize by copy with packing = none { readwrite }
+#ifndef S_RAM_CODE_START
+       except { section .textrw }
+#endif
+       ;
 if (isdefinedsymbol(__USE_DLIB_PERTHREAD))
 {
   // Required in a multi-threaded application
@@ -391,6 +405,7 @@ define block DATA with fixed order {
 
 #if defined(CONFIG_TFM_PARTITION_META)
     block TFM_SP_META_PTR,
+    block TFM_SP_META_PTR_END,
 #endif
 
     /**** APP RoT DATA start here */

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2020-2024, Arm Limited. All rights reserved.
- * Copyright 2020-2022 NXP. All rights reserved.
+ * Copyright 2020-2025 NXP. All rights reserved.
  * Copyright (c) 2024 Cypress Semiconductor Corporation (an Infineon
  * company) or an affiliate of Cypress Semiconductor Corporation. All rights
  * reserved.
@@ -27,6 +27,7 @@
 #include "load/asset_defs.h"
 #include "load/spm_load_api.h"
 #include "fih.h"
+#include "target_cfg.h"
 
 extern const struct memory_region_limits memory_regions;
 

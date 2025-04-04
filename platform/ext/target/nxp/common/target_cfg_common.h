@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2020 Arm Limited
- * Copyright 2019-2023 NXP. All rights reserved.
+ * Copyright 2019-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,9 +48,9 @@ extern "C" {
 #if defined( __ICCARM__ ) || (defined (__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050))
 /*
 * SECURE_WRITE_REGISTER(ADDRESS, VALUE) macro function.
-* Writes the given value to the given address, reads back the value for verification. In case of 
-* mismatch, tfm_core_panic() is called. For robustness against fault injection, the address is loaded twice. 
-* Also the verification step can not be skipped with a single glitch. 
+* Writes the given value to the given address, reads back the value for verification. In case of
+* mismatch, tfm_core_panic() is called. For robustness against fault injection, the address is loaded twice.
+* Also the verification step can not be skipped with a single glitch.
 * Typical usecase is to write a constant to a particular register.
 */
 /* Macro for register write that is robust against instruction glitch */
@@ -105,45 +105,45 @@ do{                                                \
 /* Macro for register write that is robust against instruction glitch */
 #define SECURE_WRITE_REGISTER( ADDRESS, VALUE )                    \
 do{                                                           \
-    asm volatile ("MOVS  R4, #0x5A\n" ::                      \
+    __asm__ volatile ("MOVS  R4, #0x5A\n" ::                      \
                   : "r0", "r1", "r2", "r3", "r4");            \
-    asm volatile ("LDR   R0, =%0\n"   :: "i" (ADDRESS));      \
-    asm volatile ("LDR   R2, =%0\n"   :: "i" (VALUE));        \
-    asm volatile ("STR   R2, [R0]\n");                        \
-    asm volatile ("LDR   R1, =%0\n"   :: "i" (ADDRESS));      \
-    asm volatile ("LDR   R4, [R1]\n");                        \
-    asm volatile ("LDR   R3, =%0\n"   :: "i" (VALUE));        \
-    asm volatile ("CMP   R4, R3\n");                          \
-    asm volatile ("BEQ   1f\n");                              \
-    asm volatile ("BL    fault_detect_handling\n");           \
-    asm volatile (".word 0xde00de00\n");                      \
-    asm volatile ("1:\n");                                    \
-}while(false)                                             
+    __asm__ volatile ("LDR   R0, =%0\n"   :: "i" (ADDRESS));      \
+    __asm__ volatile ("LDR   R2, =%0\n"   :: "i" (VALUE));        \
+    __asm__ volatile ("STR   R2, [R0]\n");                        \
+    __asm__ volatile ("LDR   R1, =%0\n"   :: "i" (ADDRESS));      \
+    __asm__ volatile ("LDR   R4, [R1]\n");                        \
+    __asm__ volatile ("LDR   R3, =%0\n"   :: "i" (VALUE));        \
+    __asm__ volatile ("CMP   R4, R3\n");                          \
+    __asm__ volatile ("BEQ   1f\n");                              \
+    __asm__ volatile ("BL    fault_detect_handling\n");           \
+    __asm__ volatile (".word 0xde00de00\n");                      \
+    __asm__ volatile ("1:\n");                                    \
+}while(false)
 
 /* Macro for register read-modify-write that is robust against instruction glitch */
 #define SECURE_READ_MODIFY_WRITE_REGISTER( ADDRESS, MASK, FLAG ) \
 do{                                                           \
-    asm volatile ("LDR   R2, =%0\n" :: "i" (ADDRESS)          \
+    __asm__ volatile ("LDR   R2, =%0\n" :: "i" (ADDRESS)          \
                   : "r0", "r1", "r2", "r3", "r4", "r5");      \
-    asm volatile ("LDR   R0, [R2]\n");                        \
-    asm volatile ("LDR   R4, =%0\n" :: "i" (MASK));           \
-    asm volatile ("AND   R0, R4\n");                          \
-    asm volatile ("LDR   R4, =%0\n" :: "i" (FLAG));           \
-    asm volatile ("ORR   R0, R4\n");                          \
-    asm volatile ("LDR   R3, =%0\n" :: "i" (ADDRESS));        \
-    asm volatile ("LDR   R1, [R3]\n");                        \
-    asm volatile ("LDR   R5, =%0\n" :: "i" (MASK));           \
-    asm volatile ("AND   R1, R5\n");                          \
-    asm volatile ("LDR   R5, =%0\n" :: "i" (FLAG));           \
-    asm volatile ("ORR   R1, R5\n");                          \
-    asm volatile ("MOVS  R4, #0x5A\n");                       \
-    asm volatile ("STR   R0, [R2]\n");                        \
-    asm volatile ("LDR   R4, [R3]\n");                        \
-    asm volatile ("CMP   R1, R4\n");                          \
-    asm volatile ("BEQ   1f\n");                              \
-    asm volatile ("BL    fault_detect_handling\n");           \
-    asm volatile (".word 0xde00de00\n");                      \
-    asm volatile ("1:\n");                                    \
+    __asm__ volatile ("LDR   R0, [R2]\n");                        \
+    __asm__ volatile ("LDR   R4, =%0\n" :: "i" (MASK));           \
+    __asm__ volatile ("AND   R0, R4\n");                          \
+    __asm__ volatile ("LDR   R4, =%0\n" :: "i" (FLAG));           \
+    __asm__ volatile ("ORR   R0, R4\n");                          \
+    __asm__ volatile ("LDR   R3, =%0\n" :: "i" (ADDRESS));        \
+    __asm__ volatile ("LDR   R1, [R3]\n");                        \
+    __asm__ volatile ("LDR   R5, =%0\n" :: "i" (MASK));           \
+    __asm__ volatile ("AND   R1, R5\n");                          \
+    __asm__ volatile ("LDR   R5, =%0\n" :: "i" (FLAG));           \
+    __asm__ volatile ("ORR   R1, R5\n");                          \
+    __asm__ volatile ("MOVS  R4, #0x5A\n");                       \
+    __asm__ volatile ("STR   R0, [R2]\n");                        \
+    __asm__ volatile ("LDR   R4, [R3]\n");                        \
+    __asm__ volatile ("CMP   R1, R4\n");                          \
+    __asm__ volatile ("BEQ   1f\n");                              \
+    __asm__ volatile ("BL    fault_detect_handling\n");           \
+    __asm__ volatile (".word 0xde00de00\n");                      \
+    __asm__ volatile ("1:\n");                                    \
 }while(false)
 
 #endif /* __GNUC__ Compiler*/
@@ -166,7 +166,7 @@ struct memory_region_limits {
     uint32_t el2go_data_import_region_base;
     uint32_t el2go_data_import_region_limit;
 #endif // TFM_EL2GO_DATA_IMPORT_REGION
-    
+
 #ifdef BL2
     uint32_t secondary_partition_base;
     uint32_t secondary_partition_limit;

@@ -1,6 +1,6 @@
 ;/*
-; * Copyright (c) 2009-2023 Arm Limited
-; * Copyright (c) 2022 Cypress Semiconductor Corporation (an Infineon company)
+; * Copyright (c) 2009-2024 Arm Limited
+; * Copyright (c) 2022-2023 Cypress Semiconductor Corporation (an Infineon company)
 ; * or an affiliate of Cypress Semiconductor Corporation. All rights reserved.
 ; *
 ; * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,7 +36,7 @@ MEMORY
   m_flash_config        (RX)  : ORIGIN = M_BOOT_FLASH_CONF_START, LENGTH = M_BOOT_FLASH_CONF_SIZE     //NXP
 #endif
   FLASH    (rx)  : ORIGIN = S_CODE_START, LENGTH = S_CODE_SIZE
-  RAM      (rwx) : ORIGIN = S_DATA_START, LENGTH = S_DATA_SIZE
+  RAM      (rw)  : ORIGIN = S_DATA_START, LENGTH = S_DATA_SIZE
 #if defined(S_RAM_CODE_START)
   CODE_RAM (rwx) : ORIGIN = S_RAM_CODE_START, LENGTH = S_RAM_CODE_SIZE
 #endif
@@ -69,9 +69,6 @@ MEMORY
 
 __msp_stack_size__ = S_MSP_STACK_SIZE;
 
-/* Library configurations */
-GROUP(libgcc.a libc.a libm.a libnosys.a libc_nano.a)
-
 ENTRY(Reset_Handler)
 
 SECTIONS
@@ -88,6 +85,9 @@ SECTIONS
 #endif
 // --------- NXP end --------------
 
+    /* Start address of the code. */
+    Image$$PT_RO_START$$Base = ADDR(.TFM_VECTORS);
+
     .TFM_VECTORS : ALIGN(4)
     {
         __vectors_start__ = .;
@@ -95,6 +95,8 @@ SECTIONS
         . = ALIGN(4);
         __vectors_end__ = .;
     } > FLASH
+
+    ASSERT(__vectors_start__ != __vectors_end__, ".vectors should not be empty")
 
 #if defined(S_CODE_VECTOR_TABLE_SIZE)
     ASSERT(. <= ADDR(.TFM_VECTORS) + S_CODE_VECTOR_TABLE_SIZE, ".TFM_VECTORS section size overflow.")
@@ -105,52 +107,6 @@ SECTIONS
     VENEERS()
 #endif
 
-    .copy.table ALIGN(4) :
-    {
-        __copy_table_start__ = .;
-#ifdef RAM_VECTORS_SUPPORT
-        /* Copy interrupt vectors from flash to RAM */
-        LONG (__vectors_start__)                            /* From */
-        LONG (__ram_vectors_start__)                        /* To   */
-        LONG ((__vectors_end__ - __vectors_start__) / 4)    /* Size */
-#endif
-        LONG (LOADADDR(.TFM_DATA))
-        LONG (ADDR(.TFM_DATA))
-        LONG (SIZEOF(.TFM_DATA) / 4)
-
-        LONG (LOADADDR(.TFM_PSA_ROT_LINKER_DATA))
-        LONG (ADDR(.TFM_PSA_ROT_LINKER_DATA))
-        LONG (SIZEOF(.TFM_PSA_ROT_LINKER_DATA) / 4)
-
-        LONG (LOADADDR(.TFM_APP_ROT_LINKER_DATA))
-        LONG (ADDR(.TFM_APP_ROT_LINKER_DATA))
-        LONG (SIZEOF(.TFM_APP_ROT_LINKER_DATA) / 4)
-
-#if defined (S_RAM_CODE_START)
-        LONG (LOADADDR(.ER_CODE_SRAM))
-        LONG (ADDR(.ER_CODE_SRAM))
-        LONG (SIZEOF(.ER_CODE_SRAM) / 4)
-#endif
-        __copy_table_end__ = .;
-    } > FLASH
-
-    .zero.table ALIGN(4) :
-    {
-        __zero_table_start__ = .;
-        LONG (ADDR(.TFM_BSS))
-        LONG (SIZEOF(.TFM_BSS) / 4)
-        LONG (ADDR(.TFM_PSA_ROT_LINKER_BSS))
-        LONG (SIZEOF(.TFM_PSA_ROT_LINKER_BSS) / 4)
-
-        LONG (ADDR(.TFM_APP_ROT_LINKER_BSS))
-        LONG (SIZEOF(.TFM_APP_ROT_LINKER_BSS) / 4)
-#if defined(CONFIG_TFM_PARTITION_META)
-        LONG (ADDR(.TFM_SP_META_PTR))
-        LONG (SIZEOF(.TFM_SP_META_PTR) / 4)
-#endif
-        __zero_table_end__ = .;
-    } > FLASH
-
     /**** Section for holding partition RO load data */
     /*
      * Sort the partition info by priority to guarantee the initing order.
@@ -158,10 +114,10 @@ SECTIONS
      */
     .TFM_SP_LOAD_LIST ALIGN(4) :
     {
-       KEEP(*(.part_load_priority_lowest))
-       KEEP(*(.part_load_priority_low))
-       KEEP(*(.part_load_priority_normal))
-       KEEP(*(.part_load_priority_high))
+       KEEP(*(.part_load_priority_00))
+       KEEP(*(.part_load_priority_01))
+       KEEP(*(.part_load_priority_02))
+       KEEP(*(.part_load_priority_03))
     } > FLASH
     Image$$TFM_SP_LOAD_LIST$$RO$$Base = ADDR(.TFM_SP_LOAD_LIST);
     Image$$TFM_SP_LOAD_LIST$$RO$$Limit = ADDR(.TFM_SP_LOAD_LIST) + SIZEOF(.TFM_SP_LOAD_LIST);
@@ -289,8 +245,72 @@ SECTIONS
     } > FLASH
     __exidx_end = .;
 
-    .ER_TFM_CODE ALIGN(4) :
+    .ER_TFM_CODE ALIGN(4) (READONLY) :
     {
+        . = ALIGN(4);
+        /* preinit data */
+        PROVIDE_HIDDEN (__preinit_array_start = .);
+        KEEP(*(.preinit_array))
+        PROVIDE_HIDDEN (__preinit_array_end = .);
+
+        . = ALIGN(4);
+        /* init data */
+        PROVIDE_HIDDEN (__init_array_start = .);
+        KEEP(*(SORT(.init_array.*)))
+        KEEP(*(.init_array))
+        PROVIDE_HIDDEN (__init_array_end = .);
+
+        . = ALIGN(4);
+        /* finit data */
+        PROVIDE_HIDDEN (__fini_array_start = .);
+        KEEP(*(SORT(.fini_array.*)))
+        KEEP(*(.fini_array))
+        PROVIDE_HIDDEN (__fini_array_end = .);
+
+        /* .copy.table */
+        . = ALIGN(4);
+        __copy_table_start__ = .;
+#ifdef RAM_VECTORS_SUPPORT
+        /* Copy interrupt vectors from flash to RAM */
+        LONG (__vectors_start__)                            /* From */
+        LONG (__ram_vectors_start__)                        /* To   */
+        LONG ((__vectors_end__ - __vectors_start__) / 4)    /* Size */
+#endif
+        LONG (LOADADDR(.TFM_DATA))
+        LONG (ADDR(.TFM_DATA))
+        LONG (SIZEOF(.TFM_DATA) / 4)
+
+        LONG (LOADADDR(.TFM_PSA_ROT_LINKER_DATA))
+        LONG (ADDR(.TFM_PSA_ROT_LINKER_DATA))
+        LONG (SIZEOF(.TFM_PSA_ROT_LINKER_DATA) / 4)
+
+        LONG (LOADADDR(.TFM_APP_ROT_LINKER_DATA))
+        LONG (ADDR(.TFM_APP_ROT_LINKER_DATA))
+        LONG (SIZEOF(.TFM_APP_ROT_LINKER_DATA) / 4)
+
+#if defined (S_RAM_CODE_START)
+        LONG (LOADADDR(.ER_CODE_SRAM))
+        LONG (ADDR(.ER_CODE_SRAM))
+        LONG (SIZEOF(.ER_CODE_SRAM) / 4)
+#endif
+        __copy_table_end__ = .;
+
+        /* .zero.table */
+        . = ALIGN(4);
+        __zero_table_start__ = .;
+        LONG (ADDR(.TFM_BSS))
+        LONG (SIZEOF(.TFM_BSS) / 4)
+        LONG (ADDR(.TFM_PSA_ROT_LINKER_BSS))
+        LONG (SIZEOF(.TFM_PSA_ROT_LINKER_BSS) / 4)
+
+        LONG (ADDR(.TFM_APP_ROT_LINKER_BSS))
+        LONG (SIZEOF(.TFM_APP_ROT_LINKER_BSS) / 4)
+#if defined(CONFIG_TFM_PARTITION_META)
+        LONG (ADDR(.TFM_SP_META_PTR))
+        LONG (SIZEOF(.TFM_SP_META_PTR) / 4)
+#endif
+        __zero_table_end__ = .;
+
         *startup*(.text*)
         *libplatform_s*:(SORT_BY_ALIGNMENT(.text*))
         *libtfm_spm*:(SORT_BY_ALIGNMENT(.text*))
@@ -301,7 +321,6 @@ SECTIONS
 
     .TFM_UNPRIV_CODE ALIGN(TFM_LINKER_UNPRIV_CODE_ALIGNMENT) :
     {
-        *(SFN)
         *(SORT_BY_ALIGNMENT(.text*))
 
         KEEP(*(.init))
@@ -333,10 +352,15 @@ SECTIONS
     VENEERS()
 #endif
 
+    /* Position tag */
+    . = ALIGN(TFM_LINKER_PT_RO_ALIGNMENT);
+    Image$$PT_RO_END$$Base = .;
+
     /**** Base address of secure data area */
     .tfm_secure_data_start :
     {
-        . = ABSOLUTE(S_DATA_START) ;
+        /* Relocate current position to RAM */
+        . = ALIGN(4);
     } > RAM
 
     /*
@@ -408,6 +432,8 @@ SECTIONS
     } > RAM
     Image$$TFM_SP_META_PTR$$ZI$$Base = ADDR(.TFM_SP_META_PTR);
     Image$$TFM_SP_META_PTR$$ZI$$Limit = ADDR(.TFM_SP_META_PTR) + SIZEOF(.TFM_SP_META_PTR);
+    /* This is needed for the uniform configuration of MPU region. */
+    Image$$TFM_SP_META_PTR_END$$ZI$$Limit = Image$$TFM_SP_META_PTR$$ZI$$Limit;
 #endif
 
     /**** APPLICATION RoT DATA start here */
@@ -605,26 +631,6 @@ SECTIONS
 
         *(SORT_BY_ALIGNMENT(.data*))
 
-        . = ALIGN(4);
-        /* preinit data */
-        PROVIDE_HIDDEN (__preinit_array_start = .);
-        KEEP(*(.preinit_array))
-        PROVIDE_HIDDEN (__preinit_array_end = .);
-
-        . = ALIGN(4);
-        /* init data */
-        PROVIDE_HIDDEN (__init_array_start = .);
-        KEEP(*(SORT(.init_array.*)))
-        KEEP(*(.init_array))
-        PROVIDE_HIDDEN (__init_array_end = .);
-
-        . = ALIGN(4);
-        /* finit data */
-        PROVIDE_HIDDEN (__fini_array_start = .);
-        KEEP(*(SORT(.fini_array.*)))
-        KEEP(*(.fini_array))
-        PROVIDE_HIDDEN (__fini_array_end = .);
-
         KEEP(*(.jcr*))
         . = ALIGN(4);
 
@@ -638,19 +644,19 @@ SECTIONS
 
         /* The runtime partition placed order is same as load partition */
         __partition_runtime_start__ = .;
-        KEEP(*(.bss.part_runtime_priority_lowest))
-        KEEP(*(.bss.part_runtime_priority_low))
-        KEEP(*(.bss.part_runtime_priority_normal))
-        KEEP(*(.bss.part_runtime_priority_high))
+        KEEP(*(.bss.part_runtime_priority_00))
+        KEEP(*(.bss.part_runtime_priority_01))
+        KEEP(*(.bss.part_runtime_priority_02))
+        KEEP(*(.bss.part_runtime_priority_03))
         __partition_runtime_end__ = .;
         . = ALIGN(4);
 
         /* The runtime service placed order is same as load partition */
         __service_runtime_start__ = .;
-        KEEP(*(.bss.serv_runtime_priority_lowest))
-        KEEP(*(.bss.serv_runtime_priority_low))
-        KEEP(*(.bss.serv_runtime_priority_normal))
-        KEEP(*(.bss.serv_runtime_priority_high))
+        KEEP(*(.bss.serv_runtime_priority_00))
+        KEEP(*(.bss.serv_runtime_priority_01))
+        KEEP(*(.bss.serv_runtime_priority_02))
+        KEEP(*(.bss.serv_runtime_priority_03))
         __service_runtime_end__ = .;
         *(SORT_BY_ALIGNMENT(.bss*))
         *(COMMON)
