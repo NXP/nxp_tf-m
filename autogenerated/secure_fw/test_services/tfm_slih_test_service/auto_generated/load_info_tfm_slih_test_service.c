@@ -77,6 +77,7 @@ const struct partition_tfm_sp_slih_test_load_info_t tfm_sp_slih_test_load
         .pid                        = TFM_SP_SLIH_TEST,
         .flags                      = 0
                                     | PARTITION_MODEL_IPC
+                                    | PARTITION_MODEL_PSA_ROT
                                     | PARTITION_PRI_NORMAL,
         .entry                      = ENTRY_TO_POSITION(tfm_slih_test_service_entry),
         .stack_size                 = 0x0400,
