@@ -1,0 +1,21 @@
+mdk:
+  project_language: cpp
+  project-templates:
+    - scripts/guigenerator/templates/mdk/lib_generic_arm/libgeneric_armclang_secure.uvprojx
+  config:
+    __common__:
+      cp-define:
+        ${CONFIG_MCUX_TOOLCHAIN_MDK_CPU_IDENTIFIER}: NXP
+
+iar:
+  project_language: auto
+  project-templates:
+    - scripts/guigenerator/templates/iar/lib_generic_arm_with_dspextension/libgeneric_with_dspextension.ewp
+    - scripts/guigenerator/templates/iar/lib_generic_arm_with_dspextension/libgeneric.eww
+
+  config:
+    __common__:
+      cp-define:
+        ${CONFIG_MCUX_TOOLCHAIN_IAR_CPU_IDENTIFIER}: NXP ${CONFIG_MCUX_TOOLCHAIN_IAR_CPU_IDENTIFIER}
+      cx-flags:
+        - -e # enable IAR extension, if no cpp file included, gui project cant get this flag from ninja
