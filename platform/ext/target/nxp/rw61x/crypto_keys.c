@@ -16,9 +16,12 @@
  */
 
 #include <string.h>
+#include "fsl_device_registers.h"
 #include "tfm_plat_crypto_keys.h"
 #include "tfm_builtin_key_ids.h"
 #include "mcuxClPsaDriver_Oracle_Interface_builtin_key_ids.h"
+#include "mcuxClEls_Types.h"
+#include "mcuxClEls_Kdf.h"
 #include "tfm_plat_otp.h"
 #include "psa_manifest/pid.h"
 #include "tfm_builtin_key_loader.h"
@@ -176,7 +179,7 @@ exit:
 
 static enum tfm_plat_err_t tfm_plat_get_huk(uint8_t *buf, size_t buf_len,
                                             size_t *key_len,
-                                            size_t *key_bits,
+                                            psa_key_bits_t *key_bits,
                                             psa_algorithm_t *algorithm,
                                             psa_key_type_t *type)
 {
@@ -209,7 +212,7 @@ static enum tfm_plat_err_t tfm_plat_get_huk(uint8_t *buf, size_t buf_len,
 #if defined(TFM_PARTITION_INITIAL_ATTESTATION)
 static enum tfm_plat_err_t tfm_plat_get_iak(uint8_t *buf, size_t buf_len,
                                             size_t *key_len,
-                                            size_t *key_bits,
+                                            psa_key_bits_t *key_bits,
                                             psa_algorithm_t *algorithm,
                                             psa_key_type_t *type)
 {
