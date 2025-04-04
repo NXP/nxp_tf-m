@@ -295,7 +295,7 @@
  *
  * This module provides the CTR_DRBG AES random number generator.
  */
-//#define MBEDTLS_CTR_DRBG_C
+#define MBEDTLS_CTR_DRBG_C
 
 /**
  * \def MBEDTLS_ENTROPY_C
@@ -312,6 +312,27 @@
 #define MBEDTLS_ENTROPY_C
 
 /**
+ * \def MBEDTLS_ENTROPY_HARDWARE_ALT
+ *
+ * Enable alt implementation for entropy in order
+ * to use platform specific TRNG.
+ *
+ */
+#define MBEDTLS_ENTROPY_HARDWARE_ALT
+
+/**
+ * \def MBEDTLS_ERROR_C
+ *
+ * Enable error code to error string conversion.
+ *
+ * Module:  library/error.c
+ * Caller:
+ *
+ * This module enables mbedtls_strerror().
+ */
+#define MBEDTLS_ERROR_C
+
+/**
  * \def MBEDTLS_HKDF_C
  *
  * Enable the HKDF algorithm (RFC 5869).
@@ -324,7 +345,7 @@
  * This module adds support for the Hashed Message Authentication Code
  * (HMAC)-based key derivation function (HKDF).
  */
-//#define MBEDTLS_HKDF_C /* Used for HUK deriviation */
+#define MBEDTLS_HKDF_C /* Used for HUK deriviation */
 
 /**
  * \def MBEDTLS_MEMORY_BUFFER_ALLOC_C
@@ -559,7 +580,7 @@
 #endif
 
 #ifdef CRYPTO_HW_ACCELERATOR
-#include "mbedtls_accelerator_config.h"
+#include "mcux_mbedtls_accelerator_config.h"
 #endif
 
 #endif /* PROFILE_L_MBEDTLS_CONFIG_H */
