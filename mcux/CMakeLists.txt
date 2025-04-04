@@ -1,8 +1,11 @@
 #
-# Copyright 2024 NXP
+# Copyright 2024-2025 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+#---------------------------------------------------------------
+#-------------------- tf-m secure specific configs -------------
+#---------------------------------------------------------------
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
     mcux_add_macro(
             CC "-DCONFIG_TFM_BUILDING_SPE=1\
@@ -26,6 +29,22 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
             -DPS_ROLLBACK_PROTECTION\
             "
     )
+    
+    #explicitly adding the partitions flags which are enabled in a secure crypto client lib
+    mcux_add_macro(
+         CC "-DTFM_PARTITION_INITIAL_ATTESTATION\
+            -DTFM_PARTITION_PROTECTED_STORAGE\
+            "
+    )
+
+    # mbedtls3x related config handling
+    mcux_remove_macro("-DMBEDTLS_CONFIG_FILE=\\\"mcux_mbedtls_psa_crypto_config.h\\\"")
+    mcux_remove_configuration("-DMBEDTLS_CONFIG_FILE=\\\"mcux_mbedtls_psa_crypto_config.h\\\"")
+    mcux_add_macro(
+         CC "-DCRYPTO_HW_ACCELERATOR\
+           "
+    )
+
     mcux_add_source(
         SOURCES 
         tf-m/lib/fih/inc/fih.h
@@ -33,7 +52,6 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
         tf-m/lib/fih/src/fih.c
         tf-m/platform/ext/common/common_target_cfg.h
         tf-m/platform/ext/common/core_ext.h
-        tf-m/platform/ext/common/exception_info.c
         tf-m/platform/ext/common/faults.c
         tf-m/platform/ext/common/provisioning.c
         tf-m/platform/ext/common/tfm_hal_its.c
@@ -48,14 +66,11 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
         tf-m/platform/ext/common/tfm_s_linker_alignments.h
         tf-m/platform/ext/common/uart_stdout.c
         tf-m/platform/ext/common/uart_stdout.h
-        tf-m/platform/ext/driver/Driver_Common.h
-        tf-m/platform/ext/driver/Driver_Flash.h
-        tf-m/platform/ext/driver/Driver_MPC.h
-        tf-m/platform/ext/driver/Driver_PPC.h
-        tf-m/platform/ext/driver/Driver_USART.h
         tf-m/platform/ext/common/template/attest_hal.c
         tf-m/platform/ext/common/template/flash_otp_nv_counters_backend.c
         tf-m/platform/ext/common/template/flash_otp_nv_counters_backend.h
+        tf-m/platform/ext/common/tfm_fatal_error.c
+        tf-m/platform/ext/common/tfm_sanitize_handlers.c
         tf-m/platform/ext/common/template/otp_flash.c
         tf-m/platform/ext/common/template/tfm_fih_rng.c
         tf-m/platform/ext/accelerator/interface/crypto_hw.h
@@ -76,55 +91,6 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
         tf-m/platform/ext/target/nxp/common/Device/Include/platform_description.h
         tf-m/platform/ext/target/nxp/common/Device/Include/platform_irq.h
         tf-m/platform/ext/target/nxp/common/Device/Include/platform_regs.h
-        tf-m/platform/include/cmsis_override.h
-        tf-m/platform/include/exception_info.h
-        tf-m/platform/include/mbedtls_entropy_nv_seed_config.h
-        tf-m/platform/include/region.h
-        tf-m/platform/include/tfm_attest_hal.h
-        tf-m/platform/include/tfm_hal_defs.h
-        tf-m/platform/include/tfm_hal_device_header.h
-        tf-m/platform/include/tfm_hal_interrupt.h
-        tf-m/platform/include/tfm_hal_isolation.h
-        tf-m/platform/include/tfm_hal_its.h
-        tf-m/platform/include/tfm_hal_platform.h
-        tf-m/platform/include/tfm_hal_ps.h
-        tf-m/platform/include/tfm_plat_boot_seed.h
-        tf-m/platform/include/tfm_plat_config.h
-        tf-m/platform/include/tfm_plat_crypto_keys.h
-        tf-m/platform/include/tfm_plat_defs.h
-        tf-m/platform/include/tfm_plat_device_id.h
-        tf-m/platform/include/tfm_plat_ns.h
-        tf-m/platform/include/tfm_plat_nv_counters.h
-        tf-m/platform/include/tfm_plat_otp.h
-        tf-m/platform/include/tfm_plat_provisioning.h
-        tf-m/platform/include/tfm_plat_test.h
-        tf-m/platform/include/tfm_platform_system.h
-        tf-m/interface/include/crypto_keys/tfm_builtin_key_ids.h
-        tf-m/interface/include/psa/client.h
-        tf-m/interface/include/psa/tfm/crypto.h
-        tf-m/interface/include/psa/crypto_client_struct.h
-        tf-m/interface/include/psa/tfm/crypto_compat.h
-        tf-m/interface/include/psa/tfm/crypto_extra.h
-        tf-m/interface/include/psa/tfm/crypto_platform.h
-        tf-m/interface/include/psa/tfm/crypto_sizes.h
-        tf-m/interface/include/psa/tfm/crypto_struct.h
-        tf-m/interface/include/psa/tfm/crypto_types.h
-        tf-m/interface/include/psa/tfm/crypto_values.h
-        tf-m/interface/include/psa/error.h
-        tf-m/interface/include/psa/framework_feature.h
-        tf-m/interface/include/psa/initial_attestation.h
-        tf-m/interface/include/psa/internal_trusted_storage.h
-        tf-m/interface/include/psa/lifecycle.h
-        tf-m/interface/include/psa/protected_storage.h
-        tf-m/interface/include/psa/service.h
-        tf-m/interface/include/psa/storage_common.h
-        tf-m/interface/include/config_impl.h
-        tf-m/interface/include/tfm_api.h
-        tf-m/interface/include/tfm_crypto_defs.h
-        tf-m/interface/include/tfm_ns_client_ext.h
-        tf-m/interface/include/tfm_platform_api.h
-        tf-m/interface/include/tfm_psa_call_pack.h
-        tf-m/interface/include/psa_manifest/pid.h
         tf-m/secure_fw/spm/include/boot/tfm_boot_status.h
         tf-m/secure_fw/spm/include/interface/runtime_defs.h
         tf-m/secure_fw/spm/include/interface/svc_num.h
@@ -141,11 +107,12 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
         tf-m/secure_fw/spm/include/utilities.h
         tf-m/secure_fw/spm/include/tfm_arch.h
         tf-m/secure_fw/spm/include/tfm_arch_v8m.h
-        tf-m/secure_fw/spm/include/ffm/agent_api.h
+        tf-m/secure_fw/spm/include/ffm/mailbox_agent_api.h
         tf-m/secure_fw/spm/include/ffm/backend.h
         tf-m/secure_fw/spm/include/ffm/backend_ipc.h
         tf-m/secure_fw/spm/include/ffm/backend_sfn.h
         tf-m/secure_fw/spm/include/ffm/psa_api.h
+        tf-m/secure_fw/spm/include/private/assert.h
         tf-m/secure_fw/spm/include/load/asset_defs.h
         tf-m/secure_fw/spm/include/load/interrupt_defs.h
         tf-m/secure_fw/spm/include/load/partition_defs.h
@@ -167,10 +134,12 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
         tf-m/secure_fw/spm/core/stack_watermark.h
         tf-m/secure_fw/spm/core/tfm_boot_data.c
         tf-m/secure_fw/spm/core/tfm_boot_data.h
+        tf-m/secure_fw/spm/core/tfm_multi_core.h
         tf-m/secure_fw/spm/core/utilities.c
         tf-m/secure_fw/spm/ns_client_ext/tfm_ns_ctx.h
         tf-m/secure_fw/spm/ns_client_ext/tfm_spm_ns_ctx.c
         tf-m/secure_fw/include/array.h
+        tf-m/secure_fw/include/async.h
         tf-m/secure_fw/include/build_config_check.h
         tf-m/secure_fw/include/compiler_ext_defs.h
         tf-m/secure_fw/include/config_tfm.h
@@ -180,13 +149,13 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
         tf-m/secure_fw/partitions/lib/runtime/include/tfm_sp_log.h
         tf-m/secure_fw/partitions/lib/runtime/include/tfm_strnlen.h
         tf-m/secure_fw/partitions/lib/runtime/service_api.c
+        tf-m/platform/ext/common/syscalls_stub.c
         tf-m/secure_fw/partitions/lib/runtime/sfn_common_thread.c
         tf-m/secure_fw/partitions/lib/runtime/sprt_partition_metadata_indicator.c
         tf-m/secure_fw/partitions/lib/runtime/sprt_partition_metadata_indicator.h
         tf-m/secure_fw/partitions/lib/runtime/tfm_sp_log_raw.c
         tf-m/secure_fw/partitions/lib/runtime/crt_strnlen.c
         tf-m/secure_fw/partitions/lib/runtime/psa_api_ipc.c
-        tf-m/interface/include/psa_manifest/sid.h
         tf-m/interface/src/tfm_psa_call.c
         tf-m/secure_fw/partitions/ns_agent_tz/load_info_ns_agent_tz.c
         tf-m/secure_fw/partitions/ns_agent_tz/ns_agent_tz_v80m.c
@@ -201,6 +170,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
         tf-m/secure_fw/spm/core/tfm_svcalls.h
         tf-m/secure_fw/spm/core/arch/tfm_arch.c
         tf-m/secure_fw/spm/core/arch/tfm_arch_v8m_main.c
+        tf-m/secure_fw/spm/core/psa_interface_thread_fn_call.c
         tf-m/secure_fw/spm/core/psa_interface_svc.c
         tf-m/secure_fw/spm/core/rom_loader.c
         tf-m/secure_fw/spm/core/spm_ipc.c
@@ -209,11 +179,20 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
         tf-m/secure_fw/spm/core/tfm_pools.c
         tf-m/secure_fw/spm/core/thread.c
         tf-m/secure_fw/spm/core/thread.h
+        tf-m/secure_fw/partitions/initial_attestation/auto_generated/load_info_tfm_initial_attestation.c
+        tf-m/secure_fw/partitions/initial_attestation/psa_manifest/tfm_initial_attestation.h
+        tf-m/secure_fw/partitions/protected_storage/auto_generated/load_info_tfm_protected_storage.c
+        tf-m/secure_fw/partitions/protected_storage/psa_manifest/tfm_protected_storage.h
+        tf-m/secure_fw/partitions/protected_storage/crypto/ps_crypto_interface.h
+        tf-m/secure_fw/partitions/crypto/auto_generated/load_info_tfm_crypto.c
+        tf-m/secure_fw/partitions/crypto/psa_manifest/tfm_crypto.h
+        tf-m/secure_fw/partitions/crypto/psa_driver_api/tfm_builtin_key_loader.h
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES 
         tf-m/
+        tf-m/config
         tf-m/lib/fih/inc
         tf-m/platform/ext 
         tf-m/platform/ext/common 
@@ -223,12 +202,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
         tf-m/platform/ext/target/nxp/common 
         tf-m/platform/ext/accelerator/interface 
         tf-m/platform/ext/target/nxp/common/Device/Config 
-        tf-m/platform/ext/target/nxp/common/Device/Include 
-        tf-m/platform/include
-        tf-m/interface/include/psa
-        tf-m/interface/include
-        tf-m/interface/include/crypto_keys
-        tf-m/interface/include/psa_manifest
+        tf-m/platform/ext/target/nxp/common/Device/Include
         tf-m/secure_fw/include
         tf-m/secure_fw/spm
         tf-m/secure_fw/spm/include
@@ -242,8 +216,16 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
         tf-m/secure_fw/partitions/
         tf-m/secure_fw/partitions/initial_attestation/psa_manifest
         tf-m/secure_fw/partitions/internal_trusted_storage/psa_manifest
+        tf-m/secure_fw/partitions/lib/runtime
         tf-m/secure_fw/partitions/lib/runtime/include
-        tf-m/config
+        tf-m/secure_fw/partitions/initial_attestation/auto_generated
+        tf-m/secure_fw/partitions/initial_attestation
+        tf-m/secure_fw/partitions/protected_storage/auto_generated
+        tf-m/secure_fw/partitions/protected_storage
+        tf-m/secure_fw/partitions/crypto/auto_generated
+        tf-m/secure_fw/partitions/crypto
+        tf-m/secure_fw/partitions/crypto/psa_driver_api
+        
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_mdk_configuration(
@@ -251,17 +233,10 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
     )
 endif()
 
-# ------- add secure/non-secure board configs start ---------
-
-# include board cmake
-include(${SdkRootDirPath}/middleware/tfm/tf-m/platform/ext/target/nxp/${board}/mcux.cmake OPTIONAL)
-
-# ------- add secure/non-secure board configs END ---------
-
 #adding tfm profile related configs when using secure build
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_large.s_configs)
     mcux_add_macro(
-         CC "-DTFM_LVL=2\
+         CC "-DTFM_ISOLATION_LEVEL=2\
             -DPROJECT_CONFIG_HEADER_FILE=\\\"config_profile_large.h\\\"\
             -DMBEDTLS_CONFIG_FILE=\\\"tfm_mbedcrypto_config_profile_large.h\\\"\
             -DMBEDTLS_PSA_CRYPTO_CONFIG_FILE=\\\"crypto_config_profile_large.h\\\"\
@@ -270,7 +245,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_large.s_configs)
     )
     mcux_add_source(
         SOURCES 
-        tf-m/lib/ext/mbedcrypto/mbedcrypto_config/tfm_mbedcrypto_config_profile_large.h 
+        tf-m/lib/ext/mbedcrypto/mbedcrypto_config/tfm_mbedcrypto_config_profile_large.h
         tf-m/lib/ext/mbedcrypto/mbedcrypto_config/crypto_config_profile_large.h 
         tf-m/config/profile/config_profile_large.h 
         tf-m/lib/ext/mbedcrypto/mbedcrypto_config/tfm_mbedcrypto_config_extra_nv_seed.h
@@ -287,7 +262,7 @@ endif()
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_medium.s_configs)
     mcux_add_macro(
-         CC "-DTFM_LVL=2\
+         CC "-DTFM_ISOLATION_LEVEL=2\
             -DPROJECT_CONFIG_HEADER_FILE=\\\"config_profile_medium.h\\\"\
             -DMBEDTLS_CONFIG_FILE=\\\"tfm_mbedcrypto_config_profile_medium.h\\\"\
             -DMBEDTLS_PSA_CRYPTO_CONFIG_FILE=\\\"crypto_config_profile_medium.h\\\"\
@@ -296,7 +271,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_medium.s_configs)
     )
     mcux_add_source(
         SOURCES 
-        tf-m/lib/ext/mbedcrypto/mbedcrypto_config/tfm_mbedcrypto_config_profile_medium.h 
+        tf-m/lib/ext/mbedcrypto/mbedcrypto_config/tfm_mbedcrypto_config_profile_medium.h
         tf-m/lib/ext/mbedcrypto/mbedcrypto_config/crypto_config_profile_medium.h 
         tf-m/config/profile/config_profile_medium.h 
         tf-m/lib/ext/mbedcrypto/mbedcrypto_config/tfm_mbedcrypto_config_extra_nv_seed.h
@@ -313,7 +288,7 @@ endif()
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_small.s_configs)
     mcux_add_macro(
-         CC "-DTFM_LVL=1\
+         CC "-DTFM_ISOLATION_LEVEL=1\
             -DPROJECT_CONFIG_HEADER_FILE=\\\"config_profile_small.h\\\"\
             -DMBEDTLS_CONFIG_FILE=\\\"tfm_mbedcrypto_config_profile_small.h\\\"\
             -DMBEDTLS_PSA_CRYPTO_CONFIG_FILE=\\\"crypto_config_profile_small.h\\\"\
@@ -537,14 +512,14 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.crypto)
          CC "-DTFM_PARTITION_CRYPTO\
             -DPLATFORM_DEFAULT_CRYPTO_KEYS\
             -DMBEDTLS_PSA_CRYPTO_DRIVERS\
-            -DMBEDTLS_PSA_CRYPTO_BUILTIN_KEYS\
             -DPSA_CRYPTO_DRIVER_TFM_BUILTIN_KEY\
             -DPSA_CRYPTO_DRIVER_TFM_BUILTIN_KEY_LOADER\
+            -DTFM_PARTITION_LOG_LEVEL=TFM_PARTITION_LOG_LEVEL_INFO\
+            -DPS_CRYPTO_AEAD_ALG=PSA_ALG_CCM\
             "
     )
     mcux_add_source(
         SOURCES 
-        tf-m/interface/src/tfm_crypto_api.c
         tf-m/secure_fw/partitions/crypto/auto_generated/intermedia_tfm_crypto.c
         tf-m/secure_fw/partitions/crypto/auto_generated/load_info_tfm_crypto.c
         tf-m/secure_fw/partitions/crypto/psa_driver_api/tfm_builtin_key_loader.c
@@ -569,201 +544,48 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.crypto)
         tf-m/secure_fw/partitions/crypto/tfm_crypto_key.h
         tf-m/secure_fw/partitions/crypto/tfm_mbedcrypto_include.h
         tf-m/secure_fw/partitions/crypto/psa_manifest/tfm_crypto.h
+        tf-m/secure_fw/include/config_tfm.h
+        tf-m/config/config_base.h
+        tf-m/secure_fw/spm/core/spm.h
+        tf-m/secure_fw/spm/include/config_spm.h
+        tf-m/lib/fih/inc/fih.h
+        tf-m/platform/include/tfm_hal_device_header.h
+        tf-m/secure_fw/partitions/lib/runtime/include/service_api.h
+        tf-m/secure_fw/partitions/lib/runtime/include/tfm_sp_log.h
+        tf-m/platform/ext/common/tfm_hal_sp_logdev.h
+        tf-m/platform/ext/common/tfm_hal_spm_logdev.h
+        tf-m/platform/include/region.h
+        tf-m/platform/ext/target/nxp/common/Device/Config/device_cfg.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/cmsis.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/device_definition.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/platform_description.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/platform_irq.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/platform_regs.h
+        tf-m/platform/include/cmsis_override.h
+        tf-m/secure_fw/spm/include/interface/runtime_defs.h
+        tf-m/secure_fw/spm/include/interface/svc_num.h
+        
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES 
+        tf-m/interface/include/psa
+        tf-m/interface/include
+        tf-m/secure_fw/include
+        tf-m/config
+        tf-m/secure_fw/spm/core
+        tf-m/secure_fw/spm/include
+        tf-m/lib/fih/inc
+        tf-m/platform/include
+        tf-m/secure_fw/partitions/lib/runtime/include
         tf-m/secure_fw/partitions/crypto 
         tf-m/secure_fw/partitions/crypto/psa_driver_api
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-endif()
-
-if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.initial_attestation.asymmetric)
-    mcux_add_macro(
-         CC "-DATTEST_KEY_BITS=256\
-            -DT_COSE_DISABLE_MAC0\
-            -DT_COSE_DISABLE_ES384\
-            -DT_COSE_DISABLE_ES512\
-            "
-    )
-    mcux_add_source(
-        SOURCES 
-        tf-m/secure_fw/partitions/initial_attestation/attest_asymmetric_key.c
-        tf-m/platform/ext/common/template/tfm_initial_attest_pub_key.c
-        tf-m/lib/ext/t_cose/src/t_cose_sign1_sign.c
-        tf-m/lib/ext/t_cose/inc/t_cose_sign1_sign.h
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-    mcux_add_include(
-        INCLUDES 
-        tf-m/lib/ext/t_cose/src 
-        tf-m/lib/ext/t_cose/inc
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-endif()
-
-if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.initial_attestation.symmetric)
-    mcux_add_macro(
-         CC "-DT_COSE_DISABLE_SIGN1\
-            -DT_COSE_DISABLE_ES384\
-            -DT_COSE_DISABLE_ES512\
-            "
-    )
-    mcux_add_source(
-        SOURCES 
-        tf-m/secure_fw/partitions/initial_attestation/attest_symmetric_key.c
-        tf-m/lib/ext/t_cose/src/t_cose_mac0_sign.c
-        tf-m/lib/ext/t_cose/inc/t_cose_mac0_sign.h
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-    mcux_add_include(
-        INCLUDES 
-        tf-m/lib/ext/t_cose/src 
-        tf-m/lib/ext/t_cose/inc
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-endif()
-
-if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.initial_attestation)
-    mcux_add_macro(
-         CC "-DTFM_PARTITION_INITIAL_ATTESTATION\
-            -DT_COSE_USE_PSA_CRYPTO\
-            "
-    )
-    mcux_add_source(
-        SOURCES 
-        tf-m/interface/include/tfm_attest_defs.h
-        tf-m/interface/include/tfm_attest_iat_defs.h
-        tf-m/interface/src/tfm_attest_api.c
-        tf-m/secure_fw/partitions/initial_attestation/auto_generated/intermedia_tfm_initial_attestation.c
-        tf-m/secure_fw/partitions/initial_attestation/auto_generated/load_info_tfm_initial_attestation.c
-        tf-m/secure_fw/partitions/initial_attestation/attest.h
-        tf-m/secure_fw/partitions/initial_attestation/attest_boot_data.c
-        tf-m/secure_fw/partitions/initial_attestation/attest_boot_data.h
-        tf-m/secure_fw/partitions/initial_attestation/attest_core.c
-        tf-m/secure_fw/partitions/initial_attestation/attest_key.h
-        tf-m/secure_fw/partitions/initial_attestation/attest_token.h
-        tf-m/secure_fw/partitions/initial_attestation/attest_token_encode.c
-        tf-m/secure_fw/partitions/initial_attestation/tfm_attest.c
-        tf-m/secure_fw/partitions/initial_attestation/tfm_attest_req_mngr.c
-        tf-m/secure_fw/partitions/initial_attestation/psa_manifest/tfm_initial_attestation.h
-        tf-m/lib/ext/t_cose/crypto_adapters/t_cose_psa_crypto.c
-        tf-m/lib/ext/t_cose/src/t_cose_crypto.h
-        tf-m/lib/ext/t_cose/src/t_cose_parameters.c
-        tf-m/lib/ext/t_cose/src/t_cose_parameters.h
-        tf-m/lib/ext/t_cose/src/t_cose_standard_constants.h
-        tf-m/lib/ext/t_cose/src/t_cose_util.c
-        tf-m/lib/ext/t_cose/src/t_cose_util.h
-        tf-m/lib/ext/t_cose/inc/t_cose_common.h
-        tf-m/lib/ext/t_cose/inc/q_useful_buf.h
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-    mcux_add_include(
-        INCLUDES 
-        tf-m/secure_fw/partitions/initial_attestation 
-        tf-m/lib/ext/t_cose/src 
-        tf-m/lib/ext/t_cose/inc
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-endif()
-
-if (CONFIG_MCUX_COMPONENT_middleware.tfm.qcbor)
-    mcux_add_macro(
-         CC "-DQCBOR_DISABLE_FLOAT_HW_USE\
-            -DUSEFULBUF_DISABLE_ALL_FLOAT\
-            -DQCBOR_DISABLE_PREFERRED_FLOAT\
-            "
-    )
-    mcux_add_source(
-        SOURCES 
-        qcbor/src/ieee754.c 
-        qcbor/src/ieee754.h 
-        qcbor/src/qcbor_decode.c 
-        qcbor/src/qcbor_encode.c 
-        qcbor/src/UsefulBuf.c 
-        qcbor/inc/qcbor/qcbor.h 
-        qcbor/inc/qcbor/qcbor_common.h 
-        qcbor/inc/qcbor/qcbor_decode.h 
-        qcbor/inc/qcbor/qcbor_encode.h 
-        qcbor/inc/qcbor/qcbor_private.h 
-        qcbor/inc/qcbor/qcbor_spiffy_decode.h 
-        qcbor/inc/qcbor/UsefulBuf.h 
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-    mcux_add_include(
-        INCLUDES qcbor/src qcbor/inc qcbor/inc/qcbor
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-endif()
-
-if (CONFIG_MCUX_COMPONENT_middleware.tfm.qcbor.test)
-    mcux_add_macro(
-         CC "-DQCBOR_DISABLE_FLOAT_HW_USE\
-            -DUSEFULBUF_DISABLE_ALL_FLOAT\
-            -DQCBOR_DISABLE_PREFERRED_FLOAT\
-            "
-    )
-    mcux_add_source(
-        SOURCES 
-        qcbor/test/float_tests.h 
-        qcbor/test/qcbor_encode_tests.c 
-        qcbor/test/qcbor_encode_tests.h 
-        qcbor/test/not_well_formed_cbor.h 
-        qcbor/test/qcbor_decode_tests.c 
-        qcbor/test/qcbor_decode_tests.h 
-        qcbor/test/run_tests.c 
-        qcbor/test/run_tests.h 
-        qcbor/test/UsefulBuf_Tests.c 
-        qcbor/test/UsefulBuf_Tests.h
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-    mcux_add_include(
-        INCLUDES qcbor/test
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-endif()
-
-if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.ps)
-    mcux_add_macro(
-         CC "-DTFM_PARTITION_PROTECTED_STORAGE\
-            "
-    )
-    mcux_add_source(
-        SOURCES 
-        tf-m/interface/include/tfm_ps_defs.h
-        tf-m/interface/src/tfm_ps_api.c
-        tf-m/secure_fw/partitions/protected_storage/auto_generated/intermedia_tfm_protected_storage.c
-        tf-m/secure_fw/partitions/protected_storage/auto_generated/load_info_tfm_protected_storage.c
-        tf-m/secure_fw/partitions/protected_storage/crypto/ps_crypto_interface.c
-        tf-m/secure_fw/partitions/protected_storage/crypto/ps_crypto_interface.h
-        tf-m/secure_fw/partitions/protected_storage/config_ps_check.h
-        tf-m/secure_fw/partitions/protected_storage/ps_encrypted_object.c
-        tf-m/secure_fw/partitions/protected_storage/ps_encrypted_object.h
-        tf-m/secure_fw/partitions/protected_storage/ps_object_defs.h
-        tf-m/secure_fw/partitions/protected_storage/ps_object_system.c
-        tf-m/secure_fw/partitions/protected_storage/ps_object_system.h
-        tf-m/secure_fw/partitions/protected_storage/ps_object_table.c
-        tf-m/secure_fw/partitions/protected_storage/ps_object_table.h
-        tf-m/secure_fw/partitions/protected_storage/ps_utils.c
-        tf-m/secure_fw/partitions/protected_storage/ps_utils.h
-        tf-m/secure_fw/partitions/protected_storage/tfm_protected_storage.c
-        tf-m/secure_fw/partitions/protected_storage/tfm_protected_storage.h
-        tf-m/secure_fw/partitions/protected_storage/tfm_ps_req_mngr.h
-        tf-m/secure_fw/partitions/protected_storage/tfm_ps_req_mngr.c
-        tf-m/secure_fw/partitions/protected_storage/psa_manifest/tfm_protected_storage.h
-        tf-m/secure_fw/partitions/protected_storage/nv_counters/ps_nv_counters.h
-        tf-m/secure_fw/partitions/protected_storage/nv_counters/ps_nv_counters.c
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-    mcux_add_include(
-        INCLUDES 
-        tf-m/interface/include
-        tf-m/secure_fw/partitions/protected_storage/crypto
-        tf-m/secure_fw/partitions/protected_storage
-        tf-m/secure_fw/partitions/protected_storage/nv_counters
-        tf-m/secure_fw/partitions/platform
-        tf-m/
+        tf-m/lib/ext/mbedcrypto/mbedcrypto_config
+        tf-m/platform/ext/target/nxp/common/Device/Config
+        tf-m/platform/ext/target/nxp/common/Device/Include
+        tf-m/platform/ext/common
+        tf-m/platform/include
+        tf-m/secure_fw/spm/include/interface
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
@@ -845,233 +667,394 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.os_wrapper.rtos)
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
-
-if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.mbedtls_compatibility)
+#---------------------------------------------------------------
+#-------------------- tf-m secure common configs -------------
+#---------------------------------------------------------------
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.common_headers)
     mcux_add_source(
         SOURCES 
-        tf-m/interface/include/psa/tfm/psa/crypto.h
+        #need this file for crypto_configs
+        ../mbedtls3x/include/psa/crypto_config.h
+        
+        tf-m/platform/include/*.h
+        
+        tf-m/interface/include/psa_manifest/sid.h
+        tf-m/interface/include/psa_manifest/pid.h
+        tf-m/interface/include/*.h
+        tf-m/interface/include/psa/*.c
+        tf-m/interface/include/psa/*.h
+        tf-m/interface/include/mbedtls/*.c
+        tf-m/interface/include/mbedtls/*.h
+        tf-m/interface/include/crypto_keys/tfm_builtin_key_ids.h
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
-        INCLUDES 
-        tf-m/interface/include/psa/tfm
+        INCLUDES
+        ../mbedtls3x/include
+        tf-m/platform/include
+        tf-m/interface/include
+        tf-m/interface/include/psa
+        tf-m/interface/include/crypto_keys
+        tf-m/interface/include/psa_manifest
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
 
-if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns)
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.driver_headers)
+    mcux_add_source(
+        SOURCES 
+        tf-m/platform/ext/driver/Driver_Common.h
+        tf-m/platform/ext/driver/Driver_Flash.h
+        tf-m/platform/ext/driver/Driver_MPC.h
+        tf-m/platform/ext/driver/Driver_PPC.h
+        tf-m/platform/ext/driver/Driver_USART.h
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES
+        tf-m/platform/ext/driver
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+
+# ------- add secure/non-secure board configs start ---------
+
+# include board cmake
+include(${SdkRootDirPath}/middleware/tfm/tf-m/platform/ext/target/nxp/${board}/mcux.cmake OPTIONAL)
+
+# ------- add secure/non-secure board configs END ---------
+
+#adding tfm profile related client configs, that can be used for any Crypto service client residing in secure/non-secure
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_large.client_configs)
     mcux_add_macro(
-         CC "-DCONFIG_TFM_FLOAT_ABI=2\
-            -DCONFIG_TFM_ENABLE_CP10CP11\
-            -DCONFIG_TFM_LAZY_STACKING\
-            -D__DOMAIN_NS=1\
-            -DDOMAIN_NS=1\
-            -DCONFIG_TFM_USE_TRUSTZONE\
-            -DATTEST_TOKEN_PROFILE_PSA_IOT_1\
-            -DPLATFORM_DEFAULT_CRYPTO_KEYS\
-            -DPS_ENCRYPTION\
+         CC "-DPROJECT_CONFIG_HEADER_FILE=\\\"config_profile_large.h\\\"\
+            -DMBEDTLS_CONFIG_FILE=\\\"tfm_mbedcrypto_config_profile_large_client.h\\\"\
             "
     )
     mcux_add_source(
         SOURCES 
-        tf-m/platform/include/tfm_plat_crypto_keys.h 
-        tf-m/platform/ext/common/uart_stdout.h 
-        tf-m/platform/ext/common/uart_stdout.c 
-        tf-m/platform/ext/driver/Driver_USART.h 
-        tf-m/platform/ext/driver/Driver_Common.h 
-        tf-m/platform/ext/target/nxp/common/libc_dummy.c 
-        tf-m/platform/ext/target/nxp/common/Device/Include/cmsis.h 
-        tf-m/platform/ext/target/nxp/common/Device/Include/device_definition.h 
-        tf-m/platform/ext/target/nxp/common/Device/Include/platform_irq.h 
-        tf-m/platform/ext/target/nxp/common/Device/Config/device_cfg.h 
-        tf-m/platform/ext/target/nxp/common/Device/Include/platform_regs.h 
-        tf-m/platform/include/tfm_hal_device_header.h 
-        tf-m/platform/include/tfm_plat_boot_seed.h 
-        tf-m/platform/include/tfm_plat_device_id.h 
-        tf-m/platform/include/tfm_plat_defs.h 
-        tf-m/platform/include/tfm_plat_ns.h 
-        tf-m/platform/include/region.h 
-        tf-m/platform/include/tfm_plat_test.h 
-        tf-m/interface/include/crypto_keys/tfm_builtin_key_ids.h 
-        tf-m/interface/include/psa_manifest/sid.h 
-        tf-m/interface/include/tfm_attest_defs.h 
-        tf-m/interface/include/config_impl.h 
-        tf-m/interface/include/tfm_crypto_defs.h 
-        tf-m/interface/include/tfm_its_defs.h 
-        tf-m/interface/include/tfm_ps_defs.h 
-        tf-m/interface/include/tfm_api.h 
-        tf-m/interface/include/tfm_ns_interface.h 
-        tf-m/interface/include/tfm_psa_call_pack.h 
-        tf-m/interface/include/tfm_ns_client_ext.h 
-        tf-m/interface/include/tfm_platform_api.h 
-        tf-m/interface/include/os_wrapper/common.h 
-        tf-m/interface/include/os_wrapper/mutex.h 
-        tf-m/interface/include/psa/client.h 
-        tf-m/interface/include/psa/tfm/crypto.h 
-        tf-m/interface/include/psa/tfm/crypto_compat.h 
-        tf-m/interface/include/psa/crypto_client_struct.h 
-        tf-m/interface/include/psa/tfm/crypto_extra.h 
-        tf-m/interface/include/psa/tfm/crypto_platform.h 
-        tf-m/interface/include/psa/tfm/crypto_sizes.h 
-        tf-m/interface/include/psa/tfm/crypto_struct.h 
-        tf-m/interface/include/psa/tfm/crypto_types.h 
-        tf-m/interface/include/psa/tfm/crypto_values.h 
-        tf-m/interface/include/psa/error.h 
-        tf-m/interface/include/psa/framework_feature.h 
-        tf-m/interface/include/psa/initial_attestation.h 
-        tf-m/interface/include/psa/internal_trusted_storage.h 
-        tf-m/interface/include/psa/lifecycle.h 
-        tf-m/interface/include/psa/protected_storage.h 
-        tf-m/interface/include/psa/service.h 
-        tf-m/interface/include/psa/storage_common.h 
-        tf-m/secure_fw/spm/include/tfm_arch.h 
-        tf-m/secure_fw/spm/include/tfm_arch_v8m.h 
-        tf-m/secure_fw/spm/include/utilities.h 
-        tf-m/secure_fw/include/config_tfm.h 
-        tf-m/config/config_base.h 
-        tf-m/secure_fw/partitions/crypto/config_crypto_check.h 
-        tf-m/secure_fw/partitions/protected_storage/config_ps_check.h 
-        tf-m/interface/src/tfm_crypto_api.c 
-        tf-m/interface/src/tfm_attest_api.c 
-        tf-m/interface/src/tfm_its_api.c 
-        tf-m/interface/src/tfm_ps_api.c 
-        tf-m/interface/src/tfm_platform_api.c 
-        tf-m/interface/src/tfm_psa_ns_api.c 
+        tf-m/lib/ext/mbedcrypto/mbedcrypto_config/tfm_mbedcrypto_config_profile_large_client.h 
+        tf-m/config/profile/config_profile_large.h 
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES
+        tf-m/config/profile
+        tf-m/lib/ext/mbedcrypto/mbedcrypto_config 
+        tf-m/platform/ext/target/nxp/common
+        ../mbedtls3x/include
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_medium.client_configs)
+    mcux_add_macro(
+         CC "-DPROJECT_CONFIG_HEADER_FILE=\\\"config_profile_medium.h\\\"\
+            -DMBEDTLS_CONFIG_FILE=\\\"tfm_mbedcrypto_config_profile_medium_client.h\\\"\
+            "
+    )
+    mcux_add_source(
+        SOURCES 
+        tf-m/lib/ext/mbedcrypto/mbedcrypto_config/tfm_mbedcrypto_config_profile_medium_client.h 
+        tf-m/config/profile/config_profile_medium.h 
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES 
-        tf-m/platform/include 
-        tf-m/platform/ext 
-        tf-m/platform/ext/common 
-        tf-m/platform/ext/driver 
-        tf-m/platform/ext/target/nxp/common/Device/Config 
-        tf-m/platform/ext/target/nxp/common/Device/Include 
-        tf-m/interface/include 
-        tf-m/interface/include/crypto_keys 
-        tf-m/interface/include/psa 
-        tf-m/interface/include/psa_manifest 
-        tf-m/interface/include/os_wrapper 
-        tf-m/secure_fw/spm/include 
-        tf-m/secure_fw/include 
-        tf-m/secure_fw/partitions/crypto 
+        tf-m/lib/ext/mbedcrypto/mbedcrypto_config 
+        tf-m/platform/ext/target/nxp/common 
+        tf-m/config/profile
+        ../mbedtls3x/include
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_small.client_configs)
+    mcux_add_macro(
+         CC "-DPROJECT_CONFIG_HEADER_FILE=\\\"config_profile_small.h\\\"\
+            -DMBEDTLS_CONFIG_FILE=\\\"tfm_mbedcrypto_config_profile_small_client.h\\\"\
+            -DSYMMETRIC_INITIAL_ATTESTATION\
+            "
+    )
+    mcux_add_source(
+        SOURCES 
+        tf-m/lib/ext/mbedcrypto/mbedcrypto_config/tfm_mbedcrypto_config_profile_small_client.h 
+        tf-m/config/profile/config_profile_small.h 
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES 
+        tf-m/lib/ext/mbedcrypto/mbedcrypto_config 
+        tf-m/platform/ext/target/nxp/common 
+        tf-m/config/profile
+        ../mbedtls3x/include
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+
+
+#---------------------------------------------------------------
+#-------------------- tf-m secure clients configs -------------
+#---------------------------------------------------------------
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.initial_attestation.asymmetric)
+    mcux_add_macro(
+         CC "-DATTEST_KEY_BITS=256\
+            -DT_COSE_DISABLE_MAC0\
+            -DT_COSE_DISABLE_ES384\
+            -DT_COSE_DISABLE_ES512\
+            "
+    )
+    mcux_add_source(
+        SOURCES 
+        tf-m/secure_fw/partitions/initial_attestation/attest_asymmetric_key.c
+        #tf-m/platform/ext/common/template/tfm_initial_attest_pub_key.c
+        tf-m/lib/ext/t_cose/src/t_cose_sign1_sign.c
+        tf-m/lib/ext/t_cose/inc/t_cose_sign1_sign.h
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES 
+        tf-m/lib/ext/t_cose/src 
+        tf-m/lib/ext/t_cose/inc
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.initial_attestation.symmetric)
+    mcux_add_macro(
+         CC "-DT_COSE_DISABLE_SIGN1\
+            -DT_COSE_DISABLE_ES384\
+            -DT_COSE_DISABLE_ES512\
+            "
+    )
+    mcux_add_source(
+        SOURCES 
+        tf-m/secure_fw/partitions/initial_attestation/attest_symmetric_key.c
+        tf-m/lib/ext/t_cose/src/t_cose_mac0_sign.c
+        tf-m/lib/ext/t_cose/inc/t_cose_mac0_sign.h
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES 
+        tf-m/lib/ext/t_cose/src 
+        tf-m/lib/ext/t_cose/inc
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.initial_attestation)
+    mcux_add_macro(
+         CC "-DTFM_PARTITION_INITIAL_ATTESTATION\
+            -DT_COSE_USE_PSA_CRYPTO\
+            "
+    )
+    mcux_add_source(
+        SOURCES 
+        tf-m/interface/include/tfm_attest_defs.h
+        tf-m/interface/include/tfm_attest_iat_defs.h
+        tf-m/interface/src/tfm_attest_api.c
+        tf-m/secure_fw/partitions/initial_attestation/auto_generated/intermedia_tfm_initial_attestation.c
+        #tf-m/secure_fw/partitions/initial_attestation/auto_generated/load_info_tfm_initial_attestation.c
+        tf-m/secure_fw/partitions/initial_attestation/attest.h
+        tf-m/secure_fw/partitions/initial_attestation/attest_boot_data.c
+        tf-m/secure_fw/partitions/initial_attestation/attest_boot_data.h
+        tf-m/secure_fw/partitions/initial_attestation/attest_core.c
+        tf-m/secure_fw/partitions/initial_attestation/attest_key.h
+        tf-m/secure_fw/partitions/initial_attestation/attest_token.h
+        tf-m/secure_fw/partitions/initial_attestation/attest_token_encode.c
+        tf-m/secure_fw/partitions/initial_attestation/tfm_attest.c
+        tf-m/secure_fw/partitions/initial_attestation/tfm_attest_req_mngr.c
+        tf-m/secure_fw/partitions/initial_attestation/psa_manifest/tfm_initial_attestation.h
+
+        tf-m/lib/ext/t_cose/crypto_adapters/t_cose_psa_crypto.c 
+        tf-m/lib/ext/t_cose/src/t_cose_crypto.h
+        tf-m/lib/ext/t_cose/src/t_cose_parameters.c
+        tf-m/lib/ext/t_cose/src/t_cose_parameters.h
+        tf-m/lib/ext/t_cose/src/t_cose_standard_constants.h
+        tf-m/lib/ext/t_cose/src/t_cose_util.c
+        tf-m/lib/ext/t_cose/src/t_cose_util.h
+        tf-m/lib/ext/t_cose/inc/t_cose_common.h
+        tf-m/lib/ext/t_cose/inc/q_useful_buf.h
+        tf-m/secure_fw/spm/include/boot/tfm_boot_status.h
+        
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES 
+        tf-m/secure_fw/spm/include/boot
         tf-m/secure_fw/partitions/initial_attestation 
-        tf-m/secure_fw/partitions/internal_trusted_storage 
-        tf-m/secure_fw/partitions/protected_storage 
-        tf-m/secure_fw/partitions/platform 
+        tf-m/lib/ext/t_cose/src 
+        tf-m/lib/ext/t_cose/inc
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.ps)
+    mcux_add_macro(
+         CC "-DTFM_PARTITION_PROTECTED_STORAGE\
+            -DTFM_PARTITION_INTERNAL_TRUSTED_STORAGE\
+            -DPLATFORM_DEFAULT_CRYPTO_KEYS\
+            -DMBEDTLS_PSA_CRYPTO_DRIVERS\
+            -DPS_ENCRYPTION\
+            -DPS_ROLLBACK_PROTECTION\
+            -DPS_CRYPTO_AEAD_ALG=PSA_ALG_CCM\
+            "
+    )
+    
+    mcux_add_source(
+        SOURCES
+        tf-m/interface/src/tfm_ps_api.c
+        tf-m/secure_fw/partitions/protected_storage/auto_generated/intermedia_tfm_protected_storage.c
+        #tf-m/secure_fw/partitions/protected_storage/auto_generated/load_info_tfm_protected_storage.c
+        tf-m/secure_fw/partitions/protected_storage/crypto/ps_crypto_interface.c
+        tf-m/secure_fw/partitions/protected_storage/crypto/ps_crypto_interface.h
+        tf-m/secure_fw/partitions/protected_storage/config_ps_check.h
+        tf-m/secure_fw/partitions/protected_storage/ps_encrypted_object.c
+        tf-m/secure_fw/partitions/protected_storage/ps_encrypted_object.h
+        tf-m/secure_fw/partitions/protected_storage/ps_object_defs.h
+        tf-m/secure_fw/partitions/protected_storage/ps_object_system.c
+        tf-m/secure_fw/partitions/protected_storage/ps_object_system.h
+        tf-m/secure_fw/partitions/protected_storage/ps_object_table.c
+        tf-m/secure_fw/partitions/protected_storage/ps_object_table.h
+        tf-m/secure_fw/partitions/protected_storage/ps_utils.c
+        tf-m/secure_fw/partitions/protected_storage/ps_utils.h
+        tf-m/secure_fw/partitions/protected_storage/tfm_protected_storage.c
+        tf-m/secure_fw/partitions/protected_storage/tfm_protected_storage.h
+        tf-m/secure_fw/partitions/protected_storage/tfm_ps_req_mngr.h
+        tf-m/secure_fw/partitions/protected_storage/tfm_ps_req_mngr.c
+        tf-m/secure_fw/partitions/protected_storage/psa_manifest/tfm_protected_storage.h
+        tf-m/secure_fw/partitions/protected_storage/nv_counters/ps_nv_counters.h
+        tf-m/secure_fw/partitions/protected_storage/nv_counters/ps_nv_counters.c
+        tf-m/secure_fw/include/config_tfm.h
+        tf-m/secure_fw/include/array.h
+        tf-m/secure_fw/include/async.h
+
+        tf-m/config/config_base.h
+        tf-m/secure_fw/spm/core/spm.h
+        tf-m/secure_fw/spm/include/config_spm.h
+        tf-m/lib/fih/inc/fih.h
+
+        tf-m/secure_fw/partitions/lib/runtime/include/service_api.h
+        tf-m/secure_fw/partitions/lib/runtime/include/tfm_sp_log.h
+        tf-m/platform/ext/common/tfm_hal_sp_logdev.h
+        tf-m/platform/ext/common/tfm_hal_spm_logdev.h
+        tf-m/lib/ext/mbedcrypto/mbedcrypto_config/tfm_mbedcrypto_config_profile_large_client.h
+        tf-m/lib/ext/mbedcrypto/mbedcrypto_config/crypto_config_profile_large.h
+
+        tf-m/platform/ext/target/nxp/common/Device/Config/device_cfg.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/cmsis.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/device_definition.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/platform_description.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/platform_irq.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/platform_regs.h
+        tf-m/platform/include/cmsis_override.h
+        tf-m/secure_fw/spm/include/interface/runtime_defs.h
+        tf-m/secure_fw/spm/include/interface/svc_num.h
+        tf-m/secure_fw/partitions/internal_trusted_storage/tfm_internal_trusted_storage.h
+        tf-m/platform/ext/driver/Driver_Common.h
+        tf-m/platform/ext/driver/Driver_Flash.h
+        tf-m/platform/ext/driver/Driver_MPC.h
+        tf-m/platform/ext/driver/Driver_PPC.h
+        tf-m/platform/ext/driver/Driver_USART.h
+        tf-m/secure_fw/partitions/crypto/crypto_spe.h
+        tf-m/interface/src/tfm_crypto_api.c
+        
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES 
+        tf-m/secure_fw/include
         tf-m/config
+        tf-m/secure_fw/spm/core
+        tf-m/secure_fw/spm/include
+        tf-m/lib/fih/inc
+        tf-m/secure_fw/partitions/lib/runtime/include
+        tf-m/platform/ext/common
+        tf-m/lib/ext/mbedcrypto/mbedcrypto_config
+        tf-m/platform/include
+        tf-m/platform/ext/target/nxp/common/Device/Config
+        tf-m/platform/ext/target/nxp/common/Device/Include
+        tf-m/platform/include
+        tf-m/secure_fw/spm/include/interface
+        tf-m/secure_fw/partitions/internal_trusted_storage
+        tf-m/platform/ext/driver
+        tf-m/secure_fw/partitions/crypto
+        tf-m/interface/src
+        tf-m/secure_fw/partitions/protected_storage/crypto
+        tf-m/secure_fw/partitions/protected_storage
+        tf-m/secure_fw/partitions/protected_storage/nv_counters
+        tf-m/secure_fw/partitions/platform
+        tf-m/
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
 
-#adding tfm profile related configs when using non-secure build
-if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_large.ns_configs)
-    mcux_add_macro(
-         CC "-DTFM_LVL=2\
-            -DPROJECT_CONFIG_HEADER_FILE=\\\"config_profile_large.h\\\"\
-            "
-    )
-    mcux_add_source(
-        SOURCES tf-m/config/profile/config_profile_large.h
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-    mcux_add_include(
-        INCLUDES tf-m/config/profile
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-endif()
-
-if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_medium.ns_configs)
-    mcux_add_macro(
-         CC "-DTFM_LVL=2\
-            -DPROJECT_CONFIG_HEADER_FILE=\\\"config_profile_medium.h\\\"\
-            "
-    )
-    mcux_add_source(
-        SOURCES tf-m/config/profile/config_profile_medium.h
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-    mcux_add_include(
-        INCLUDES tf-m/config/profile
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-endif()
-
-if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_small.ns_configs)
-    mcux_add_macro(
-         CC "-DTFM_LVL=1\
-            -DPROJECT_CONFIG_HEADER_FILE=\\\"config_profile_small.h\\\"\
-            "
-    )
-    mcux_add_source(
-        SOURCES tf-m/config/profile/config_profile_small.h
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-    mcux_add_include(
-        INCLUDES tf-m/config/profile
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-endif()
-
-if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.loader_service)
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.t_cose.sign1_verify)
     mcux_add_source(
         SOURCES 
-        tf-m/platform/ext/target/nxp/rw61x/partitions/loader_service/interface/include/tfm_lds_defs.h 
-        tf-m/platform/ext/target/nxp/rw61x/partitions/loader_service/interface/src/tfm_lds_api.c 
-        tf-m/platform/ext/target/nxp/rw61x/partitions/loader_service/tfm_lds_sid.h 
-        tf-m/platform/ext/target/nxp/rw61x/partitions/loader_service/tfm_lds_func_ids.h
+        tf-m/lib/ext/t_cose/src/t_cose_sign1_verify.c 
+        tf-m/lib/ext/t_cose/inc/t_cose_sign1_verify.h
+        qcbor/inc/qcbor/UsefulBuf.h 
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES 
-        tf-m/platform/ext/target/nxp/rw61x/partitions/loader_service 
-        tf-m/platform/ext/target/nxp/rw61x/partitions/loader_service/interface/include
+        tf-m/lib/ext/t_cose/inc
+        qcbor/inc/qcbor
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
 
-if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.platform_rw61x)
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.t_cose.mac0_verify)
     mcux_add_source(
         SOURCES 
-        tf-m/platform/ext/target/nxp/common/CMSIS_Driver/Driver_USART.c 
-        tf-m/platform/ext/target/nxp/rw61x/plat_iak_pk/plat_iak_pk.c 
-        tf-m/platform/ext/target/nxp/rw61x/plat_iak_pk/plat_iak_pk.h
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-    mcux_add_include(
-        INCLUDES tf-m/platform/ext/target/nxp/rw61x/plat_iak_pk
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-endif()
-
-if (CONFIG_MCUX_COMPONENT_middleware.tfmtests.ns)
-    mcux_add_source(
-        SOURCES 
-        tf-m-tests/app/os_wrapper_cmsis_rtos_v2.c 
-        tf-m-tests/app/main_ns.c 
-        tf-m-tests/app/test_app.c 
-        tf-m-tests/app/test_app.h 
-        tf-m-tests/app/tfm_log.h 
-        tf-m-tests/log/tfm_log_raw.c 
-        tf-m-tests/log/tfm_log_raw.h 
-        tf-m-tests/ns_interface/os_wrapper/delay.h 
-        tf-m-tests/ns_interface/os_wrapper/msg_queue.h 
-        tf-m-tests/ns_interface/os_wrapper/semaphore.h 
-        tf-m-tests/ns_interface/os_wrapper/thread.h 
-        tf-m-tests/ns_interface/ns_client_ext/tfm_nsid_manager.h 
-        tf-m-tests/ns_interface/ns_client_ext/tz_shim_layer.c 
+        tf-m/lib/ext/t_cose/src/t_cose_mac0_verify.c 
+        tf-m/lib/ext/t_cose/inc/t_cose_mac0_verify.h
+        qcbor/inc/qcbor/UsefulBuf.h
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES 
-        tf-m-tests/app 
-        tf-m-tests/log 
-        tf-m-tests/ns_interface 
-        tf-m-tests/ns_interface/ns_client_ext
+        tf-m/lib/ext/t_cose/inc
+        qcbor/inc/qcbor
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+#---------------------------------------------------------------
+#---- tf-m secure clients and non-secure common configs --------
+#---------------------------------------------------------------
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.qcbor)
+    mcux_add_macro(
+         CC "-DQCBOR_DISABLE_FLOAT_HW_USE\
+            -DUSEFULBUF_DISABLE_ALL_FLOAT\
+            -DQCBOR_DISABLE_PREFERRED_FLOAT\
+            "
+    )
+    mcux_add_source(
+        SOURCES 
+        qcbor/src/ieee754.c 
+        qcbor/src/ieee754.h 
+        qcbor/src/qcbor_decode.c 
+        qcbor/src/qcbor_encode.c 
+        qcbor/src/UsefulBuf.c 
+        qcbor/inc/qcbor/qcbor.h 
+        qcbor/inc/qcbor/qcbor_common.h 
+        qcbor/inc/qcbor/qcbor_decode.h 
+        qcbor/inc/qcbor/qcbor_encode.h 
+        qcbor/inc/qcbor/qcbor_private.h 
+        qcbor/inc/qcbor/qcbor_spiffy_decode.h 
+        qcbor/inc/qcbor/UsefulBuf.h 
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES qcbor/src qcbor/inc qcbor/inc/qcbor
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
 
+#---------------------------------------------------------------
+#--------------- tf-m secure Regression Suites configs ---------
+#---------------------------------------------------------------
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test)
     mcux_add_macro(
          CC "-DTFM_S_REG_TEST\
@@ -1080,41 +1063,190 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test)
     )
     mcux_add_source(
         SOURCES 
-        tf-m-tests/test/secure_fw/secure_suites.c 
-        tf-m-tests/test/framework/test_framework.c 
-        tf-m-tests/test/framework/test_framework.h 
-        tf-m-tests/test/framework/test_framework_error_codes.h 
-        tf-m-tests/test/framework/test_framework_helpers.c 
-        tf-m-tests/test/framework/test_framework_helpers.h 
-        tf-m-tests/test/framework/test_framework_integ_test.h 
-        tf-m-tests/test/framework/test_framework_integ_test_helper.c 
-        tf-m-tests/test/framework/test_framework_integ_test_helper.h 
-        tf-m-tests/test/framework/test_log.h 
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_secure_client_service/auto_generated/intermedia_tfm_secure_client_service.c 
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_secure_client_service/auto_generated/load_info_tfm_secure_client_service.c 
-        tf-m-tests/test/secure_fw/common_test_services/tfm_secure_client_service/tfm_secure_client_service.c 
-        tf-m-tests/test/secure_fw/common_test_services/tfm_secure_client_service/tfm_secure_client_service.h 
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_secure_client_service/psa_manifest/tfm_secure_client_service.h 
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_secure_client_2/auto_generated/intermedia_tfm_secure_client_2.c 
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_secure_client_2/auto_generated/load_info_tfm_secure_client_2.c 
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_secure_client_2/psa_manifest/tfm_secure_client_2.h 
-        tf-m-tests/test/secure_fw/common_test_services/tfm_secure_client_2/tfm_secure_client_2.c 
-        tf-m-tests/test/secure_fw/common_test_services/tfm_secure_client_2/tfm_secure_client_2_api.c 
-        tf-m-tests/test/secure_fw/common_test_services/tfm_secure_client_2/tfm_secure_client_2_api.h 
-        tf-m-tests/test/secure_fw/suites/spm/ipc/secure/ipc_s_tests.h 
+        tf-m-tests/tests_reg/test/secure_regression/secure_suites.c 
+        tf-m-tests/tests_reg/test/secure_regression/secure_suites.h
+        tf-m-tests/tests_reg/test/framework/test_framework.c 
+        tf-m-tests/tests_reg/test/framework/test_framework.h 
+        tf-m-tests/tests_reg/test/framework/test_framework_error_codes.h 
+        tf-m-tests/tests_reg/test/framework/test_framework_helpers.c 
+        tf-m-tests/tests_reg/test/framework/test_framework_helpers.h         
+        tf-m-tests/tests_reg/test/framework/test_log.h 
+        
+        #secure client 1 and 2
+        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_service/auto_generated/intermedia_tfm_secure_client_service.c 
+        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_service/auto_generated/load_info_tfm_secure_client_service.c 
+        tf-m-tests/tests_reg/test/secure_fw/common_test_services/tfm_secure_client_service/tfm_secure_client_service.c 
+        tf-m-tests/tests_reg/test/secure_fw/common_test_services/tfm_secure_client_service/tfm_secure_client_service.h 
+        tf-m-tests/tests_reg/test/secure_fw/common_test_services/tfm_secure_client_2/tfm_secure_client_2_api.h
+        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_service/psa_manifest/tfm_secure_client_service.h 
+        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_2/auto_generated/intermedia_tfm_secure_client_2.c 
+        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_2/auto_generated/load_info_tfm_secure_client_2.c 
+        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_2/psa_manifest/tfm_secure_client_2.h 
+
+        #ps tests
+        tf-m-tests/tests_reg/test/secure_fw/suites/ps/secure/s_test_helpers.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/ps/secure/ps_tests.h
+        tf-m/autogenerated/secure_fw/test_services/tfm_ps_test_service/auto_generated/intermedia_tfm_ps_test_service.c
+        tf-m/autogenerated/secure_fw/test_services/tfm_ps_test_service/auto_generated/load_info_tfm_ps_test_service.c
+        tf-m/autogenerated/secure_fw/test_services/tfm_ps_test_service/psa_manifest/tfm_ps_test_service.h
+    
+        #ipc tests (already part of the secure app)
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/ipc/secure/ipc_s_tests.h
+        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_service/auto_generated/intermedia_tfm_ipc_service_test.c
+        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_service/auto_generated/load_info_tfm_ipc_service_test.c
+        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_service/psa_manifest/tfm_ipc_service_test.h
+        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_client/auto_generated/intermedia_tfm_ipc_client_test.c
+        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_client/auto_generated/load_info_tfm_ipc_client_test.c
+        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_client/psa_manifest/tfm_ipc_client_test.h
+
+        #SLIH
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/spm_test_defs.h 
+        tf-m/autogenerated/secure_fw/test_services/tfm_slih_test_service/auto_generated/intermedia_tfm_slih_test_service.c
+        tf-m/autogenerated/secure_fw/test_services/tfm_slih_test_service/auto_generated/load_info_tfm_slih_test_service.c 
+        tf-m/autogenerated/secure_fw/test_services/tfm_slih_test_service/psa_manifest/tfm_slih_test_service.h        
+        
+        #platform
+        tf-m-tests/tests_reg/test/secure_fw/suites/platform/secure/platform_s_tests.h 
+        #attest tests
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/secure/attest_s_tests.h
+        #crypto
+        tf-m-tests/tests_reg/test/secure_fw/suites/crypto/secure/crypto_s_tests.h
+        #its
+        tf-m-tests/tests_reg/test/secure_fw/suites/its/secure/its_s_tests.h 
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
+    
+    # macros to make sure, partitions tests are enabled.
+    mcux_add_macro(
+         CC "-DTEST_S_PLATFORM\
+            -DTEST_S_CRYPTO\
+            -DTEST_S_ATTESTATION\
+            -DTEST_S_ITS\
+            -DTFM_PARTITION_TEST_PS\
+            -DTEST_S_PS\
+            -DTFM_PARTITION_SLIH_TEST\
+            "
+    )
+    
     mcux_add_include(
         INCLUDES ./ 
-        tf-m-tests/test 
-        tf-m-tests/test/framework 
-        tf-m-tests/test/secure_fw/common_test_services/tfm_secure_client_service 
-        tf-m-tests/test/secure_fw/common_test_services/tfm_secure_client_2 
-        tf-m-tests/test/secure_fw/suites/spm/ipc/secure 
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_secure_client_service/psa_manifest 
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_secure_client_service 
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_secure_client_2/psa_manifest 
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_secure_client_2
+        tf-m-tests/tests_reg/test/framework 
+        tf-m-tests/tests_reg/test/secure_regression
+        tf-m-tests/tests_reg/test/secure_fw/common_test_services/tfm_secure_client_service 
+        tf-m-tests/tests_reg/test/secure_fw/common_test_services/tfm_secure_client_2 
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/ipc/secure 
+        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_service/psa_manifest 
+        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_service 
+        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_2/psa_manifest 
+        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_2
+        
+        #ps tests
+        tf-m-tests/tests_reg/test/secure_fw/suites/ps/secure
+        tf-m/autogenerated/secure_fw/test_services/tfm_ps_test_service
+        
+        #ipc tests (already part of the secure app
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/ipc/secure
+        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_service
+        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_client
+        
+        #SLIH
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common
+        tf-m/autogenerated/secure_fw/test_services/tfm_slih_test_service    
+       
+        #platform
+        tf-m-tests/tests_reg/test/secure_fw/suites/platform/secure
+        #attest tests
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/secure
+        #crypto
+        tf-m-tests/tests_reg/test/secure_fw/suites/crypto/secure
+        #its
+        tf-m-tests/tests_reg/test/secure_fw/suites/its/secure
+        
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.secure_reg_test_enable)
+
+    mcux_add_macro(
+         CC "-DTFM_S_REG_TEST\
+            -DUSE_SP_LOG\
+            "
+    )
+
+    mcux_add_source(
+        SOURCES 
+        tf-m/secure_fw/include/config_tfm.h
+        tf-m/config/config_base.h
+        tf-m/secure_fw/spm/core/spm.h
+        tf-m/secure_fw/spm/include/config_spm.h
+        tf-m/lib/fih/inc/fih.h
+        tf-m/platform/include/tfm_hal_device_header.h
+        tf-m/secure_fw/partitions/lib/runtime/include/service_api.h
+        tf-m/secure_fw/partitions/lib/runtime/include/tfm_sp_log.h
+        tf-m/secure_fw/partitions/initial_attestation/attest.h
+        
+        tf-m/platform/ext/common/tfm_hal_sp_logdev.h
+        tf-m/platform/ext/common/tfm_hal_spm_logdev.h
+        tf-m/platform/include/region.h
+        tf-m/platform/ext/target/nxp/common/Device/Config/device_cfg.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/cmsis.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/device_definition.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/platform_description.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/platform_irq.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/platform_regs.h
+        tf-m/platform/ext/common/uart_stdout.h
+        tf-m/platform/include/cmsis_override.h
+        tf-m/secure_fw/spm/include/interface/runtime_defs.h
+        tf-m/secure_fw/spm/include/interface/svc_num.h
+        tf-m/secure_fw/spm/include/tfm_arch.h 
+        tf-m/secure_fw/spm/include/tfm_arch_v8m.h 
+        tf-m/secure_fw/spm/include/utilities.h 
+        tf-m/secure_fw/include/config_tfm.h 
+        tf-m-tests/tests_reg/test/framework/test_framework.h 
+        tf-m-tests/tests_reg/test/framework/test_framework_error_codes.h 
+        tf-m-tests/tests_reg/test/framework/test_framework_helpers.h 
+        tf-m-tests/tests_reg/test/framework/test_log.h 
+        tf-m-tests/tests_reg/test/secure_fw/common_test_services/tfm_secure_client_service/tfm_secure_client_service.h 
+        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_service/psa_manifest/tfm_secure_client_service.h 
+        
+        tf-m/lib/ext/t_cose/src/t_cose_crypto.h
+        tf-m/lib/ext/t_cose/src/t_cose_parameters.h 
+        tf-m/lib/ext/t_cose/src/t_cose_standard_constants.h 
+        tf-m/lib/ext/t_cose/src/t_cose_util.h 
+        tf-m/lib/ext/t_cose/inc/t_cose_common.h 
+        tf-m/lib/ext/t_cose/inc/q_useful_buf.h 
+        tf-m/lib/ext/t_cose/inc/t_cose_sign1_sign.h
+        
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+
+    mcux_add_include(
+        INCLUDES 
+        tf-m/interface/include/psa
+        tf-m/interface/include
+        tf-m/secure_fw/include
+        tf-m/config
+        tf-m/secure_fw/spm/core
+        tf-m/secure_fw/spm/include
+        tf-m/lib/fih/inc
+        tf-m/platform/include
+        tf-m/secure_fw/partitions/lib/runtime/include
+        tf-m/secure_fw/partitions/crypto 
+        tf-m/secure_fw/partitions/initial_attestation
+        tf-m/secure_fw/partitions/crypto/psa_driver_api
+        tf-m/lib/ext/mbedcrypto/mbedcrypto_config
+        tf-m/platform/ext/target/nxp/common/Device/Config
+        tf-m/platform/ext/target/nxp/common/Device/Include
+        tf-m/platform/ext/common
+        tf-m/platform/include
+        tf-m/secure_fw/spm/include/interface
+        tf-m-tests/tests_reg/test/framework
+        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_service
+        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_2
+        tf-m/lib/ext/t_cose/inc
+        tf-m/lib/ext/t_cose/src
+        
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
@@ -1152,145 +1284,176 @@ endif()
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test.ps)
     mcux_add_macro(
-         CC "-DTFM_PARTITION_TEST_PS\
-            -DTEST_S_PS\
+         CC "-DTFM_PARTITION_PROTECTED_STORAGE\
+            -DTFM_PARTITION_TEST_PS\
             "
     )
+    
     mcux_add_source(
-        SOURCES tf-m-tests/test/secure_fw/suites/ps/secure/psa_ps_s_interface_testsuite.c
-       tf-m-tests/test/secure_fw/suites/ps/secure/psa_ps_s_reliability_testsuite.c
-       tf-m-tests/test/secure_fw/suites/ps/secure/s_test_helpers.h
-       tf-m-tests/test/secure_fw/suites/ps/secure/ps_tests.h
-       tf-m/autogenerated/test/secure_fw/test_services/tfm_ps_test_service/auto_generated/intermedia_tfm_ps_test_service.c
-       tf-m/autogenerated/test/secure_fw/test_services/tfm_ps_test_service/auto_generated/load_info_tfm_ps_test_service.c
-       tf-m/autogenerated/test/secure_fw/test_services/tfm_ps_test_service/psa_manifest/tfm_ps_test_service.h
-       tf-m-tests/test/secure_fw/suites/ps/service/tfm_ps_test_service.c
-       tf-m-tests/test/secure_fw/suites/ps/service/tfm_ps_test_service_api.c
-       tf-m-tests/test/secure_fw/suites/ps/service/tfm_ps_test_service_api.h
+        SOURCES tf-m-tests/tests_reg/test/secure_fw/suites/ps/secure/psa_ps_s_interface_testsuite.c
+       tf-m-tests/tests_reg/test/secure_fw/suites/ps/secure/psa_ps_s_reliability_testsuite.c
+       tf-m-tests/tests_reg/test/secure_fw/suites/ps/secure/s_test_helpers.h
+       tf-m-tests/tests_reg/test/secure_fw/suites/ps/secure/ps_tests.h
+       tf-m/autogenerated/secure_fw/test_services/tfm_ps_test_service/auto_generated/intermedia_tfm_ps_test_service.c
+       #tf-m/autogenerated/secure_fw/test_services/tfm_ps_test_service/auto_generated/load_info_tfm_ps_test_service.c
+       tf-m/autogenerated/secure_fw/test_services/tfm_ps_test_service/psa_manifest/tfm_ps_test_service.h
+       tf-m-tests/tests_reg/test/secure_fw/suites/ps/service/tfm_ps_test_service.c
+       tf-m-tests/tests_reg/test/secure_fw/suites/ps/service/tfm_ps_test_service_api.c
+       tf-m-tests/tests_reg/test/secure_fw/suites/ps/service/tfm_ps_test_service_api.h
+       tf-m/secure_fw/partitions/protected_storage/ps_object_system.h
        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES 
-        tf-m-tests/test/secure_fw/suites/ps/secure 
-        tf-m-tests/test/secure_fw/suites/ps/service 
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_ps_test_service/psa_manifest
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_ps_test_service
+        tf-m-tests/tests_reg/test/secure_fw/suites/ps/secure 
+        tf-m-tests/tests_reg/test/secure_fw/suites/ps/service 
+        tf-m/autogenerated/secure_fw/test_services/tfm_ps_test_service/psa_manifest
+        tf-m/autogenerated/secure_fw/test_services/tfm_ps_test_service
+        tf-m/secure_fw/partitions/protected_storage
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test.its)
     mcux_add_macro(
-         CC "-DTEST_S_ITS\
+         CC "-DTFM_PARTITION_INTERNAL_TRUSTED_STORAGE\
             "
     )
     mcux_add_source(
         SOURCES 
-        tf-m-tests/test/secure_fw/suites/its/its_tests_common.c 
-        tf-m-tests/test/secure_fw/suites/its/its_tests_common.h 
-        tf-m-tests/test/secure_fw/suites/its/secure/its_s_tests.h 
-        tf-m-tests/test/secure_fw/suites/its/secure/psa_its_s_interface_testsuite.c 
-        tf-m-tests/test/secure_fw/suites/its/secure/psa_its_s_reliability_testsuite.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/its/its_tests_common.c 
+        tf-m-tests/tests_reg/test/secure_fw/suites/its/its_tests_common.h 
+        tf-m-tests/tests_reg/test/secure_fw/suites/its/secure/its_s_tests.h 
+        tf-m-tests/tests_reg/test/secure_fw/suites/its/secure/psa_its_s_interface_testsuite.c 
+        tf-m-tests/tests_reg/test/secure_fw/suites/its/secure/psa_its_s_reliability_testsuite.c
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES 
-        tf-m-tests/test/secure_fw/suites/its 
-        tf-m-tests/test/secure_fw/suites/its/secure
+        tf-m-tests/tests_reg/test/secure_fw/suites/its 
+        tf-m-tests/tests_reg/test/secure_fw/suites/its/secure
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test.attestation.asymmetric)
+    mcux_add_macro(
+         CC "-DATTEST_KEY_BITS=256\
+            -DT_COSE_DISABLE_MAC0\
+            -DT_COSE_DISABLE_ES384\
+            -DT_COSE_DISABLE_ES512\
+            "
+    )
     mcux_add_source(
         SOURCES 
-        tf-m-tests/test/secure_fw/suites/attestation/secure/attest_asymmetric_s_interface_testsuite.c 
-        tf-m-tests/test/secure_fw/suites/attestation/attest_token_decode_asymmetric.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/secure/attest_asymmetric_s_interface_testsuite.c 
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/attest_token_decode_asymmetric.c
+        tf-m/secure_fw/partitions/initial_attestation/attest_token.h
+        tf-m/secure_fw/partitions/initial_attestation/attest.h        
+        tf-m/secure_fw/spm/include/boot/tfm_boot_status.h
+        tf-m-tests/lib/log/tfm_log.h 
+        tf-m-tests/lib/log/tfm_log_raw.c 
+        tf-m-tests/lib/log/tfm_log_raw.h
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
+    mcux_add_include(
+        INCLUDES 
+        tf-m-tests/lib/log
+        tf-m/secure_fw/spm/include/boot
+        tf-m/secure_fw/partitions/initial_attestation
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    
 endif()
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test.attestation.symmetric)
+    mcux_add_macro(
+         CC "-DT_COSE_DISABLE_SIGN1\
+            -DT_COSE_DISABLE_ES384\
+            -DT_COSE_DISABLE_ES512\
+            "
+    )
     mcux_add_source(
         SOURCES 
-        tf-m-tests/test/secure_fw/suites/attestation/secure/attest_symmetric_s_interface_testsuite.c 
-        tf-m-tests/test/secure_fw/suites/attestation/attest_token_decode_symmetric.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/secure/attest_symmetric_s_interface_testsuite.c 
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/attest_token_decode_symmetric.c
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test.attestation)
     mcux_add_macro(
-         CC "-DTEST_S_ATTESTATION\
+         CC "-DTFM_PARTITION_INITIAL_ATTESTATION\
+             -DT_COSE_USE_PSA_CRYPTO\
             "
     )
-    mcux_add_source(
-        SOURCES 
-        tf-m-tests/test/secure_fw/suites/attestation/ext/qcbor_util/qcbor_util.c 
-        tf-m-tests/test/secure_fw/suites/attestation/ext/qcbor_util/qcbor_util.h 
-        tf-m-tests/test/secure_fw/suites/attestation/secure/attest_s_tests.h 
-        tf-m-tests/test/secure_fw/suites/attestation/attest_token_decode.h 
-        tf-m-tests/test/secure_fw/suites/attestation/attest_token_decode_common.c 
-        tf-m-tests/test/secure_fw/suites/attestation/attest_token_test.c 
-        tf-m-tests/test/secure_fw/suites/attestation/attest_token_test.h 
-        tf-m-tests/test/secure_fw/suites/attestation/attest_token_test_values.h 
-        tf-m-tests/test/secure_fw/suites/attestation/attest_tests_common.h
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-    mcux_add_include(
-        INCLUDES 
-        tf-m-tests/test/secure_fw/suites/attestation/ext/qcbor_util 
-        tf-m-tests/test/secure_fw/suites/attestation/secure 
-        tf-m-tests/test/secure_fw/suites/attestation
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-endif()
 
-if (CONFIG_MCUX_COMPONENT_middleware.tfm.t_cose.sign1_verify)
     mcux_add_source(
         SOURCES 
-        tf-m/lib/ext/t_cose/src/t_cose_sign1_verify.c 
-        tf-m/lib/ext/t_cose/inc/t_cose_sign1_verify.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/ext/qcbor_util/qcbor_util.c 
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/ext/qcbor_util/qcbor_util.h 
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/secure/attest_s_tests.h 
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/attest_token_decode.h 
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/attest_token_decode_common.c 
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/attest_token_test.c 
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/attest_token_test.h 
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/attest_token_test_values.h 
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/attest_tests_common.h
+        tf-m-tests/tests_reg/test/framework/test_framework.h
+        qcbor/inc/qcbor/qcbor.h
+        tf-m-tests/lib/log/tfm_log_raw.h
+        tf-m-tests/lib/log/tfm_log_raw.c
+        tf-m/secure_fw/spm/include/boot/tfm_boot_status.h
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES 
-        tf-m/lib/ext/t_cose/inc
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-endif()
-
-if (CONFIG_MCUX_COMPONENT_middleware.tfm.t_cose.mac0_verify)
-    mcux_add_source(
-        SOURCES 
-        tf-m/lib/ext/t_cose/src/t_cose_mac0_verify.c 
-        tf-m/lib/ext/t_cose/inc/t_cose_mac0_verify.h
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-    mcux_add_include(
-        INCLUDES 
-        tf-m/lib/ext/t_cose/inc
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/ext/qcbor_util 
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/secure 
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation
+        tf-m-tests/tests_reg/test/framework
+        tf-m-tests/lib/log
+        qcbor/inc/
+        tf-m/secure_fw/spm/include/boot
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test.crypto)
     mcux_add_macro(
-         CC "-DTEST_S_CRYPTO\
+         CC "-DTFM_PARTITION_CRYPTO\
+            -DPLATFORM_DEFAULT_CRYPTO_KEYS\
+            -DMBEDTLS_PSA_CRYPTO_DRIVERS\
             "
     )
+    
     mcux_add_source(
-        SOURCES tf-m-tests/test/secure_fw/suites/crypto/crypto_tests_common.c 
-        tf-m-tests/test/secure_fw/suites/crypto/crypto_tests_common.h 
-        tf-m-tests/test/secure_fw/suites/crypto/crypto_tests_check_config.h 
-        tf-m-tests/test/secure_fw/suites/crypto/secure/crypto_s_tests.h 
-        tf-m-tests/test/secure_fw/suites/crypto/secure/crypto_sec_interface_testsuite.c
+        SOURCES tf-m-tests/tests_reg/test/secure_fw/suites/crypto/crypto_tests_common.c 
+        tf-m-tests/tests_reg/test/secure_fw/suites/crypto/crypto_tests_common.h 
+        tf-m-tests/tests_reg/test/secure_fw/suites/crypto/crypto_tests_check_config.h 
+        tf-m-tests/tests_reg/test/secure_fw/suites/crypto/secure/crypto_s_tests.h 
+        tf-m-tests/tests_reg/test/secure_fw/suites/crypto/secure/crypto_sec_interface_testsuite.c
+        
+        tf-m-tests/tests_reg/test/secure_fw/common_test_services/tfm_secure_client_service/tfm_secure_client_service.h 
+        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_service/psa_manifest/tfm_secure_client_service.h 
+        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_2/psa_manifest/tfm_secure_client_2.h 
+        tf-m-tests/tests_reg/test/secure_fw/common_test_services/tfm_secure_client_2/tfm_secure_client_2_api.h
+        tf-m-tests/tests_reg/test/secure_fw/common_test_services/tfm_secure_client_2/tfm_secure_client_2.c 
+        tf-m-tests/tests_reg/test/secure_fw/common_test_services/tfm_secure_client_2/tfm_secure_client_2_api.c 
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/ipc/secure/ipc_s_tests.h 
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES 
-        tf-m-tests/test/secure_fw/suites/crypto 
-        tf-m-tests/test/secure_fw/suites/crypto/secure
+        tf-m-tests/tests_reg/test/secure_fw/suites/crypto 
+        tf-m-tests/tests_reg/test/secure_fw/suites/crypto/secure
+        
+        tf-m-tests/tests_reg/test/secure_fw/common_test_services/tfm_secure_client_service
+        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_service/psa_manifest
+        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_2/psa_manifest
+        tf-m-tests/tests_reg/test/secure_fw/common_test_services/tfm_secure_client_2
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/ipc/secure
+        
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
@@ -1310,15 +1473,15 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test.platform)
     )
     mcux_add_source(
         SOURCES 
-        tf-m-tests/test/secure_fw/suites/platform/platform_tests_common.c 
-        tf-m-tests/test/secure_fw/suites/platform/platform_tests_common.h 
-        tf-m-tests/test/secure_fw/suites/platform/secure/platform_s_tests.h 
-        tf-m-tests/test/secure_fw/suites/platform/secure/platform_s_interface_testsuite.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/platform/platform_tests_common.c 
+        tf-m-tests/tests_reg/test/secure_fw/suites/platform/platform_tests_common.h 
+        tf-m-tests/tests_reg/test/secure_fw/suites/platform/secure/platform_s_tests.h 
+        tf-m-tests/tests_reg/test/secure_fw/suites/platform/secure/platform_s_interface_testsuite.c
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
-        INCLUDES tf-m-tests/test/secure_fw/suites/platform 
-        tf-m-tests/test/secure_fw/suites/platform/secure
+        INCLUDES tf-m-tests/tests_reg/test/secure_fw/suites/platform 
+        tf-m-tests/tests_reg/test/secure_fw/suites/platform/secure
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
@@ -1331,93 +1494,293 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test.ipc)
     )
     mcux_add_source(
         SOURCES 
-        tf-m-tests/test/secure_fw/suites/spm/common/spm_test_defs.h
-       tf-m-tests/test/secure_fw/suites/spm/common/suites/client_api_tests.c
-       tf-m-tests/test/secure_fw/suites/spm/common/suites/client_api_tests.h
-       tf-m-tests/test/secure_fw/suites/spm/common/service/client_api_test_defs.h
-       tf-m-tests/test/secure_fw/suites/spm/common/service/client_api_test_service.c
-       tf-m-tests/test/secure_fw/suites/spm/common/service/client_api_test_service.h
-       tf-m-tests/test/secure_fw/suites/spm/ipc/secure/ipc_s_tests.h
-       tf-m-tests/test/secure_fw/suites/spm/ipc/secure/ipc_s_interface_testsuite.c
-       tf-m/autogenerated/test/secure_fw/test_services/tfm_ipc_service/auto_generated/intermedia_tfm_ipc_service_test.c
-       tf-m/autogenerated/test/secure_fw/test_services/tfm_ipc_service/auto_generated/load_info_tfm_ipc_service_test.c
-       tf-m/autogenerated/test/secure_fw/test_services/tfm_ipc_service/psa_manifest/tfm_ipc_service_test.h
-       tf-m-tests/test/secure_fw/suites/spm/ipc/service/tfm_ipc_service/tfm_ipc_service_test.c
-       tf-m/autogenerated/test/secure_fw/test_services/tfm_ipc_client/auto_generated/intermedia_tfm_ipc_client_test.c
-       tf-m/autogenerated/test/secure_fw/test_services/tfm_ipc_client/auto_generated/load_info_tfm_ipc_client_test.c
-       tf-m/autogenerated/test/secure_fw/test_services/tfm_ipc_client/psa_manifest/tfm_ipc_client_test.h
-       tf-m-tests/test/secure_fw/suites/spm/ipc/service/tfm_ipc_client/tfm_ipc_client_test.c
-       BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/spm_test_defs.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/suites/client_api_tests.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/suites/client_api_tests.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/service/client_api_test_defs.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/service/client_api_test_service.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/service/client_api_test_service.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/ipc/secure/ipc_s_tests.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/ipc/secure/ipc_s_interface_testsuite.c
+        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_service/auto_generated/intermedia_tfm_ipc_service_test.c
+        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_service/auto_generated/load_info_tfm_ipc_service_test.c
+        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_service/psa_manifest/tfm_ipc_service_test.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/ipc/service/tfm_ipc_service/tfm_ipc_service_test.c
+        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_client/auto_generated/intermedia_tfm_ipc_client_test.c
+        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_client/auto_generated/load_info_tfm_ipc_client_test.c
+        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_client/psa_manifest/tfm_ipc_client_test.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/ipc/service/tfm_ipc_client/tfm_ipc_client_test.c
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES
-        tf-m-tests/test/secure_fw/suites/spm/ipc/secure
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_ipc_service/psa_manifest
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_ipc_service
-        tf-m-tests/test/secure_fw/suites/spm/common
-        tf-m-tests/test/secure_fw/suites/spm/common/suites
-        tf-m-tests/test/secure_fw/suites/spm/common/service
-        tf-m-tests/test/secure_fw/suites/spm/ipc/service/tfm_ipc_service
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_ipc_client/psa_manifest
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_ipc_client
-        tf-m-tests/test/secure_fw/suites/spm/ipc/service/tfm_ipc_client
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/ipc/secure
+        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_service/psa_manifest
+        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_service
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/suites
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/service
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/ipc/service/tfm_ipc_service
+        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_client/psa_manifest
+        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_client
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/ipc/service/tfm_ipc_client
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test.irq_slih)
     mcux_add_macro(
-         CC "-DTEST_NS_SLIH_IRQ\
+         CC "-DTFM_PARTITION_SLIH_TEST\
             "
     )
     mcux_add_source(
         SOURCES 
-        tf-m-tests/test/secure_fw/suites/spm/common/spm_test_defs.h 
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_slih_test_service/auto_generated/intermedia_tfm_slih_test_service.c
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_slih_test_service/auto_generated/load_info_tfm_slih_test_service.c 
-        tf-m-tests/test/secure_fw/suites/spm/irq/service/tfm_slih_test_service/tfm_slih_test_service.c 
-        tf-m-tests/test/secure_fw/suites/spm/common/service/tfm_irq_test_service.c 
-        tf-m-tests/test/secure_fw/suites/spm/common/service/tfm_irq_test_service.h 
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_slih_test_service/psa_manifest/tfm_slih_test_service.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/spm_test_defs.h 
+        tf-m/autogenerated/secure_fw/test_services/tfm_slih_test_service/auto_generated/intermedia_tfm_slih_test_service.c
+        tf-m/autogenerated/secure_fw/test_services/tfm_slih_test_service/auto_generated/load_info_tfm_slih_test_service.c 
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/irq/service/tfm_slih_test_service/tfm_slih_test_service.c 
+        tf-m/autogenerated/secure_fw/test_services/tfm_slih_test_service/psa_manifest/tfm_slih_test_service.h
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES 
-        tf-m-tests/test/secure_fw/suites/spm/irq/service/tfm_slih_test_service 
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_slih_test_service 
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_slih_test_service/psa_manifest 
-        tf-m-tests/test/secure_fw/suites/spm/common/ 
-        tf-m-tests/test/secure_fw/suites/spm/common/service
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/irq/service/tfm_slih_test_service 
+        tf-m/autogenerated/secure_fw/test_services/tfm_slih_test_service 
+        tf-m/autogenerated/secure_fw/test_services/tfm_slih_test_service/psa_manifest 
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/ 
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/service
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test.irq_flih)
     mcux_add_macro(
-         CC "-DTEST_NS_FLIH_IRQ\
+         CC "-DTFM_PARTITION_FLIH_TEST\
             "
     )
     mcux_add_source(
         SOURCES 
-        tf-m-tests/test/secure_fw/suites/spm/common/spm_test_defs.h 
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_flih_test_service/auto_generated/intermedia_tfm_flih_test_service.c
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_flih_test_service/auto_generated/load_info_tfm_flih_test_service.c 
-        tf-m-tests/test/secure_fw/suites/spm/irq/service/tfm_flih_test_service/tfm_flih_test_service.c 
-        tf-m-tests/test/secure_fw/suites/spm/common/service/tfm_irq_test_service.c 
-        tf-m-tests/test/secure_fw/suites/spm/common/service/tfm_irq_test_service.h 
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_flih_test_service/psa_manifest/tfm_flih_test_service.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/spm_test_defs.h 
+        tf-m/autogenerated/secure_fw/test_services/tfm_flih_test_service/auto_generated/intermedia_tfm_flih_test_service.c
+        tf-m/autogenerated/secure_fw/test_services/tfm_flih_test_service/auto_generated/load_info_tfm_flih_test_service.c 
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/irq/service/tfm_flih_test_service/tfm_flih_test_service.c 
+        tf-m/autogenerated/secure_fw/test_services/tfm_flih_test_service/psa_manifest/tfm_flih_test_service.h
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES 
-        tf-m-tests/test/secure_fw/suites/spm/irq/service/tfm_flih_test_service 
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_flih_test_service 
-        tf-m/autogenerated/test/secure_fw/test_services/tfm_flih_test_service/psa_manifest 
-        tf-m-tests/test/secure_fw/suites/spm/common/ 
-        tf-m-tests/test/secure_fw/suites/spm/common/service
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/irq/service/tfm_flih_test_service 
+        tf-m/autogenerated/secure_fw/test_services/tfm_flih_test_service 
+        tf-m/autogenerated/secure_fw/test_services/tfm_flih_test_service/psa_manifest 
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/ 
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/service
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
+
+#---------------------------------------------------------------
+#------------------ tf-m non-secure configs --------------------
+#---------------------------------------------------------------
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.qcbor.test)
+    mcux_add_macro(
+         CC "-DQCBOR_DISABLE_FLOAT_HW_USE\
+            -DUSEFULBUF_DISABLE_ALL_FLOAT\
+            -DQCBOR_DISABLE_PREFERRED_FLOAT\
+            "
+    )
+    mcux_add_source(
+        SOURCES 
+        qcbor/test/float_tests.h 
+        qcbor/test/qcbor_encode_tests.c 
+        qcbor/test/qcbor_encode_tests.h 
+        qcbor/test/not_well_formed_cbor.h 
+        qcbor/test/qcbor_decode_tests.c 
+        qcbor/test/qcbor_decode_tests.h 
+        qcbor/test/run_tests.c 
+        qcbor/test/run_tests.h 
+        qcbor/test/UsefulBuf_Tests.c 
+        qcbor/test/UsefulBuf_Tests.h
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES qcbor/test
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns)
+    mcux_add_macro(
+         CC "-DCONFIG_TFM_FLOAT_ABI=2\
+            -DCONFIG_TFM_ENABLE_CP10CP11\
+            -DCONFIG_TFM_LAZY_STACKING\
+            -D__DOMAIN_NS=1\
+            -DDOMAIN_NS=1\
+            -DCONFIG_TFM_USE_TRUSTZONE\
+            -DATTEST_TOKEN_PROFILE_PSA_IOT_1\
+            -DPLATFORM_DEFAULT_CRYPTO_KEYS\
+            -DPS_ENCRYPTION\
+            "
+    )
+    mcux_add_source(
+        SOURCES 
+        tf-m/platform/include/tfm_plat_crypto_keys.h 
+        tf-m/platform/ext/common/uart_stdout.h 
+        tf-m/platform/ext/common/uart_stdout.c 
+        tf-m/platform/ext/driver/Driver_USART.h 
+        tf-m/platform/ext/driver/Driver_Common.h 
+        tf-m/platform/ext/target/nxp/common/libc_dummy.c 
+        tf-m/platform/ext/target/nxp/common/Device/Include/cmsis.h 
+        tf-m/platform/ext/target/nxp/common/Device/Include/device_definition.h 
+        tf-m/platform/ext/target/nxp/common/Device/Include/platform_irq.h 
+        tf-m/platform/ext/target/nxp/common/Device/Config/device_cfg.h 
+        tf-m/platform/ext/target/nxp/common/Device/Include/platform_regs.h
+        tf-m/platform/ext/target/nxp/common/tfm_hal_ns_init.c
+        
+        tf-m/platform/include/tfm_hal_device_header.h 
+        tf-m/platform/include/tfm_plat_boot_seed.h 
+        tf-m/platform/include/tfm_plat_device_id.h 
+        tf-m/platform/include/tfm_plat_defs.h 
+        tf-m/platform/include/tfm_plat_ns.h 
+        tf-m/platform/include/region.h 
+        tf-m/platform/include/tfm_plat_test.h 
+
+        tf-m/interface/include/crypto_keys/tfm_builtin_key_ids.h 
+        tf-m/interface/include/psa_manifest/sid.h 
+        tf-m/interface/include/tfm_attest_defs.h 
+        tf-m/interface/include/config_impl.h 
+        tf-m/interface/include/tfm_crypto_defs.h 
+        tf-m/interface/include/tfm_its_defs.h 
+        tf-m/interface/include/tfm_ps_defs.h 
+        tf-m/interface/include/tfm_veneers.h
+        tf-m/interface/include/tfm_ns_interface.h 
+        tf-m/interface/include/tfm_psa_call_pack.h 
+        tf-m/interface/include/tfm_ns_client_ext.h 
+        tf-m/interface/include/tfm_platform_api.h 
+        tf-m/interface/include/os_wrapper/common.h 
+        tf-m/interface/include/os_wrapper/mutex.h 
+        tf-m/interface/include/psa/client.h 
+        tf-m/interface/include/psa/crypto.h 
+        tf-m/interface/include/psa/crypto_compat.h 
+        tf-m/interface/include/psa/crypto_extra.h 
+        tf-m/interface/include/psa/crypto_platform.h 
+        tf-m/interface/include/psa/crypto_sizes.h 
+        tf-m/interface/include/psa/crypto_struct.h 
+        tf-m/interface/include/psa/crypto_types.h 
+        tf-m/interface/include/psa/crypto_values.h 
+        tf-m/interface/include/psa/error.h 
+        tf-m/interface/include/psa/framework_feature.h 
+        tf-m/interface/include/psa/initial_attestation.h 
+        tf-m/interface/include/psa/internal_trusted_storage.h 
+        tf-m/interface/include/psa/lifecycle.h 
+        tf-m/interface/include/psa/protected_storage.h 
+        tf-m/interface/include/psa/service.h 
+        tf-m/interface/include/psa/storage_common.h 
+
+        tf-m/secure_fw/spm/include/tfm_arch.h 
+        tf-m/secure_fw/spm/include/tfm_arch_v8m.h 
+        tf-m/secure_fw/spm/include/utilities.h 
+        tf-m/secure_fw/include/config_tfm.h 
+        tf-m/config/config_base.h 
+        tf-m/secure_fw/partitions/crypto/config_crypto_check.h 
+        tf-m/secure_fw/partitions/protected_storage/config_ps_check.h 
+        tf-m/interface/src/tfm_crypto_api.c 
+        tf-m/interface/src/tfm_attest_api.c 
+        tf-m/interface/src/tfm_its_api.c 
+        tf-m/interface/src/tfm_ps_api.c 
+        tf-m/interface/src/tfm_platform_api.c 
+        tf-m/interface/src/tfm_tz_psa_ns_api.c
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES 
+        tf-m/platform/include 
+        tf-m/platform/ext 
+        tf-m/platform/ext/common 
+        tf-m/platform/ext/driver 
+        tf-m/platform/ext/target/nxp/common/Device/Config 
+        tf-m/platform/ext/target/nxp/common/Device/Include 
+        tf-m/interface/include 
+        tf-m/interface/include/crypto_keys 
+        tf-m/interface/include/psa 
+        tf-m/interface/include/psa_manifest 
+        tf-m/interface/include/os_wrapper 
+        tf-m/secure_fw/spm/include 
+        tf-m/secure_fw/include 
+        tf-m/secure_fw/partitions/crypto 
+        tf-m/secure_fw/partitions/initial_attestation 
+        tf-m/secure_fw/partitions/internal_trusted_storage 
+        tf-m/secure_fw/partitions/protected_storage 
+        tf-m/secure_fw/partitions/platform 
+        tf-m/config
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.loader_service)
+    mcux_add_source(
+        SOURCES 
+        tf-m/platform/ext/target/nxp/rw61x/partitions/loader_service/interface/include/tfm_lds_defs.h 
+        tf-m/platform/ext/target/nxp/rw61x/partitions/loader_service/interface/src/tfm_lds_api.c 
+        tf-m/platform/ext/target/nxp/rw61x/partitions/loader_service/tfm_lds_sid.h 
+        tf-m/platform/ext/target/nxp/rw61x/partitions/loader_service/tfm_lds_func_ids.h
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES 
+        tf-m/platform/ext/target/nxp/rw61x/partitions/loader_service 
+        tf-m/platform/ext/target/nxp/rw61x/partitions/loader_service/interface/include
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.platform_rw61x)
+    mcux_add_source(
+        SOURCES 
+        tf-m/platform/ext/target/nxp/common/CMSIS_Driver/Driver_USART.c 
+        tf-m/platform/ext/target/nxp/rw61x/plat_iak_pk/plat_iak_pk.c 
+        tf-m/platform/ext/target/nxp/rw61x/plat_iak_pk/plat_iak_pk.h
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES tf-m/platform/ext/target/nxp/rw61x/plat_iak_pk
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+
+#---------------------------------------------------------------
+#------------------ tf-m non-secure tests configs --------------
+#---------------------------------------------------------------
+if (CONFIG_MCUX_COMPONENT_middleware.tfmtests.ns)
+    mcux_add_source(
+        SOURCES 
+        tf-m-tests/app_broker/os_wrapper_cmsis_rtos_v2.c 
+        tf-m-tests/app_broker/syscalls_stub.c
+        tf-m-tests/app_broker/main_ns.c 
+        tf-m-tests/app_broker/test_app.h 
+        tf-m-tests/lib/log/tfm_log.h 
+        tf-m-tests/lib/log/tfm_log_raw.c 
+        tf-m-tests/lib/log/tfm_log_raw.h 
+        tf-m-tests/lib/os_wrapper/delay.h 
+        tf-m-tests/lib/os_wrapper/msg_queue.h 
+        tf-m-tests/lib/os_wrapper/semaphore.h 
+        tf-m-tests/lib/os_wrapper/thread.h
+        tf-m-tests/lib/os_wrapper/tick.h
+        tf-m-tests/lib/nsid_manager/tfm_nsid_manager.h
+        tf-m-tests/lib/nsid_manager/tfm_nsid_manager.c 
+        tf-m-tests/lib/nsid_manager/tz_shim_layer.c 
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES 
+        tf-m-tests/app_broker
+        tf-m-tests/lib
+        tf-m-tests/lib/os_wrapper
+        tf-m-tests/lib/log  
+        tf-m-tests/lib/nsid_manager
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()        
+
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.test)
     mcux_add_macro(
@@ -1426,38 +1789,66 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.test)
     )
     mcux_add_source(
         SOURCES
-        tf-m-tests/test/secure_fw/non_secure_suites.c
-        tf-m-tests/test/framework/test_framework.c
-        tf-m-tests/test/framework/test_framework.h
-        tf-m-tests/test/framework/test_framework_error_codes.h
-        tf-m-tests/test/framework/test_framework_integ_test.h
-        tf-m-tests/test/framework/test_framework_integ_test_helper.c
-        tf-m-tests/test/framework/test_framework_integ_test_helper.h
-        tf-m-tests/test/framework/test_framework_helpers.c
-        tf-m-tests/test/framework/test_framework_helpers.h
-        tf-m-tests/test/framework/test_log.h
-        tf-m-tests/test/secure_fw/suites/spm/ipc/non_secure/ipc_ns_tests.h
-        tf-m-tests/test/secure_fw/suites/t_cose/non_secure/t_cose_ns_tests.h
-        tf-m-tests/test/secure_fw/suites/multi_core/non_secure/multi_core_ns_test.h
-        tf-m-tests/test/secure_fw/suites/ps/non_secure/ps_ns_tests.h
-        tf-m-tests/test/secure_fw/suites/qcbor/non_secure/qcbor_ns_tests.h
-        tf-m-tests/test/secure_fw/suites/platform/non_secure/platform_ns_tests.h
+        tf-m-tests/tests_reg/test/ns_regression/non_secure_suites.c
+        tf-m-tests/tests_reg/test/ns_regression/non_secure_suites.h
+        tf-m-tests/tests_reg/test/framework/test_framework.c
+        tf-m-tests/tests_reg/test/framework/test_framework.h
+        tf-m-tests/tests_reg/test/framework/test_framework_error_codes.h
+        tf-m-tests/tests_reg/test/framework/test_framework_helpers.c
+        tf-m-tests/tests_reg/test/framework/test_framework_helpers.h
+        tf-m-tests/tests_reg/test/framework/test_log.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/ipc/non_secure/ipc_ns_tests.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/t_cose/non_secure/t_cose_ns_tests.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/multi_core/non_secure/multi_core_ns_test.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/ps/non_secure/ps_ns_tests.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/qcbor/non_secure/qcbor_ns_tests.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/platform/non_secure/platform_ns_tests.h
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES
-        tf-m-tests/test/framework
-        tf-m-tests/test/secure_fw/suites/spm/ipc/non_secure
-        tf-m-tests/test/secure_fw/suites/t_cose/non_secure
-        tf-m-tests/test/secure_fw/suites/multi_core/non_secure
-        tf-m-tests/test/secure_fw/suites/ps/non_secure
-        tf-m-tests/test/secure_fw/suites/qcbor/non_secure
-        tf-m-tests/test/secure_fw/suites/platform/non_secure 
+        tf-m-tests/app_broker
+        tf-m-tests/tests_reg/test/framework
+        tf-m-tests/tests_reg/test/ns_regression
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/ipc/non_secure
+        tf-m-tests/tests_reg/test/secure_fw/suites/t_cose/non_secure
+        tf-m-tests/tests_reg/test/secure_fw/suites/multi_core/non_secure
+        tf-m-tests/tests_reg/test/secure_fw/suites/ps/non_secure
+        tf-m-tests/tests_reg/test/secure_fw/suites/qcbor/non_secure
+        tf-m-tests/tests_reg/test/secure_fw/suites/platform/non_secure 
         tf-m-tests/
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
+ 
+# Default test app for psa-arch-test while using tfm.
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.test.default_app)
+    mcux_add_source(
+        SOURCES 
+        tf-m-tests/tests_reg/test_app.c 
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES 
+        tf-m-tests/app_broker
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif() 
 
+# Separate test app for psa-arch-test while using tfm.
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.test.psatest_app)
+    mcux_add_source(
+        SOURCES 
+        tf-m-tests/tests_psa_arch/test_app.c 
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES 
+        tf-m-tests/app_broker
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()    
+    
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_large.ns_test_configs)
     mcux_add_macro(
          CC "-DTFM_CRYPTO_TEST_ALG_CBC\
@@ -1495,15 +1886,15 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.test.ps)
     )
     mcux_add_source(
         SOURCES
-        tf-m-tests/test/secure_fw/suites/ps/non_secure/ns_test_helpers.c
-        tf-m-tests/test/secure_fw/suites/ps/non_secure/ns_test_helpers.h
-        tf-m-tests/test/secure_fw/suites/ps/non_secure/psa_ps_ns_interface_testsuite.c
-        tf-m-tests/test/secure_fw/suites/ps/non_secure/ps_ns_tests.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/ps/non_secure/ns_test_helpers.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/ps/non_secure/ns_test_helpers.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/ps/non_secure/psa_ps_ns_interface_testsuite.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/ps/non_secure/ps_ns_tests.h
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES 
-        tf-m-tests/test/secure_fw/suites/ps/non_secure
+        tf-m-tests/tests_reg/test/secure_fw/suites/ps/non_secure
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
@@ -1515,16 +1906,16 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.test.its)
     )
     mcux_add_source(
         SOURCES
-        tf-m-tests/test/secure_fw/suites/its/its_tests_common.c
-        tf-m-tests/test/secure_fw/suites/its/its_tests_common.h
-        tf-m-tests/test/secure_fw/suites/its/non_secure/psa_its_ns_interface_testsuite.c
-        tf-m-tests/test/secure_fw/suites/its/non_secure/its_ns_tests.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/its/its_tests_common.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/its/its_tests_common.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/its/non_secure/psa_its_ns_interface_testsuite.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/its/non_secure/its_ns_tests.h
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES 
-        tf-m-tests/test/secure_fw/suites/its 
-        tf-m-tests/test/secure_fw/suites/its/non_secure
+        tf-m-tests/tests_reg/test/secure_fw/suites/its 
+        tf-m-tests/tests_reg/test/secure_fw/suites/its/non_secure
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
@@ -1535,7 +1926,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.test.s)
             "
     )
     mcux_add_include(
-        INCLUDES tf-m-tests/test/secure_fw/common_test_services/tfm_secure_client_service
+        INCLUDES tf-m-tests/tests_reg/test/secure_fw/common_test_services/tfm_secure_client_service
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
@@ -1543,7 +1934,7 @@ endif()
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.test.attestation.asymmetric)
     mcux_add_source(
         SOURCES 
-        tf-m/platform/ext/common/template/tfm_initial_attest_pub_key.c 
+        #tf-m/platform/ext/common/template/tfm_initial_attest_pub_key.c 
         tf-m/lib/ext/t_cose/src/t_cose_sign1_sign.c 
         tf-m/lib/ext/t_cose/inc/t_cose_sign1_sign.h
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
@@ -1611,8 +2002,8 @@ endif()
 if (CONFIG_MCUX_COMPONENT_middleware.tfmtests.ns.test.attestation.asymmetric)
     mcux_add_source(
         SOURCES
-        tf-m-tests/test/secure_fw/suites/attestation/non_secure/attest_asymmetric_ns_interface_testsuite.c
-        tf-m-tests/test/secure_fw/suites/attestation/attest_token_decode_asymmetric.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/non_secure/attest_asymmetric_ns_interface_testsuite.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/attest_token_decode_asymmetric.c
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
@@ -1620,35 +2011,37 @@ endif()
 if (CONFIG_MCUX_COMPONENT_middleware.tfmtests.ns.test.attestation.symmetric)
     mcux_add_source(
         SOURCES
-        tf-m-tests/test/secure_fw/suites/attestation/non_secure/attest_symmetric_ns_interface_testsuite.c
-        tf-m-tests/test/secure_fw/suites/attestation/attest_token_decode_symmetric.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/non_secure/attest_symmetric_ns_interface_testsuite.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/attest_token_decode_symmetric.c
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfmtests.ns.test.attestation)
-    mcux_add_macro(
-         CC "-DTEST_NS_ATTESTATION\
-            "
-    )
+
+    # TODO: Temp Disable of NS-Attest test until IOTDL-2050 is fixed.
+    #mcux_add_macro(
+    #     CC "-DTEST_NS_ATTESTATION\
+    #        "
+    #)
     mcux_add_source(
         SOURCES
-        tf-m-tests/test/secure_fw/suites/attestation/ext/qcbor_util/qcbor_util.c
-        tf-m-tests/test/secure_fw/suites/attestation/ext/qcbor_util/qcbor_util.h
-        tf-m-tests/test/secure_fw/suites/attestation/non_secure/attest_ns_tests.h
-        tf-m-tests/test/secure_fw/suites/attestation/attest_token_decode.h
-        tf-m-tests/test/secure_fw/suites/attestation/attest_token_decode_common.c
-        tf-m-tests/test/secure_fw/suites/attestation/attest_token_test.c
-        tf-m-tests/test/secure_fw/suites/attestation/attest_token_test.h
-        tf-m-tests/test/secure_fw/suites/attestation/attest_token_test_values.h
-        tf-m-tests/test/secure_fw/suites/attestation/attest_tests_common.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/ext/qcbor_util/qcbor_util.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/ext/qcbor_util/qcbor_util.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/non_secure/attest_ns_tests.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/attest_token_decode.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/attest_token_decode_common.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/attest_token_test.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/attest_token_test.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/attest_token_test_values.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/attest_tests_common.h
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES 
-        tf-m-tests/test/secure_fw/suites/attestation/ext/qcbor_util 
-        tf-m-tests/test/secure_fw/suites/attestation/non_secure 
-        tf-m-tests/test/secure_fw/suites/attestation
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/ext/qcbor_util 
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation/non_secure 
+        tf-m-tests/tests_reg/test/secure_fw/suites/attestation
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
@@ -1661,17 +2054,17 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.test.crypto)
     )
     mcux_add_source(
         SOURCES
-        tf-m-tests/test/secure_fw/suites/crypto/crypto_tests_common.c
-        tf-m-tests/test/secure_fw/suites/crypto/crypto_tests_common.h
-        tf-m-tests/test/secure_fw/suites/crypto/crypto_tests_check_config.h
-        tf-m-tests/test/secure_fw/suites/crypto/non_secure/crypto_ns_interface_testsuite.c
-        tf-m-tests/test/secure_fw/suites/crypto/non_secure/crypto_ns_tests.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/crypto/crypto_tests_common.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/crypto/crypto_tests_common.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/crypto/crypto_tests_check_config.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/crypto/non_secure/crypto_ns_interface_testsuite.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/crypto/non_secure/crypto_ns_tests.h
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES 
-        tf-m-tests/test/secure_fw/suites/crypto 
-        tf-m-tests/test/secure_fw/suites/crypto/non_secure
+        tf-m-tests/tests_reg/test/secure_fw/suites/crypto 
+        tf-m-tests/tests_reg/test/secure_fw/suites/crypto/non_secure
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
@@ -1683,12 +2076,12 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.test.qcbor)
     )
     mcux_add_source(
         SOURCES
-        tf-m-tests/test/secure_fw/suites/qcbor/non_secure/qcbor_ns_testsuite.c
-        tf-m-tests/test/secure_fw/suites/qcbor/non_secure/qcbor_ns_tests.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/qcbor/non_secure/qcbor_ns_testsuite.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/qcbor/non_secure/qcbor_ns_tests.h
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
-        INCLUDES tf-m-tests/test/secure_fw/suites/qcbor/non_secure
+        INCLUDES tf-m-tests/tests_reg/test/secure_fw/suites/qcbor/non_secure
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
@@ -1701,68 +2094,68 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.test.ipc)
     )
     mcux_add_source(
         SOURCES
-        tf-m-tests/test/secure_fw/suites/spm/common/service/client_api_test_defs.h
-        tf-m-tests/test/secure_fw/suites/spm/common/suites/client_api_tests.c
-        tf-m-tests/test/secure_fw/suites/spm/common/suites/client_api_tests.h
-        tf-m-tests/test/secure_fw/suites/spm/ipc/non_secure/ipc_ns_interface_testsuite.c
-        tf-m-tests/test/secure_fw/suites/spm/ipc/non_secure/ipc_ns_tests.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/service/client_api_test_defs.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/suites/client_api_tests.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/suites/client_api_tests.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/ipc/non_secure/ipc_ns_interface_testsuite.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/ipc/non_secure/ipc_ns_tests.h
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES
-        tf-m-tests/test/secure_fw/suites/spm/common/suites
-        tf-m-tests/test/secure_fw/suites/spm/common/service
-        tf-m-tests/test/secure_fw/suites/spm/ipc/non_secure
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/suites
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/service
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/ipc/non_secure
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.test.irq_slih)
     mcux_add_macro(
-         CC "-DTEST_NS_SLIH_IRQ\
+         CC "-DTFM_PARTITION_SLIH_TEST\
             "
     )
     mcux_add_source(
         SOURCES
-        tf-m-tests/test/secure_fw/suites/spm/common/spm_test_defs.h
-        tf-m-tests/test/secure_fw/suites/spm/common/service/client_api_test_defs.h
-        tf-m-tests/test/secure_fw/suites/spm/common/suites/irq_test.c
-        tf-m-tests/test/secure_fw/suites/spm/common/suites/irq_test.h
-        tf-m-tests/test/secure_fw/suites/spm/irq/irq_testsuite.c
-        tf-m-tests/test/secure_fw/suites/spm/irq/irq_testsuite.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/spm_test_defs.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/service/client_api_test_defs.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/suites/irq_test.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/suites/irq_test.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/irq/non_secure/irq_testsuite.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/irq/non_secure/irq_testsuite.h
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES
-        tf-m-tests/test/secure_fw/suites/spm/common/suites
-        tf-m-tests/test/secure_fw/suites/spm/common/service
-        tf-m-tests/test/secure_fw/suites/spm/irq
-        tf-m-tests/test/secure_fw/suites/spm/common
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/suites
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/service
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/irq/non_secure
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.test.irq_flih)
     mcux_add_macro(
-         CC "-DTEST_NS_FLIH_IRQ\
+         CC "-DTFM_PARTITION_FLIH_TEST\
             "
     )
     mcux_add_source(
         SOURCES
-        tf-m-tests/test/secure_fw/suites/spm/common/spm_test_defs.h
-        tf-m-tests/test/secure_fw/suites/spm/common/service/client_api_test_defs.h
-        tf-m-tests/test/secure_fw/suites/spm/common/suites/irq_test.c
-        tf-m-tests/test/secure_fw/suites/spm/common/suites/irq_test.h
-        tf-m-tests/test/secure_fw/suites/spm/irq/irq_testsuite.c
-        tf-m-tests/test/secure_fw/suites/spm/irq/irq_testsuite.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/spm_test_defs.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/service/client_api_test_defs.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/suites/irq_test.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/suites/irq_test.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/irq/non_secure/irq_testsuite.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/irq/non_secure/irq_testsuite.h
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES
-        tf-m-tests/test/secure_fw/suites/spm/common/suites
-        tf-m-tests/test/secure_fw/suites/spm/common/service
-        tf-m-tests/test/secure_fw/suites/spm/irq
-        tf-m-tests/test/secure_fw/suites/spm/common
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/suites
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/service
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/irq/non_secure
+        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
@@ -1774,16 +2167,16 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.test.platform)
     )
     mcux_add_source(
         SOURCES
-        tf-m-tests/test/secure_fw/suites/platform/platform_tests_common.c
-        tf-m-tests/test/secure_fw/suites/platform/platform_tests_common.h
-        tf-m-tests/test/secure_fw/suites/platform/non_secure/platform_ns_tests.h
-        tf-m-tests/test/secure_fw/suites/platform/non_secure/platform_ns_interface_testsuite.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/platform/platform_tests_common.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/platform/platform_tests_common.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/platform/non_secure/platform_ns_tests.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/platform/non_secure/platform_ns_interface_testsuite.c
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES
-        tf-m-tests/test/secure_fw/suites/platform
-        tf-m-tests/test/secure_fw/suites/platform/non_secure
+        tf-m-tests/tests_reg/test/secure_fw/suites/platform
+        tf-m-tests/tests_reg/test/secure_fw/suites/platform/non_secure
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
@@ -1821,274 +2214,24 @@ endif()
 if (CONFIG_MCUX_COMPONENT_middleware.tfmtests.ns.test.tcose)
     mcux_add_source(
         SOURCES
-        tf-m-tests/test/secure_fw/suites/t_cose/non_secure/t_cose_ns_tests.h
-        tf-m-tests/test/secure_fw/suites/t_cose/non_secure/t_cose_ns_testsuite.c
+        tf-m-tests/tests_reg/test/secure_fw/suites/t_cose/non_secure/t_cose_ns_tests.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/t_cose/non_secure/t_cose_ns_testsuite.c
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES
-        tf-m-tests/test/secure_fw/suites/t_cose/non_secure
-        tf-m-tests/test/secure_fw/suites/t_cose
+        tf-m-tests/tests_reg/test/secure_fw/suites/t_cose/non_secure
+        tf-m-tests/tests_reg/test/secure_fw/suites/t_cose
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
 
-if (CONFIG_MCUX_COMPONENT_middleware.mbedcrypto)
-    mcux_add_source(
-        SOURCES 
-        mbed-crypto/include/mbedtls/aes.h
-        mbed-crypto/include/mbedtls/aria.h
-        mbed-crypto/include/mbedtls/asn1.h
-        mbed-crypto/include/mbedtls/asn1write.h
-        mbed-crypto/include/mbedtls/base64.h
-        mbed-crypto/include/mbedtls/bignum.h
-        mbed-crypto/include/mbedtls/build_info.h
-        mbed-crypto/include/mbedtls/camellia.h
-        mbed-crypto/include/mbedtls/ccm.h
-        mbed-crypto/include/mbedtls/chacha20.h
-        mbed-crypto/include/mbedtls/chachapoly.h
-        mbed-crypto/include/mbedtls/check_config.h
-        mbed-crypto/include/mbedtls/cipher.h
-        mbed-crypto/include/mbedtls/compat-2.x.h
-        mbed-crypto/include/mbedtls/cmac.h
-        mbed-crypto/include/mbedtls/config_psa.h
-        mbed-crypto/include/mbedtls/constant_time.h
-        mbed-crypto/include/mbedtls/ctr_drbg.h
-        mbed-crypto/include/mbedtls/debug.h
-        mbed-crypto/include/mbedtls/des.h
-        mbed-crypto/include/mbedtls/dhm.h
-        mbed-crypto/include/mbedtls/ecdh.h
-        mbed-crypto/include/mbedtls/ecdsa.h
-        mbed-crypto/include/mbedtls/ecjpake.h
-        mbed-crypto/include/mbedtls/ecp.h
-        mbed-crypto/include/mbedtls/entropy.h
-        mbed-crypto/include/mbedtls/error.h
-        mbed-crypto/include/mbedtls/gcm.h
-        mbed-crypto/include/mbedtls/hkdf.h
-        mbed-crypto/include/mbedtls/hmac_drbg.h
-        mbed-crypto/include/mbedtls/legacy_or_psa.h
-        mbed-crypto/include/mbedtls/lms.h
-        mbed-crypto/include/mbedtls/md.h
-        mbed-crypto/include/mbedtls/md5.h
-        mbed-crypto/include/mbedtls/memory_buffer_alloc.h
-        mbed-crypto/include/mbedtls/nist_kw.h
-        mbed-crypto/include/mbedtls/oid.h
-        mbed-crypto/include/mbedtls/pem.h
-        mbed-crypto/include/mbedtls/pk.h
-        mbed-crypto/include/mbedtls/pkcs5.h
-        mbed-crypto/include/mbedtls/pkcs12.h
-        mbed-crypto/include/mbedtls/platform.h
-        mbed-crypto/include/mbedtls/platform_time.h
-        mbed-crypto/include/mbedtls/platform_util.h
-        mbed-crypto/include/mbedtls/poly1305.h
-        mbed-crypto/include/mbedtls/private_access.h
-        mbed-crypto/include/mbedtls/psa_util.h
-        mbed-crypto/include/mbedtls/ripemd160.h
-        mbed-crypto/include/mbedtls/rsa.h
-        mbed-crypto/include/mbedtls/sha1.h
-        mbed-crypto/include/mbedtls/sha256.h
-        mbed-crypto/include/mbedtls/sha512.h
-        mbed-crypto/include/mbedtls/threading.h
-        mbed-crypto/include/mbedtls/timing.h
-        mbed-crypto/include/mbedtls/version.h
-        mbed-crypto/include/psa/crypto.h
-        mbed-crypto/include/psa/crypto_builtin_composites.h
-        mbed-crypto/include/psa/crypto_builtin_primitives.h
-        mbed-crypto/include/psa/crypto_compat.h
-        mbed-crypto/include/psa/crypto_config.h
-        mbed-crypto/include/psa/crypto_driver_common.h
-        mbed-crypto/include/psa/crypto_extra.h
-        mbed-crypto/include/psa/crypto_platform.h
-        mbed-crypto/include/psa/crypto_se_driver.h
-        mbed-crypto/include/psa/crypto_sizes.h
-        mbed-crypto/include/psa/crypto_struct.h
-        mbed-crypto/include/psa/crypto_types.h
-        mbed-crypto/include/psa/crypto_values.h
-        mbed-crypto/include/psa/crypto_driver_contexts_composites.h
-        mbed-crypto/include/psa/crypto_driver_contexts_primitives.h
-        mbed-crypto/library/aes.c
-        mbed-crypto/library/aesce.c
-        mbed-crypto/library/aesce.h
-        mbed-crypto/library/aesni.c
-        mbed-crypto/library/aesni.h
-        mbed-crypto/library/alignment.h
-        mbed-crypto/library/asn1parse.c
-        mbed-crypto/library/asn1write.c
-        mbed-crypto/library/base64.c
-        mbed-crypto/library/bignum.c
-        mbed-crypto/library/bignum_core.c
-        mbed-crypto/library/bignum_core.h
-        mbed-crypto/library/bignum_mod.c
-        mbed-crypto/library/bignum_mod.h
-        mbed-crypto/library/bignum_mod_raw.c
-        mbed-crypto/library/bignum_mod_raw.h
-        mbed-crypto/library/bignum_mod_raw_invasive.h
-        mbed-crypto/library/bn_mul.h
-        mbed-crypto/library/camellia.c
-        mbed-crypto/library/ccm.c
-        mbed-crypto/library/chacha20.c
-        mbed-crypto/library/chachapoly.c
-        mbed-crypto/library/check_crypto_config.h
-        mbed-crypto/library/cipher.c
-        mbed-crypto/library/cipher_wrap.c
-        mbed-crypto/library/cipher_wrap.h
-        mbed-crypto/library/cmac.c
-        mbed-crypto/library/common.h
-        mbed-crypto/library/constant_time.c
-        mbed-crypto/library/constant_time_internal.h
-        mbed-crypto/library/constant_time_invasive.h
-        mbed-crypto/library/ctr_drbg.c
-        mbed-crypto/library/debug.c
-        mbed-crypto/library/des.c
-        mbed-crypto/library/dhm.c
-        mbed-crypto/library/ecdh.c
-        mbed-crypto/library/ecdsa.c
-        mbed-crypto/library/ecjpake.c
-        mbed-crypto/library/ecp.c
-        mbed-crypto/library/ecp_curves.c
-        mbed-crypto/library/ecp_internal_alt.h
-        mbed-crypto/library/ecp_invasive.h
-        mbed-crypto/library/entropy.c
-        mbed-crypto/library/entropy_poll.c
-        mbed-crypto/library/entropy_poll.h
-        mbed-crypto/library/error.c
-        mbed-crypto/library/gcm.c
-        mbed-crypto/library/hash_info.c
-        mbed-crypto/library/hash_info.h
-        mbed-crypto/library/hkdf.c
-        mbed-crypto/library/hmac_drbg.c
-        mbed-crypto/library/lmots.c
-        mbed-crypto/library/lmots.h
-        mbed-crypto/library/lms.c
-        mbed-crypto/library/md.c
-        mbed-crypto/library/md_wrap.h
-        mbed-crypto/library/md5.c
-        mbed-crypto/library/memory_buffer_alloc.c
-        mbed-crypto/library/nist_kw.c
-        mbed-crypto/library/oid.c
-        mbed-crypto/library/padlock.c
-        mbed-crypto/library/padlock.h
-        mbed-crypto/library/pem.c
-        mbed-crypto/library/pk.c
-        mbed-crypto/library/pk_wrap.c
-        mbed-crypto/library/pk_wrap.h
-        mbed-crypto/library/pkcs5.c
-        mbed-crypto/library/pkcs12.c
-        mbed-crypto/library/pkparse.c
-        mbed-crypto/library/pkwrite.c
-        mbed-crypto/library/pkwrite.h
-        mbed-crypto/library/platform.c
-        mbed-crypto/library/platform_util.c
-        mbed-crypto/library/poly1305.c
-        mbed-crypto/library/psa_crypto.c
-        mbed-crypto/library/psa_crypto_aead.c
-        mbed-crypto/library/psa_crypto_aead.h
-        mbed-crypto/library/psa_crypto_cipher.c
-        mbed-crypto/library/psa_crypto_cipher.h
-        mbed-crypto/library/psa_crypto_client.c
-        mbed-crypto/library/psa_crypto_core.h
-        mbed-crypto/library/psa_crypto_driver_wrappers.h
-        mbed-crypto/library/psa_crypto_driver_wrappers.c
-        mbed-crypto/library/psa_crypto_ecp.c
-        mbed-crypto/library/psa_crypto_ecp.h
-        mbed-crypto/library/psa_crypto_hash.c
-        mbed-crypto/library/psa_crypto_hash.h
-        mbed-crypto/library/psa_crypto_invasive.h
-        mbed-crypto/library/psa_crypto_its.h
-        mbed-crypto/library/psa_crypto_mac.c
-        mbed-crypto/library/psa_crypto_mac.h
-        mbed-crypto/library/psa_crypto_pake.c
-        mbed-crypto/library/psa_crypto_random_impl.h
-        mbed-crypto/library/psa_crypto_rsa.c
-        mbed-crypto/library/psa_crypto_rsa.h
-        mbed-crypto/library/psa_crypto_pake.h
-        mbed-crypto/library/psa_crypto_se.c
-        mbed-crypto/library/psa_crypto_se.h
-        mbed-crypto/library/psa_crypto_slot_management.c
-        mbed-crypto/library/psa_crypto_slot_management.h
-        mbed-crypto/library/psa_crypto_storage.c
-        mbed-crypto/library/psa_crypto_storage.h
-        mbed-crypto/library/psa_its_file.c
-        mbed-crypto/library/psa_util.c
-        mbed-crypto/library/ripemd160.c
-        mbed-crypto/library/rsa.c
-        mbed-crypto/library/rsa_alt_helpers.c
-        mbed-crypto/library/rsa_alt_helpers.h
-        mbed-crypto/library/sha1.c
-        mbed-crypto/library/sha256.c
-        mbed-crypto/library/sha512.c
-        mbed-crypto/library/threading.c
-        mbed-crypto/library/timing.c
-        mbed-crypto/library/version.c
-        mbed-crypto/library/version_features.c
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-    mcux_add_include(
-        INCLUDES 
-        mbed-crypto/include/mbedtls 
-        mbed-crypto/include/psa 
-        mbed-crypto/library 
-        mbed-crypto/port 
-        mbed-crypto/include
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-endif()
-
-if (CONFIG_MCUX_COMPONENT_middleware.mbedcrypto.port)
-    mcux_add_source(
-        SOURCES 
-        mbed-crypto/port/aes_alt.h 
-        mbed-crypto/port/mbedcrypto_mcux_casper.c 
-        mbed-crypto/port/mbedcrypto_mcux_els.c 
-        mbed-crypto/port/mbedcrypto_mcux_hashcrypt.c 
-        mbed-crypto/port/mbedcrypto_mcux_config.h 
-        mbed-crypto/port/mbedcrypto_mcux_pkc.c 
-        mbed-crypto/port/mbedcrypto_mcux_sss.c 
-        mbed-crypto/port/mbedtls_accelerator_config.h 
-        mbed-crypto/port/sha1_alt.h port/sha256_alt.h 
-        mbed-crypto/port/sha512_alt.h port/ecdsa_alt.h 
-        mbed-crypto/port/ecdh_alt.h port/ccm_alt.h
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-    mcux_add_include(
-        INCLUDES mbed-crypto/port
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-endif()
-
-if (CONFIG_MCUX_COMPONENT_middleware.mbedcrypto.port.config)
-    mcux_add_macro(
-         CC "-DCRYPTO_HW_ACCELERATOR\
-            "
-    )
-    mcux_add_source(
-        SOURCES 
-        mbed-crypto/port/mbedcrypto_mcux_config.h 
-        mbed-crypto/port/mbedtls_accelerator_config.h
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-    mcux_add_include(
-        INCLUDES mbed-crypto/port
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-endif()
-
-if (CONFIG_MCUX_COMPONENT_middleware.mbedcrypto.port.rng)
-    mcux_add_source(
-        SOURCES 
-        mbed-crypto/port/mbedcrypto_mcux_entropy.c
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-    mcux_add_include(
-        INCLUDES mbed-crypto/port
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
-    )
-endif()
-
-#-------------------- psa-arch-test-------------
+#---------------------------------------------------------------
+#------------------------- psa-arch-test -----------------------
+#---------------------------------------------------------------
 if (CONFIG_MCUX_COMPONENT_middleware.psatest.ns)
     mcux_add_source(
-        SOURCES 
+        SOURCES
         psa-arch-tests/api-tests/val/test_entry_list.inc
         psa-arch-tests/api-tests/val/test_entry_fn_declare_list.inc
         psa-arch-tests/api-tests/val/nspe/pal_interfaces_ns.h
@@ -2132,7 +2275,6 @@ if (CONFIG_MCUX_COMPONENT_middleware.psatest.ns)
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
-
 
 if (CONFIG_MCUX_COMPONENT_middleware.psatest.ns.tgt_dev_apis_nxp)
     mcux_add_source(
@@ -2555,6 +2697,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.psatest.ns.protected_storage)
         SOURCES 
         psa-arch-tests/api-tests/platform/targets/common/nspe/protected_storage/pal_protected_storage_intf.c
         psa-arch-tests/api-tests/platform/targets/common/nspe/protected_storage/pal_protected_storage_intf.h
+        #psa-arch-tests/api-tests/dev_apis/storage/common/test_storage_common.c
         psa-arch-tests/api-tests/dev_apis/storage/test_storage_common.h
         psa-arch-tests/api-tests/dev_apis/storage/test_s001/test_s001.c
         psa-arch-tests/api-tests/dev_apis/storage/test_s001/test_s001.h
@@ -2631,6 +2774,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.psatest.ns.protected_storage)
         INCLUDES
         psa-arch-tests/api-tests/platform/targets/common/nspe/protected_storage
         psa-arch-tests/api-tests/dev_apis/storage
+        #psa-arch-tests/api-tests/dev_apis/storage/common
         psa-arch-tests/api-tests/dev_apis/storage/test_s001
         psa-arch-tests/api-tests/dev_apis/storage/test_s002
         psa-arch-tests/api-tests/dev_apis/storage/test_s003
@@ -2662,6 +2806,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.psatest.ns.internal_trusted_storage)
         SOURCES 
         psa-arch-tests/api-tests/platform/targets/common/nspe/internal_trusted_storage/pal_internal_trusted_storage_intf.c
         psa-arch-tests/api-tests/platform/targets/common/nspe/internal_trusted_storage/pal_internal_trusted_storage_intf.h
+        #psa-arch-tests/api-tests/dev_apis/storage/common/test_storage_common.c
         psa-arch-tests/api-tests/dev_apis/storage/test_storage_common.h
         psa-arch-tests/api-tests/dev_apis/storage/test_s001/test_s001.c
         psa-arch-tests/api-tests/dev_apis/storage/test_s001/test_s001.h
@@ -2709,6 +2854,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.psatest.ns.internal_trusted_storage)
         INCLUDES
         psa-arch-tests/api-tests/platform/targets/common/nspe/internal_trusted_storage
         psa-arch-tests/api-tests/dev_apis/storage
+        #psa-arch-tests/api-tests/dev_apis/storage/common
         psa-arch-tests/api-tests/dev_apis/storage/test_s001
         psa-arch-tests/api-tests/dev_apis/storage/test_s002
         psa-arch-tests/api-tests/dev_apis/storage/test_s003
@@ -2722,4 +2868,3 @@ if (CONFIG_MCUX_COMPONENT_middleware.psatest.ns.internal_trusted_storage)
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
-
