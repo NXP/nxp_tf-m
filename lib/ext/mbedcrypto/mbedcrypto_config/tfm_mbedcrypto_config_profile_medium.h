@@ -334,7 +334,7 @@
  * This module adds support for the Hashed Message Authentication Code
  * (HMAC)-based key derivation function (HKDF).
  */
-//#define MBEDTLS_HKDF_C /* Used for HUK deriviation */
+#define MBEDTLS_HKDF_C /* Used for HUK deriviation */
 
 /**
  * \def MBEDTLS_MEMORY_BUFFER_ALLOC_C
@@ -597,9 +597,18 @@
  *       #MBEDTLS_PK_PARSE_EC_EXTENDED as those currently require a subset of
  *       the built-in ECC implementation, see docs/driver-only-builds.md.
  */
-#define MBEDTLS_PSA_P256M_DRIVER_ENABLED
+//#define MBEDTLS_PSA_P256M_DRIVER_ENABLED
 
 /* \} name SECTION: Customisation configuration options */
+
+/**
+ * \def MBEDTLS_ENTROPY_HARDWARE_ALT
+ *
+ * Enable alt implementation for entropy in order
+ * to use platform specific TRNG.
+ *
+ */
+#define MBEDTLS_ENTROPY_HARDWARE_ALT
 
 #if CRYPTO_NV_SEED
 #include "tfm_mbedcrypto_config_extra_nv_seed.h"
@@ -610,7 +619,7 @@
 #endif
 
 #ifdef CRYPTO_HW_ACCELERATOR
-#include "mbedtls_accelerator_config.h"
+#include "mcux_mbedtls_accelerator_config.h"
 #endif
 
 #endif /* PROFILE_M_MBEDTLS_CONFIG_H */

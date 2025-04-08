@@ -44,14 +44,14 @@
  * CBC-MAC is not yet supported via the PSA API in Mbed TLS.
  */
 //#define PSA_WANT_ALG_CBC_MAC                    1
-//#define PSA_WANT_ALG_CBC_NO_PADDING             1
+#define PSA_WANT_ALG_CBC_NO_PADDING             1
 //#define PSA_WANT_ALG_CBC_PKCS7                  1
 #define PSA_WANT_ALG_CCM                        1
-//#define PSA_WANT_ALG_CMAC                       1
+#define PSA_WANT_ALG_CMAC                       1
 //#define PSA_WANT_ALG_CFB                        1
 //#define PSA_WANT_ALG_CHACHA20_POLY1305          1
 //#define PSA_WANT_ALG_CTR                        1
-//#define PSA_WANT_ALG_DETERMINISTIC_ECDSA        1
+#define PSA_WANT_ALG_DETERMINISTIC_ECDSA        1
 //#define PSA_WANT_ALG_ECB_NO_PADDING             1
 #define PSA_WANT_ALG_ECDH                       1
 #define PSA_WANT_ALG_ECDSA                      1
@@ -106,7 +106,7 @@
 //#define PSA_WANT_KEY_TYPE_CAMELLIA              1
 //#define PSA_WANT_KEY_TYPE_CHACHA20              1
 //#define PSA_WANT_KEY_TYPE_DES                   1
-//#define PSA_WANT_KEY_TYPE_ECC_KEY_PAIR          1 /* Deprecated */
+#define PSA_WANT_KEY_TYPE_ECC_KEY_PAIR          1 /* Deprecated */
 #define PSA_WANT_KEY_TYPE_ECC_PUBLIC_KEY        1
 #define PSA_WANT_KEY_TYPE_RAW_DATA              1
 //#define PSA_WANT_KEY_TYPE_RSA_KEY_PAIR          1 /* Deprecated */
