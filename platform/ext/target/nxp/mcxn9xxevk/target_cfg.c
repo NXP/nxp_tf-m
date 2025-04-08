@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include <assert.h>
 #include "target_cfg.h"
 #include "Driver_Common.h"
 #include "platform_description.h"
@@ -22,6 +23,7 @@
 #include "region_defs.h"
 #include "tfm_plat_defs.h"
 #include "utilities.h"
+#include "target_cfg_common.h"
 #include "tfm_spm_log.h"
 
 extern const struct memory_region_limits memory_regions;
@@ -149,8 +151,8 @@ int32_t mpc_init_cfg(void)
 
     /* == Region 0 == */
     /* The regions have to be alligned to FLASH_SUBREGION_SIZE to cover the AHB Flash Region. */
-    SPM_ASSERT(((memory_regions.non_secure_partition_base - NS_ROM_ALIAS_BASE) % FLASH_SUBREGION_SIZE) == 0);
-    SPM_ASSERT(((memory_regions.non_secure_partition_limit - NS_ROM_ALIAS_BASE + 1) % FLASH_SUBREGION_SIZE) == 0);
+    assert(((memory_regions.non_secure_partition_base - NS_ROM_ALIAS_BASE) % FLASH_SUBREGION_SIZE) == 0);
+    assert(((memory_regions.non_secure_partition_limit - NS_ROM_ALIAS_BASE + 1) % FLASH_SUBREGION_SIZE) == 0);
 
     enable_mem_rule_for_partition(memory_regions.non_secure_partition_base, memory_regions.non_secure_partition_limit);
 
@@ -179,8 +181,8 @@ int32_t mpc_init_cfg(void)
     /* == SRAM region == */
 
     /* The regions have to be alligned to 4 kB to cover the AHB RAM Region */
-    SPM_ASSERT((S_DATA_SIZE % DATA_SUBREGION_SIZE) == 0);
-    SPM_ASSERT(((S_DATA_SIZE + NS_DATA_SIZE) % DATA_SUBREGION_SIZE) == 0);
+    assert((S_DATA_SIZE % DATA_SUBREGION_SIZE) == 0);
+    assert(((S_DATA_SIZE + NS_DATA_SIZE) % DATA_SUBREGION_SIZE) == 0);
 
     /* Security access rules for RAM (0x3 = all regions set to secure and privileged user access*/
     

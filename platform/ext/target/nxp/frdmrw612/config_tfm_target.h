@@ -12,6 +12,7 @@
 /* Using of stored NV seed to provide entropy is disabled, when CRYPTO_HW_ACCELERATOR is defined.  */
 #ifdef CRYPTO_HW_ACCELERATOR
 #define CRYPTO_NV_SEED       0
+#define CRYPTO_EXT_RNG       1
 #endif
 
 /* Heap size for the crypto backend */

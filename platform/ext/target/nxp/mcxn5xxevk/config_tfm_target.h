@@ -12,9 +12,13 @@
 /* Using of stored NV seed to provide entropy is disabled, when CRYPTO_HW_ACCELERATOR is defined.  */
 #ifdef CRYPTO_HW_ACCELERATOR
 #define CRYPTO_NV_SEED       0
+#define CRYPTO_EXT_RNG       1
 #endif
 
 #define PLATFORM_SP_STACK_SIZE                 0x800
+
+/* Enable PSA Crypto Cipher module */
+#define CRYPTO_CIPHER_MODULE_ENABLED           1
 
 /* Heap size for the crypto backend */
 #undef CRYPTO_ENGINE_BUF_SIZE
