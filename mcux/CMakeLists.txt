@@ -241,6 +241,8 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_large.s_configs)
             -DMBEDTLS_CONFIG_FILE=\\\"tfm_mbedcrypto_config_profile_large.h\\\"\
             -DMBEDTLS_PSA_CRYPTO_CONFIG_FILE=\\\"crypto_config_profile_large.h\\\"\
             -DPS_CRYPTO_AEAD_ALG=PSA_ALG_CCM\
+            -DPSA_WANT_ALG_SHA_512_224\
+            -DPSA_WANT_ALG_SHA_512_256\
             "
     )
     mcux_add_source(
@@ -267,6 +269,10 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_medium.s_configs)
             -DMBEDTLS_CONFIG_FILE=\\\"tfm_mbedcrypto_config_profile_medium.h\\\"\
             -DMBEDTLS_PSA_CRYPTO_CONFIG_FILE=\\\"crypto_config_profile_medium.h\\\"\
             -DPS_CRYPTO_AEAD_ALG=PSA_ALG_CCM\
+            -DPSA_WANT_ALG_SHA_384\
+            -DPSA_WANT_ALG_SHA_512\
+            -DPSA_WANT_ALG_SHA_512_224\
+            -DPSA_WANT_ALG_SHA_512_256\
             "
     )
     mcux_add_source(
