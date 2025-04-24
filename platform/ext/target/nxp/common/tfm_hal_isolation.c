@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2020-2024, Arm Limited. All rights reserved.
- * Copyright 2020-2025 NXP. All rights reserved.
+ * Copyright 2020-2025 NXP
  * Copyright (c) 2024 Cypress Semiconductor Corporation (an Infineon
  * company) or an affiliate of Cypress Semiconductor Corporation. All rights
  * reserved.

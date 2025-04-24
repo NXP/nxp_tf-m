@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013-2018 ARM Limited. All rights reserved.
- * Copyright (c) 2019-2023 NXP. All rights reserved.
+ * Copyright 2019-2023, 2025 NXP
  *
  * SPDX-License-Identifier: Apache-2.0
  *
