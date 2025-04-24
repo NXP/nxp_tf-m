@@ -37,6 +37,14 @@
 #include <libtestdriver1/include/psa/crypto.h>
 #endif
 
+#if defined(PSA_CRYPTO_DRIVER_ELE_S2XX)
+#include "ele_s2xx_crypto_primitives.h"
+#endif
+
+#if defined(PSA_CRYPTO_DRIVER_ELE_S4XX)
+#include "ele_s4xx_crypto_primitives.h"
+#endif
+
 #if defined(PSA_CRYPTO_DRIVER_ELS_PKC)
 #include "els_pkc_crypto_primitives.h"
 #endif
@@ -100,6 +108,12 @@ typedef union {
 #endif
 #if defined(PSA_CRYPTO_DRIVER_CC3XX)
     cc3xx_hash_operation_t cc3xx_driver_ctx;
+#endif
+#if defined(PSA_CRYPTO_DRIVER_ELE_S2XX)
+    ele_s2xx_hash_operation_t ele_driver_ctx;
+#endif
+#if defined(PSA_CRYPTO_DRIVER_ELE_S4XX)
+    ele_s4xx_hash_operation_t ele_driver_ctx;
 #endif
 #if defined(PSA_CRYPTO_DRIVER_ELS_PKC)
     els_pkc_hash_operation_t els_pkc_driver_ctx;
