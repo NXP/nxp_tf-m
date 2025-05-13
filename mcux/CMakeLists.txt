@@ -390,6 +390,14 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.platform_rw61x)
     )
 endif()
 
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.flash_mcxw23)
+    mcux_add_source(
+        SOURCES 
+        tf-m/platform/ext/target/nxp/common/CMSIS_Driver/Driver_Flash_mcxw23.c
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.flash_iap1)
     mcux_add_source(
         SOURCES 

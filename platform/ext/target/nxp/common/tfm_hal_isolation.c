@@ -592,7 +592,7 @@ FIH_RET_TYPE(bool) tfm_hal_boundary_need_switch(uintptr_t boundary_from,
 
 /*------------------- SAU/IDAU configuration functions -----------------------*/
 
-void sau_and_idau_cfg(void)
+__attribute__((weak)) void sau_and_idau_cfg(void)
 {
     /* Ensure all memory accesses are completed */
     __DMB();
