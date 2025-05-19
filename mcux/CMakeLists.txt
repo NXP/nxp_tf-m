@@ -2032,12 +2032,10 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfmtests.ns.test.attestation.symmetric)
 endif()
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfmtests.ns.test.attestation)
-
-    # TODO: Temp Disable of NS-Attest test until IOTDL-2050 is fixed.
-    #mcux_add_macro(
-    #     CC "-DTEST_NS_ATTESTATION\
-    #        "
-    #)
+    mcux_add_macro(
+         CC "-DTEST_NS_ATTESTATION\
+            "
+    )
     mcux_add_source(
         SOURCES
         tf-m-tests/tests_reg/test/secure_fw/suites/attestation/ext/qcbor_util/qcbor_util.c
