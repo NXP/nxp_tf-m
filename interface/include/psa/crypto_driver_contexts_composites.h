@@ -133,6 +133,10 @@ typedef union {
     els_pkc_transparent_mac_operation_t transparent_els_pkc_driver_ctx;
     els_pkc_opaque_mac_operation_t opaque_els_pkc_driver_ctx;
 #endif
+#if defined(PSA_CRYPTO_DRIVER_ELE_S2XX)
+    ele_s2xx_transparent_mac_operation_t transparent_ele_s2xx_driver_ctx;
+    ele_s2xx_opaque_mac_operation_t opaque_ele_s2xx_driver_ctx;
+#endif
 } psa_driver_mac_context_t;
 
 typedef union {
