@@ -1,0 +1,98 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2025-05-30T09:57:23Z",
+    "creators": [
+      "Organization: NXP"
+    ],
+    "licenseListVersion": "3.20"
+  },
+  "name": "nxp_tf-m-v25.06.00",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://nxp.com/spdx/89766f0c-0a61-40df-baf6-79b1413a7220",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-package-89766f0c-0a61-40df-baf6-79b1413a7220",
+      "name": "nxp_tf-m",
+      "versionInfo": "v25.06.00",
+      "licenseConcluded": "(BSD-3-Clause)",
+      "licenseDeclared": "(BSD-3-Clause)",
+      "downloadLocation": "https://github.com/NXP/nxp_tf-m",
+      "originator": "Organization: NXP",
+      "supplier": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-f872a562-49f7-464f-a9a6-2ceb45966850",
+      "name": "CMSIS_5",
+      "versionInfo": "5.9.0",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "https://github.com/ARM-software/CMSIS_5",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "supplier": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-package-99e2e534-5c1e-4340-9a97-6a4d82676f32",
+      "name": "git.trustedfirmware.org/TF-M/trusted-firmware-m",
+      "versionInfo": "TF-Mv2.1.2",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: NXP",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "ba7590e1-0624-4a1e-9975-006ec3a6a04d",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-83cbd343-73dd-44dc-8655-adc88fb3ccc6",
+      "name": "mbed TLS",
+      "versionInfo": "v3.6.3",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "https://www.trustedfirmware.org/",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceLocator": "cpe:2.3:a:mbed:mbedtls:3.6.3:*:*:*:*:*:*:*",
+          "referenceType": "cpe23Type"
+        }
+      ],
+      "filesAnalyzed": false,
+      "supplier": "NOASSERTION"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-package-89766f0c-0a61-40df-baf6-79b1413a7220"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-89766f0c-0a61-40df-baf6-79b1413a7220",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-83cbd343-73dd-44dc-8655-adc88fb3ccc6"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-89766f0c-0a61-40df-baf6-79b1413a7220",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-package-99e2e534-5c1e-4340-9a97-6a4d82676f32"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-89766f0c-0a61-40df-baf6-79b1413a7220",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-package-f872a562-49f7-464f-a9a6-2ceb45966850"
+    }
+  ]
+}
