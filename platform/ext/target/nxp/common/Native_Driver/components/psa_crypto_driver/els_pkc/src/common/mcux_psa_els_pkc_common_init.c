@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 NXP
+ * Copyright 2022-2024 NXP
  *
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -9,10 +9,12 @@
 #include "mcux_els.h"
 #include "mcux_pkc.h"
 
+/* Standalone TRNG can be used if its configured to be used, otherwise Use 256bit RNG3 random mode if available, or else fallback to low entropy PRNG */
+#if defined(MBEDTLS_MCUX_USE_TRNG_AS_ENTROPY_SEED)
 #if defined(FSL_FEATURE_SOC_TRNG_COUNT) && (FSL_FEATURE_SOC_TRNG_COUNT > 0)
 #include "fsl_trng.h"
-#define MBEDTLS_MCUX_USE_TRNG_AS_ENTROPY_SEED
-#endif
+#endif /* FSL_FEATURE_SOC_TRNG_COUNT */
+#endif /* MBEDTLS_MCUX_USE_TRNG_AS_ENTROPY_SEED */
 
 /******************************************************************************/
 /*************************** Globals and Mutex ********************************************/

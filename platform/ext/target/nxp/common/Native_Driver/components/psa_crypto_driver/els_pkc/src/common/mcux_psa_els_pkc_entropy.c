@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 NXP
+ * Copyright 2023-2024 NXP
  *
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -19,14 +19,21 @@
 #if defined(MBEDTLS_MCUX_ENTROPY) && (MBEDTLS_MCUX_ENTROPY == 1)
 
 #include "mcux_psa_els_pkc_entropy.h"
+
+/* Standalone TRNG can be used if its configured to be used via cmake,
+   otherwise Use 256bit RNG3 random mode if available, or else fallback to low entropy PRNG(default enabled) */
+#if defined(MBEDTLS_MCUX_USE_TRNG_AS_ENTROPY_SEED)
 #if defined(FSL_FEATURE_SOC_TRNG_COUNT) && (FSL_FEATURE_SOC_TRNG_COUNT > 0)
 #include "fsl_trng.h"
-#define MBEDTLS_MCUX_USE_TRNG_AS_ENTROPY_SEED
 #ifndef TRNG0
 #define TRNG0 TRNG
-#endif
-#endif
-
+#endif /* ifndef TRNG0 */
+#endif /* FSL_FEATURE_SOC_TRNG_COUNT */
+#elif defined(MCUXCL_FEATURE_RANDOMMODES_SECSTRENGTH_256) && (MCUXCL_FEATURE_RANDOMMODES_SECSTRENGTH_256 > 0u)
+#include <mcuxClRandom.h>
+#include <mcuxClRandomModes.h>
+#endif /* MCUXCL_FEATURE_RANDOMMODES_SECSTRENGTH_256 || MBEDTLS_MCUX_USE_TRNG_AS_ENTROPY_SEED */
+      
 /** \defgroup psa_entropy PSA driver entry points for entropy collection
  *
  *  Entry points for entropy collection from the TRNG source as described by the
@@ -59,14 +66,81 @@ psa_status_t els_pkc_get_entropy(uint32_t flags, size_t *estimate_bits, uint8_t 
 #if defined(MBEDTLS_MCUX_USE_TRNG_AS_ENTROPY_SEED)
             /* Get random data from trng driver*/
             result = TRNG_GetRandomData(TRNG0, output, output_size);
+#elif defined(MCUXCL_FEATURE_RANDOMMODES_SECSTRENGTH_256)
+            mcuxClSession_Descriptor_t session;
+
+            /* Allocate workarea space */
+            uint32_t cpuWorkarea[MCUXCLRANDOMMODES_MAX_CPU_WA_BUFFER_SIZE / sizeof(uint32_t)];
+
+            MCUX_CSSL_FP_FUNCTION_CALL_BEGIN(retSessionInit, tokenSessionInit, mcuxClSession_init(&session,
+                                                                             cpuWorkarea,
+                                                                             MCUXCLRANDOMMODES_MAX_CPU_WA_BUFFER_SIZE,
+                                                                             NULL,
+                                                                             0u));
+
+            if((MCUX_CSSL_FP_FUNCTION_CALLED(mcuxClSession_init) != tokenSessionInit) || (MCUXCLSESSION_STATUS_OK != retSessionInit))
+            {
+                return PSA_ERROR_GENERIC_ERROR;
+            }
+
+            MCUX_CSSL_FP_FUNCTION_CALL_END();
+
+            /**************************************************************************/
+            /* Random init                                                            */
+            /**************************************************************************/
+
+            /* Initialize the RNG context, with maximum size */
+            uint32_t rng_ctx[MCUXCLRANDOMMODES_CTR_DRBG_AES256_CONTEXT_SIZE_IN_WORDS] = {0u};
+
+            MCUX_CSSL_FP_FUNCTION_CALL_BEGIN(retRandomInit, tokenRandInit, mcuxClRandom_init(
+                                                          &session,
+                                                          (mcuxClRandom_Context_t)rng_ctx,
+                                                          mcuxClRandomModes_Mode_CtrDrbg_AES256_DRG3));
+            if((MCUX_CSSL_FP_FUNCTION_CALLED(mcuxClRandom_init) != tokenRandInit) || (MCUXCLRANDOM_STATUS_OK != retRandomInit))
+            {
+                return PSA_ERROR_GENERIC_ERROR;
+            }
+
+            MCUX_CSSL_FP_FUNCTION_CALL_END();
+
+            /**************************************************************************/
+            /* Generate random values.                                                */
+            /**************************************************************************/
+
+            /* Generate random values of smaller amount than one word size. */
+            MCUX_CSSL_FP_FUNCTION_CALL_BEGIN(retRandGen, tokenRandGen, mcuxClRandom_generate(
+                                                          &session,
+                                                          output,
+                                                          output_size));
+            if((MCUX_CSSL_FP_FUNCTION_CALLED(mcuxClRandom_generate) != tokenRandGen) || (MCUXCLRANDOM_STATUS_OK != retRandGen))
+            {
+                return PSA_ERROR_GENERIC_ERROR;
+            }
+
+            MCUX_CSSL_FP_FUNCTION_CALL_END();
+
+            MCUX_CSSL_FP_FUNCTION_CALL_BEGIN(cleanup_result, cleanup_token, mcuxClSession_cleanup(&session));
+            if((MCUX_CSSL_FP_FUNCTION_CALLED(mcuxClSession_cleanup) != cleanup_token) || (MCUXCLSESSION_STATUS_OK != cleanup_result))
+            {
+                return PSA_ERROR_GENERIC_ERROR;
+            }
+            MCUX_CSSL_FP_FUNCTION_CALL_END();
+
+            MCUX_CSSL_FP_FUNCTION_CALL_BEGIN(destroy_result, destroy_token, mcuxClSession_destroy(&session));
+            if((MCUX_CSSL_FP_FUNCTION_CALLED(mcuxClSession_destroy) != destroy_token) || (MCUXCLSESSION_STATUS_OK != destroy_result))
+            {
+                return PSA_ERROR_GENERIC_ERROR;
+            }
+            MCUX_CSSL_FP_FUNCTION_CALL_END();
+            
 #else
-        /* Call ELS to get random data */
-        MCUX_CSSL_FP_FUNCTION_CALL_BEGIN(els_result, token, mcuxClEls_Prng_GetRandom(output, output_size));
-        if ((MCUX_CSSL_FP_FUNCTION_CALLED(mcuxClEls_Prng_GetRandom) != token) || (MCUXCLELS_STATUS_OK != els_result))
-        {
-            result = kStatus_Fail;
-        }
-        MCUX_CSSL_FP_FUNCTION_CALL_END();
+            /* Call ELS to get random data */
+            MCUX_CSSL_FP_FUNCTION_CALL_BEGIN(els_result, token, mcuxClEls_Prng_GetRandom(output, output_size));
+            if ((MCUX_CSSL_FP_FUNCTION_CALLED(mcuxClEls_Prng_GetRandom) != token) || (MCUXCLELS_STATUS_OK != els_result))
+            {
+                result = kStatus_Fail;
+            }
+            MCUX_CSSL_FP_FUNCTION_CALL_END();
 #endif
             if (result == kStatus_Success)
             {

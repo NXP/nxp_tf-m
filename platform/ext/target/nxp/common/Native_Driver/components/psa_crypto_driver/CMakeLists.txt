@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-# Copyright 2023-2024 NXP
+# Copyright 2023-2025 NXP
 # SPDX-License-Identifier: BSD-3-Clause
 #
 #-------------------------------------------------------------------------------
@@ -40,10 +40,19 @@ if(CONFIG_SOC_SERIES_RW6XX)
             CPU_RW612ETA1I
     )
 
+    if (CONFIG_MCUX_PSA_CRYPTO_DRIVER_USE_ELS_PKC_SHA1)
+        target_compile_definitions(
+            McuxPsaCryptoDriverElsPkc 
+            PRIVATE
+                MCUX_PSA_CRYPTO_DRIVER_USE_ELS_PKC_SHA1
+        )
+    endif()
+
     target_compile_definitions(
         McuxPsaCryptoDriverElsPkc 
         PRIVATE
             MBEDTLS_MCUX_ENTROPY
+            MBEDTLS_MCUX_USE_TRNG_AS_ENTROPY_SEED
     )
 
     target_include_directories(McuxPsaCryptoDriverElsPkc
@@ -55,7 +64,8 @@ if(CONFIG_SOC_SERIES_RW6XX)
             ${CMAKE_CURRENT_LIST_DIR}/els_pkc/include/transparent
             ${CMAKE_CURRENT_LIST_DIR}/els_pkc/oracle
             ${CMAKE_CURRENT_LIST_DIR}/els_pkc/oracle/inc
-    
+            ${CMAKE_CURRENT_LIST_DIR}/els_pkc/oracle/platforms/rw61x
+
             #include the psa-driver inlcude path from clib
             ${NXP_MODULE_ELS_PKC_PATH}/src/comps/mcuxClPsaDriver/inc
             ${NXP_MODULE_ELS_PKC_PATH}/src/comps/mcuxClPsaDriver/inc/internal
