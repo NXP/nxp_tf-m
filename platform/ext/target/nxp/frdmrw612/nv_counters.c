@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2022, Arm Limited. All rights reserved.
- * Copyright 2023 NXP
+ * Copyright 2023-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -19,6 +19,7 @@
 
 
 #include <string.h>
+#include "psa_manifest/pid.h"
 
 #ifdef OCOTP_NV_COUNTERS_RAM_EMULATION
 
@@ -28,11 +29,14 @@
 // The number of fuses used for a single ITS counter.
 #define OTP_NV_COUNTER_ITS_FUSE_COUNT   (16u)
 
+// The number of fuses used for a single BL2 counter.
+#define OTP_NV_COUNTER_BL2_FUSE_COUNT   (16u)
+
 // If we use RAM emulation for the OTP fuses, we also can define to have more fuses available than actual OCOTP. So here
 // we make the number of fuses depending on the definition of the counters above. Howver in reality this is vice-versa.
 // HW offers a given nr of fuses which can be distributed among counters.
 #define OTP_NV_COUNTER_FUSES_START_INDEX (0u)
-#define OTP_NV_COUNTER_FUSES_COUNT       (2u * OTP_NV_COUNTER_ITS_FUSE_COUNT + 3u * OTP_NV_COUNTER_PS_FUSE_COUNT)
+#define OTP_NV_COUNTER_FUSES_COUNT       (2u * OTP_NV_COUNTER_ITS_FUSE_COUNT + 3u * OTP_NV_COUNTER_PS_FUSE_COUNT + 4u * OTP_NV_COUNTER_BL2_FUSE_COUNT)
 
 #else // #ifdef OCOTP_NV_COUNTERS_RAM_EMULATION
 
@@ -61,6 +65,18 @@
 #define OTP_NV_COUNTER_ITS_0_FUSE_COUNT OTP_NV_COUNTER_ITS_FUSE_COUNT
 #define OTP_NV_COUNTER_ITS_1_FUSE_START (OTP_NV_COUNTER_ITS_0_FUSE_START + OTP_NV_COUNTER_ITS_0_FUSE_COUNT)
 #define OTP_NV_COUNTER_ITS_1_FUSE_COUNT OTP_NV_COUNTER_ITS_FUSE_COUNT
+
+#define OTP_NV_COUNTER_BL2_0_FUSE_START (OTP_NV_COUNTER_ITS_1_FUSE_START + OTP_NV_COUNTER_ITS_1_FUSE_COUNT)
+#define OTP_NV_COUNTER_BL2_0_FUSE_COUNT OTP_NV_COUNTER_BL2_FUSE_COUNT
+
+#define OTP_NV_COUNTER_BL2_1_FUSE_START (OTP_NV_COUNTER_BL2_0_FUSE_START + OTP_NV_COUNTER_BL2_0_FUSE_COUNT)
+#define OTP_NV_COUNTER_BL2_1_FUSE_COUNT OTP_NV_COUNTER_BL2_FUSE_COUNT
+
+#define OTP_NV_COUNTER_BL2_2_FUSE_START (OTP_NV_COUNTER_BL2_1_FUSE_START + OTP_NV_COUNTER_BL2_1_FUSE_COUNT)
+#define OTP_NV_COUNTER_BL2_2_FUSE_COUNT OTP_NV_COUNTER_BL2_FUSE_COUNT
+
+#define OTP_NV_COUNTER_BL2_3_FUSE_START (OTP_NV_COUNTER_BL2_2_FUSE_START + OTP_NV_COUNTER_BL2_2_FUSE_COUNT)
+#define OTP_NV_COUNTER_BL2_3_FUSE_COUNT OTP_NV_COUNTER_BL2_FUSE_COUNT
 
 #define OTP_COUNTER_MAX_SIZE 128u
 #define NV_COUNTER_SIZE      4
@@ -167,6 +183,24 @@ static enum tfm_plat_err_t get_fuses_for_nv_counter(uint32_t id, uint32_t* start
             *fuse_count = OTP_NV_COUNTER_ITS_1_FUSE_COUNT;
             break;
 #endif
+#if defined(BL2)
+        case PLAT_NV_COUNTER_BL2_0:
+            *start_fuse = OTP_NV_COUNTER_BL2_0_FUSE_START;
+            *fuse_count = OTP_NV_COUNTER_BL2_0_FUSE_COUNT;
+            break;
+        case PLAT_NV_COUNTER_BL2_1:
+            *start_fuse = OTP_NV_COUNTER_BL2_1_FUSE_START;
+            *fuse_count = OTP_NV_COUNTER_BL2_1_FUSE_COUNT;
+            break;
+        case PLAT_NV_COUNTER_BL2_2:
+            *start_fuse = OTP_NV_COUNTER_BL2_2_FUSE_START;
+            *fuse_count = OTP_NV_COUNTER_BL2_2_FUSE_COUNT;
+            break;
+        case PLAT_NV_COUNTER_BL2_3:
+            *start_fuse = OTP_NV_COUNTER_BL2_3_FUSE_START;
+            *fuse_count = OTP_NV_COUNTER_BL2_3_FUSE_COUNT;
+            break;
+#endif
         default:
             return TFM_PLAT_ERR_INVALID_INPUT;
     }
@@ -213,8 +247,15 @@ enum tfm_plat_err_t tfm_plat_read_nv_counter(enum tfm_nv_counter_t counter_id, u
             return read_nv_counter_otp(PLAT_NV_COUNTER_PS_2, size, val);
 #endif /* TFM_PARTITION_PROTECTED_STORAGE */
 
-#ifdef BL2
-#error unsupported
+#if defined(BL2)
+        case (PLAT_NV_COUNTER_BL2_0):
+            return read_nv_counter_otp(PLAT_NV_COUNTER_BL2_0, size, val);
+        case (PLAT_NV_COUNTER_BL2_1):
+            return read_nv_counter_otp(PLAT_NV_COUNTER_BL2_1, size, val);
+        case (PLAT_NV_COUNTER_BL2_2):
+            return read_nv_counter_otp(PLAT_NV_COUNTER_BL2_2, size, val);
+        case (PLAT_NV_COUNTER_BL2_3):
+            return read_nv_counter_otp(PLAT_NV_COUNTER_BL2_3, size, val);
 #endif /* BL2 */
 
 #ifdef BL1
@@ -342,8 +383,19 @@ enum tfm_plat_err_t tfm_plat_set_nv_counter(enum tfm_nv_counter_t counter_id, ui
             break;
 #endif /* TFM_PARTITION_PROTECTED_STORAGE */
 
-#ifdef BL2
-#error unsupported
+#if defined(BL2)
+        case (PLAT_NV_COUNTER_BL2_0):
+            err = set_nv_counter_otp(PLAT_NV_COUNTER_BL2_0, value);
+            break;
+        case (PLAT_NV_COUNTER_BL2_1):
+            err = set_nv_counter_otp(PLAT_NV_COUNTER_BL2_1, value);
+            break;
+        case (PLAT_NV_COUNTER_BL2_2):
+            err = set_nv_counter_otp(PLAT_NV_COUNTER_BL2_2, value);
+            break;
+        case (PLAT_NV_COUNTER_BL2_3):
+            err = set_nv_counter_otp(PLAT_NV_COUNTER_BL2_3, value);
+            break;
 #endif /* BL2 */
 
 #ifdef BL1
@@ -407,4 +459,57 @@ enum tfm_plat_err_t tfm_plat_increment_nv_counter(enum tfm_nv_counter_t counter_
     }
 
     return tfm_plat_set_nv_counter(counter_id, security_cnt + 1u);
+}
+
+enum tfm_plat_err_t tfm_plat_nv_counter_permissions_check(int32_t client_id,
+                                                          enum tfm_nv_counter_t nv_counter_no,
+                                                          bool is_read)
+{
+    (void)is_read;
+
+    switch (nv_counter_no) {
+#ifdef TFM_PARTITION_PROTECTED_STORAGE
+    case PLAT_NV_COUNTER_PS_0:
+    case PLAT_NV_COUNTER_PS_1:
+    case PLAT_NV_COUNTER_PS_2:
+        if (client_id == TFM_SP_PS) {
+            return TFM_PLAT_ERR_SUCCESS;
+        } else {
+            return TFM_PLAT_ERR_UNSUPPORTED;
+        }
+#endif /* TFM_PARTITION_PROTECTED_STORAGE */
+    case PLAT_NV_COUNTER_NS_0:
+    case PLAT_NV_COUNTER_NS_1:
+    case PLAT_NV_COUNTER_NS_2:
+        /* TODO how does this interact with the ns_ctx extension? */
+        if (client_id < 0) {
+            return TFM_PLAT_ERR_SUCCESS;
+        } else {
+            return TFM_PLAT_ERR_UNSUPPORTED;
+        }
+#if defined(TFM_PARTITION_INTERNAL_TRUSTED_STORAGE) && !defined(PLATFORM_DEFAULT_NV_COUNTERS)
+    case PLAT_NV_COUNTER_ITS_0:
+    case PLAT_NV_COUNTER_ITS_1:
+        if (client_id == TFM_SP_ITS) {
+            return TFM_PLAT_ERR_SUCCESS;
+        } else {
+            return TFM_PLAT_ERR_UNSUPPORTED;
+        }
+#endif
+    default:
+        return TFM_PLAT_ERR_UNSUPPORTED;
+    }
+}
+
+enum tfm_plat_err_t tfm_plat_ns_counter_idx_to_nv_counter(uint32_t ns_counter_idx,
+                                                          enum tfm_nv_counter_t *counter_id)
+{
+    /* Default NV counters only have PLAT_NV_COUNTERS_NS_0, _1 and _2 */
+    if ((ns_counter_idx > 2) || (counter_id == NULL)) {
+        return TFM_PLAT_ERR_INVALID_INPUT;
+    }
+
+    *counter_id = PLAT_NV_COUNTER_NS_0 + ns_counter_idx;
+
+    return TFM_PLAT_ERR_SUCCESS;
 }
