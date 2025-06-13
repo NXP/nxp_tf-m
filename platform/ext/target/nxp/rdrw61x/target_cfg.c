@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2022 Arm Limited. All rights reserved.
- * Copyright 2019-2024 NXP
+ * Copyright 2019-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -304,6 +304,16 @@ int32_t mpc_init_cfg(void)
 #ifdef TFM_EL2GO_DATA_IMPORT_REGION
 	enable_mem_rule_for_partition(memory_regions.el2go_data_import_region_base, memory_regions.el2go_data_import_region_limit);
 #endif /* TFM_EL2GO_DATA_IMPORT_REGION */
+
+#ifdef BL2 /* Set secondary image region to NS, when BL2 is enabled */
+    /* The regions have to be alligned to 32 kB to cover the AHB Flash Region. */
+    assert(memory_regions.secondary_partition_base >= NS_ROM_ALIAS_BASE);
+    assert(((memory_regions.secondary_partition_base - NS_ROM_ALIAS_BASE) % FLASH_REGION0_SUBREGION_SIZE) == 0);
+    assert(((memory_regions.secondary_partition_limit - NS_ROM_ALIAS_BASE + 1) % FLASH_REGION0_SUBREGION_SIZE)
+               == 0);
+    enable_mem_rule_for_partition(memory_regions.secondary_partition_base, memory_regions.secondary_partition_limit);
+
+#endif
 
     /* == SRAM region == */
     /* RAM0 to RAM18 ~1 MB, each 64 KB (32 * 2 KB) */

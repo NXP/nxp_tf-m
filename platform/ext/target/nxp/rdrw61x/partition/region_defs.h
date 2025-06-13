@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2017-2023 Arm Limited. All rights reserved.
- * Copyright 2019-2023 NXP.
+ * Copyright 2019-2025 NXP.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,11 @@
 #define __REGION_DEFS_H__
 
 #include "flash_layout.h"
+#ifdef BL2
+
+#define BL2_HEAP_SIZE           (0x0001000)
+#define BL2_MSP_STACK_SIZE      (0x0001800)
+#endif
 
 #ifdef ENABLE_HEAP
     #define S_HEAP_SIZE             (0x0000200)
@@ -54,13 +59,24 @@ Offset      Width (Bytes) Field Description
 // NS_DATA_SIZE: TOTAL_RAM_SIZE - S_DATA_SIZE - S_DATA_OFFSET     = 0x000F0000
 // NS_DATA_LIMIT: NS_DATA_START + NS_DATA_SIZE - 1                = 0x0012FFFF
 
-#define S_IMAGE_PRIMARY_PARTITION_OFFSET (0x1000)
+
+#ifdef BL2
+#ifndef LINK_TO_SECONDARY_PARTITION
+#define S_IMAGE_PRIMARY_PARTITION_OFFSET   (FLASH_AREA_0_OFFSET)
+#define S_IMAGE_SECONDARY_PARTITION_OFFSET (FLASH_AREA_2_OFFSET)
+#else
+#define S_IMAGE_PRIMARY_PARTITION_OFFSET   (FLASH_AREA_2_OFFSET)
+#define S_IMAGE_SECONDARY_PARTITION_OFFSET (FLASH_AREA_0_OFFSET)
+#endif /* !LINK_TO_SECONDARY_PARTITION */
+#else
+#define S_IMAGE_PRIMARY_PARTITION_OFFSET   (FLASH_IMAGE_HEADER_SIZE)
+#endif /* BL2 */
 
 /* The SRAM region [0x00000-0x10000] is reserved for RAM execution. */
 #define S_DATA_OFFSET    (S_RAM_CODE_SIZE)
 
 #ifndef LINK_TO_SECONDARY_PARTITION
-#define NS_IMAGE_PRIMARY_PARTITION_OFFSET   (FLASH_AREA_0_OFFSET + S_IMAGE_PRIMARY_PARTITION_OFFSET + FLASH_S_PARTITION_SIZE)
+#define NS_IMAGE_PRIMARY_PARTITION_OFFSET   (FLASH_AREA_0_OFFSET + FLASH_S_PARTITION_SIZE)
 #else
 #define NS_IMAGE_PRIMARY_PARTITION_OFFSET   (FLASH_AREA_2_OFFSET + FLASH_S_PARTITION_SIZE)
 #endif /* !LINK_TO_SECONDARY_PARTITION */
@@ -75,8 +91,28 @@ Offset      Width (Bytes) Field Description
  * introduced by the bootloader.
  */
 
-#define IMAGE_S_CODE_SIZE   (FLASH_S_PARTITION_SIZE - BL2_HEADER_SIZE - BL2_TRAILER_SIZE)
-#define IMAGE_NS_CODE_SIZE  (FLASH_NS_PARTITION_SIZE - BL2_HEADER_SIZE - BL2_TRAILER_SIZE)
+#ifdef BL2
+#if (!defined(MCUBOOT_IMAGE_NUMBER) || (MCUBOOT_IMAGE_NUMBER == 1)) && \
+    (NS_IMAGE_PRIMARY_PARTITION_OFFSET > S_IMAGE_PRIMARY_PARTITION_OFFSET)
+/* If secure image and nonsecure image are concatenated, and nonsecure image
+ * locates at the higher memory range, then the secure image does not need
+ * the trailer area.
+ */
+#define IMAGE_S_CODE_SIZE  (FLASH_S_PARTITION_SIZE - BL2_HEADER_SIZE)
+#else
+#define IMAGE_S_CODE_SIZE  (FLASH_S_PARTITION_SIZE - BL2_HEADER_SIZE - BL2_TRAILER_SIZE)
+#endif /* MCUBOOT_IMAGE_NUMBER check */
+#else /*BL2*/
+#define IMAGE_S_CODE_SIZE  (FLASH_S_PARTITION_SIZE)
+#endif
+
+#ifdef BL2
+#define IMAGE_NS_CODE_SIZE \
+            (FLASH_NS_PARTITION_SIZE - BL2_HEADER_SIZE - BL2_TRAILER_SIZE)
+#else /*BL2*/
+#define IMAGE_NS_CODE_SIZE \
+            (FLASH_NS_PARTITION_SIZE)
+#endif
 
 #define CMSE_VENEER_REGION_SIZE     (0x340)
 
@@ -88,7 +124,11 @@ Offset      Width (Bytes) Field Description
 #define NS_RAM_ALIAS(x)     (NS_RAM_ALIAS_BASE + (x))
 
 /* Secure regions */
+#ifdef BL2
 #define S_IMAGE_PRIMARY_AREA_OFFSET     (S_IMAGE_PRIMARY_PARTITION_OFFSET + BL2_HEADER_SIZE)
+#else
+#define S_IMAGE_PRIMARY_AREA_OFFSET     (S_IMAGE_PRIMARY_PARTITION_OFFSET)
+#endif /*BL2*/
 #define S_CODE_START                    (S_ROM_ALIAS(S_IMAGE_PRIMARY_AREA_OFFSET))
 #define S_CODE_SIZE                     (IMAGE_S_CODE_SIZE)
 #define S_CODE_LIMIT                    (S_CODE_START + S_CODE_SIZE - 1)
@@ -103,7 +143,11 @@ and assign bit more to non secure region. 1/6th size is reserved for secure inst
 #define S_CODE_VECTOR_TABLE_SIZE        (0x244)
 
 /* Non-secure regions */
+#ifdef BL2
 #define NS_IMAGE_PRIMARY_AREA_OFFSET    (NS_IMAGE_PRIMARY_PARTITION_OFFSET + BL2_HEADER_SIZE)
+#else
+#define NS_IMAGE_PRIMARY_AREA_OFFSET    (NS_IMAGE_PRIMARY_PARTITION_OFFSET)
+#endif /*BL2*/
 #define NS_CODE_START                   (NS_ROM_ALIAS(NS_IMAGE_PRIMARY_AREA_OFFSET))
 #define NS_CODE_SIZE                    (IMAGE_NS_CODE_SIZE)
 #define NS_CODE_LIMIT                   (NS_CODE_START + NS_CODE_SIZE - 1)
@@ -164,7 +208,7 @@ and assign bit more to non secure region. 1/6th size is reserved for secure inst
 #define BL2_CODE_SIZE     (FLASH_AREA_BL2_SIZE)
 #define BL2_CODE_LIMIT    (BL2_CODE_START + BL2_CODE_SIZE - 1)
 
-#define BL2_DATA_START    (S_RAM_ALIAS(0x0))
+#define BL2_DATA_START    (S_RAM_ALIAS(S_DATA_OFFSET))
 #define BL2_DATA_SIZE     (TOTAL_RAM_SIZE)
 #define BL2_DATA_LIMIT    (BL2_DATA_START + BL2_DATA_SIZE - 1)
 #endif /* BL2 */
