@@ -32,7 +32,8 @@
 
 MEMORY
 {
-#ifdef M_BOOT_FLASH_CONF_START             //NXP
+/* NXP: Block is added to place flash Config at specified start address of the executable */
+#if defined(M_BOOT_FLASH_CONF_START) && !defined(BL2)          //NXP
 /* Flash configuration block(FCB) is used to configure the FlexSPI interface during the boot process. */
   m_flash_config        (RX)  : ORIGIN = M_BOOT_FLASH_CONF_START, LENGTH = M_BOOT_FLASH_CONF_SIZE     //NXP
 #endif
@@ -75,7 +76,7 @@ ENTRY(Reset_Handler)
 SECTIONS
 {
 // --------- NXP --------------
-#ifdef M_BOOT_FLASH_CONF_START
+#if defined(M_BOOT_FLASH_CONF_START) && !defined(BL2)
     .flash_config :
     {
       . = ALIGN(4);

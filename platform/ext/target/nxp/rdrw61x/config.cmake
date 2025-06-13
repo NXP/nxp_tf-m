@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2020-2023, Arm Limited. All rights reserved.
-# Copyright 2023-2024 NXP
+# Copyright 2023-2025 NXP
 # Copyright (c) 2022 Cypress Semiconductor Corporation (an Infineon company)
 # or an affiliate of Cypress Semiconductor Corporation. All rights reserved.
 #
@@ -16,13 +16,18 @@
 #set(PLATFORM_DEFAULT_ATTEST_HAL       OFF         CACHE BOOL      "Use default attest hal implementation.")
 set(PLATFORM_DEFAULT_CRYPTO_KEYS       OFF         CACHE BOOL      "Use default crypto keys implementation")
 
+if(BL2)
 ############################ BL2 ########################################
-#set(BL2_S_IMAGE_START                   "0x8000"        CACHE STRING    "Base address of the secure image in configuration with BL2")
-#set(BL2_NS_IMAGE_START                  "0x30000"       CACHE STRING    "Base address of the non secure image in configuration with BL2")
+set(BL2_S_IMAGE_START                  "0x20000"   CACHE STRING    "Base address of the secure image in configuration with BL2")
+set(BL2_NS_IMAGE_START                 "0xC0000"   CACHE STRING    "Base address of the non secure image in configuration with BL2")
+set(MCUBOOT_IMAGE_NUMBER                2          CACHE STRING    "Whether to combine S and NS into either 1 image, or sign each separately")
+set(BL2_HEADER_SIZE     0x400)
+set(BL2_TRAILER_SIZE    0x400)
+endif()
 
 # Platform-specific configurations
-set(CONFIG_TFM_USE_TRUSTZONE            ON              CACHE BOOL      "Enable use of TrustZone to transition between NSPE and SPE")
-set(TFM_MULTI_CORE_TOPOLOGY             OFF             CACHE BOOL      "Whether to build for a dual-cpu architecture")
+set(CONFIG_TFM_USE_TRUSTZONE           ON          CACHE BOOL      "Enable use of TrustZone to transition between NSPE and SPE")
+set(TFM_MULTI_CORE_TOPOLOGY            OFF         CACHE BOOL      "Whether to build for a dual-cpu architecture")
 
 ################################## Platform specific features ################################
 set(USE_ELS_PKC_HUK                    ON          CACHE BOOL      "Use HUK for RW61x platform via els_pkc")
