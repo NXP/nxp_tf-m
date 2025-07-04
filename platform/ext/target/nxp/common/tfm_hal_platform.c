@@ -26,6 +26,9 @@ REGION_DECLARE(Load$$LR$$, LR_WIFI_FLASH_REGION, $$Base);
 #ifdef TFM_EL2GO_DATA_IMPORT_REGION
 REGION_DECLARE(Load$$LR$$, LR_EL2GO_DATA_IMPORT_REGION, $$Base);
 #endif // TFM_EL2GO_DATA_IMPORT_REGION
+#ifdef TFM_EL2GO_CMPA_REGION
+REGION_DECLARE(Load$$LR$$, LR_EL2GO_CMPA_REGION, $$Base);
+#endif // TFM_EL2GO_CMPA_REGION
 #ifdef BL2
 REGION_DECLARE(Load$$LR$$, LR_SECONDARY_PARTITION, $$Base);
 #endif /* BL2 */
@@ -59,6 +62,12 @@ const struct memory_region_limits memory_regions = {
     .el2go_data_import_region_limit  =
         (uint32_t)&REGION_NAME(Load$$LR$$, LR_EL2GO_DATA_IMPORT_REGION, $$Base) + EL2GO_DATA_IMPORT_REGION_SIZE - 1,
 #endif // TFM_EL2GO_DATA_IMPORT_REGION
+#ifdef TFM_EL2GO_CMPA_REGION
+    .el2go_cmpa_region_base   =
+        (uint32_t)&REGION_NAME(Load$$LR$$, LR_EL2GO_CMPA_REGION, $$Base),
+    .el2go_cmpa_region_limit  =
+        (uint32_t)&REGION_NAME(Load$$LR$$, LR_EL2GO_CMPA_REGION, $$Base) + EL2GO_CMPA_REGION_SIZE - 1,
+#endif // TFM_EL2GO_CMPA_REGION
 #ifdef BL2
     .secondary_partition_base =
         (uint32_t)&REGION_NAME(Load$$LR$$, LR_SECONDARY_PARTITION, $$Base),

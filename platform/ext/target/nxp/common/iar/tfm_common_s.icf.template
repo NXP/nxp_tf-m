@@ -478,4 +478,10 @@ place at address WIFI_FLASH_REGION_START { block LR_WIFI_FLASH_REGION };
 define block LR_EL2GO_DATA_IMPORT_REGION with size = EL2GO_DATA_IMPORT_REGION_SIZE { };
 place at address EL2GO_DATA_IMPORT_REGION_START { block LR_EL2GO_DATA_IMPORT_REGION };
 #endif /* TFM_EL2GO_DATA_IMPORT_REGION */
+
+#ifdef TFM_EL2GO_CMPA_REGION
+    /* CMPA region for EL2GO apps, made accessible to NS application. */
+define block LR_EL2GO_CMPA_REGION with size = EL2GO_CMPA_REGION_SIZE { };
+place at address EL2GO_CMPA_REGION_START { block LR_EL2GO_CMPA_REGION };
+#endif /* TFM_EL2GO_CMPA_REGION */
 // --------- NXP end --------------

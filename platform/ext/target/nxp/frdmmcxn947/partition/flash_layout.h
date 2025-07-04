@@ -166,6 +166,10 @@
 #define TFM_EL2GO_NV_DATA_IMPORT_ADDR  (0x001C0000)
 #define TFM_EL2GO_NV_DATA_IMPORT_SIZE  (0x00040000)
 
+/* CMPA area, from where EL2GO apps can read the UUID*/
+#define TFM_EL2GO_NV_CMPA_ADDR  (0x01100000)
+#define TFM_EL2GO_NV_CMPA_SIZE  (0x00000010)
+
 /* Use Flash memory to store Code data */
 #define S_ROM_ALIAS_BASE    (0x10000000)
 #define NS_ROM_ALIAS_BASE   (0x00000000)

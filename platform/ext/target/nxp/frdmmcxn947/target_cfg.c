@@ -158,7 +158,11 @@ int32_t mpc_init_cfg(void)
 
 #ifdef TFM_EL2GO_DATA_IMPORT_REGION
 	enable_mem_rule_for_partition(memory_regions.el2go_data_import_region_base, memory_regions.el2go_data_import_region_limit);
-#endif /* TFM_EL2GO_DATA_IMPORT_REGION */ 
+#endif /* TFM_EL2GO_DATA_IMPORT_REGION */
+
+#ifdef TFM_EL2GO_CMPA_REGION
+	enable_mem_rule_for_partition(memory_regions.el2go_cmpa_region_base, memory_regions.el2go_cmpa_region_limit);
+#endif /* TFM_EL2GO_CMPA_REGION */
 
     /* == ROM region == */
 

@@ -179,4 +179,9 @@ security tier by programing corresponding registers in secure AHB controller. */
 #define EL2GO_DATA_IMPORT_REGION_SIZE		(TFM_EL2GO_NV_DATA_IMPORT_SIZE)
 #endif /* TFM_EL2GO_DATA_IMPORT_REGION */
 
+#ifdef TFM_EL2GO_CMPA_REGION
+#define EL2GO_CMPA_REGION_START		(TFM_EL2GO_NV_CMPA_ADDR)
+#define EL2GO_CMPA_REGION_SIZE		(TFM_EL2GO_NV_CMPA_SIZE)
+#endif /* TFM_EL2GO_CMPA_REGION */
+
 #endif /* __REGION_DEFS_H__ */

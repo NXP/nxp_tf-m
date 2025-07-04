@@ -592,6 +592,11 @@ SECTIONS
     /* Reserved region for EL2GO offline-provisioned blobs, made accessible to NS application. */
     Load$$LR$$LR_EL2GO_DATA_IMPORT_REGION$$Base = EL2GO_DATA_IMPORT_REGION_START;
 #endif /* TFM_EL2GO_DATA_IMPORT_REGION */
+
+#ifdef TFM_EL2GO_CMPA_REGION
+    /* CMPA region for EL2GO apps, made accessible to NS application. */
+    Load$$LR$$LR_EL2GO_CMPA_REGION$$Base = EL2GO_CMPA_REGION_START;
+#endif /* TFM_EL2GO_CMPA_REGION */
 // --------- NXP end --------------
 
     PROVIDE(__stack = Image$$ARM_LIB_STACK$$ZI$$Limit);

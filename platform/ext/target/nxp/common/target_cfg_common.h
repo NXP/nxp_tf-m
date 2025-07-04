@@ -166,6 +166,10 @@ struct memory_region_limits {
     uint32_t el2go_data_import_region_base;
     uint32_t el2go_data_import_region_limit;
 #endif // TFM_EL2GO_DATA_IMPORT_REGION
+#ifdef TFM_EL2GO_CMPA_REGION
+    uint32_t el2go_cmpa_region_base;
+    uint32_t el2go_cmpa_region_limit;
+#endif // TFM_EL2GO_CMPA_REGION
 
 #ifdef BL2
     uint32_t secondary_partition_base;

@@ -652,6 +652,14 @@ __attribute__((weak)) void sau_and_idau_cfg(void)
 	           | SAU_RLAR_ENABLE_Msk;
 #endif /* TFM_EL2GO_DATA_IMPORT_REGION */
 
+#ifdef TFM_EL2GO_CMPA_REGION
+    /* EL2GO data import region */
+    SECURE_WRITE_REGISTER(&(SAU->RNR), 7U);
+    SAU->RBAR = (memory_regions.el2go_cmpa_region_base & SAU_RBAR_BADDR_Msk);
+    SAU->RLAR = (memory_regions.el2go_cmpa_region_limit & SAU_RLAR_LADDR_Msk)
+	           | SAU_RLAR_ENABLE_Msk;
+#endif /* TFM_EL2GO_CMPA_REGION */
+
     /* Ensure the write is completed and flush pipeline */
     __DSB();
     __ISB();
