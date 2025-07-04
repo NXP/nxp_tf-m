@@ -26,6 +26,7 @@
 #define SPM_ASSERT(cond)
 #endif
 
+#undef assert //NXP
 #define assert(cond) SPM_ASSERT(cond)
 
 #endif /* __TFM_PRIV_ASSERT_H__ */
