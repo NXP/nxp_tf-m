@@ -2,7 +2,7 @@
 ; * Copyright (c) 2009-2023 Arm Limited
 ; * Copyright (c) 2022 Cypress Semiconductor Corporation (an Infineon company)
 ; * or an affiliate of Cypress Semiconductor Corporation. All rights reserved.
-; * Copyright 2023 NXP.
+; * Copyright 2023, 2025 NXP
 ; *
 ; * Licensed under the Apache License, Version 2.0 (the "License");
 ; * you may not use this file except in compliance with the License.
