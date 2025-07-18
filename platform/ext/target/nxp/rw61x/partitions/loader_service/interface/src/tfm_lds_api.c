@@ -83,5 +83,48 @@ TFM_LOADER_SERVICE_API(psa_status_t,sb3_fw_reset)(LOAD_Target_Type loadTarget, u
     return API_DISPATCH_NO_OUTVEC(in_vec);
 }
 
+TFM_LOADER_SERVICE_API(int32_t, cau_temperature_write_to_firmware)(void)
+{
+    struct tfm_loader_pack_iovec iov = {
+        .target_id = 0,
+        .function_id = TFM_LDS_CAU_SET_TEMP,
+        .flag = 0,
+        .src_address = 0,
+    };
+    psa_invec in_vec[] = {
+        {.base = &iov, .len = sizeof(struct tfm_loader_pack_iovec)},
+    };
 
+    return API_DISPATCH_NO_OUTVEC(in_vec);
+}
+
+TFM_LOADER_SERVICE_API(int32_t, cau_get_temperature)(void)
+{
+    struct tfm_loader_pack_iovec iov = {
+        .target_id = 0,
+        .function_id = TFM_LDS_CAU_GET_TEMP,
+        .flag = 0,
+        .src_address = 0,
+    };
+    psa_invec in_vec[] = {
+        {.base = &iov, .len = sizeof(struct tfm_loader_pack_iovec)},
+    };
+
+    return API_DISPATCH_NO_OUTVEC(in_vec);
+}
+
+TFM_LOADER_SERVICE_API(void, cau_temperature_enable)(void)
+{
+    struct tfm_loader_pack_iovec iov = {
+        .target_id = 0,
+        .function_id = TFM_LDS_CAU_TEM_ENABLE,
+        .flag = 0,
+        .src_address = 0,
+    };
+    psa_invec in_vec[] = {
+        {.base = &iov, .len = sizeof(struct tfm_loader_pack_iovec)},
+    };
+
+    API_DISPATCH_NO_OUTVEC(in_vec);
+}
 
