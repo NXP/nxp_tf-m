@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2023, Arm Limited. All rights reserved.
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -14,5 +14,8 @@
 #define TFM_LDS_SB3_FW_RESET          (0x1002)
 #define TFM_LDS_PWR_OFF_DEVICE        (0x1003)
 #define TFM_LDS_PWR_ON_DEVICE         (0x1004)
+#define TFM_LDS_CAU_SET_TEMP          (0x1005)
+#define TFM_LDS_CAU_GET_TEMP          (0x1006)
+#define TFM_LDS_CAU_TEM_ENABLE        (0x1007)
 
 #endif /* __TFM_LDS_FUNC_IDS_H__ */
