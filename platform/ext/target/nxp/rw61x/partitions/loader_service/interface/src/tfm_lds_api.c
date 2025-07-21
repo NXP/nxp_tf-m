@@ -86,7 +86,7 @@ TFM_LOADER_SERVICE_API(psa_status_t,sb3_fw_reset)(LOAD_Target_Type loadTarget, u
 TFM_LOADER_SERVICE_API(int32_t, cau_temperature_write_to_firmware)(void)
 {
     struct tfm_loader_pack_iovec iov = {
-        .target_id = 0,
+        .target_id = LOAD_TYPE_MAX,
         .function_id = TFM_LDS_CAU_SET_TEMP,
         .flag = 0,
         .src_address = 0,
@@ -101,7 +101,7 @@ TFM_LOADER_SERVICE_API(int32_t, cau_temperature_write_to_firmware)(void)
 TFM_LOADER_SERVICE_API(int32_t, cau_get_temperature)(void)
 {
     struct tfm_loader_pack_iovec iov = {
-        .target_id = 0,
+        .target_id = LOAD_TYPE_MAX,
         .function_id = TFM_LDS_CAU_GET_TEMP,
         .flag = 0,
         .src_address = 0,
@@ -116,7 +116,7 @@ TFM_LOADER_SERVICE_API(int32_t, cau_get_temperature)(void)
 TFM_LOADER_SERVICE_API(void, cau_temperature_enable)(void)
 {
     struct tfm_loader_pack_iovec iov = {
-        .target_id = 0,
+        .target_id = LOAD_TYPE_MAX,
         .function_id = TFM_LDS_CAU_TEM_ENABLE,
         .flag = 0,
         .src_address = 0,
