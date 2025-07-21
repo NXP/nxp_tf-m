@@ -5,6 +5,8 @@
  *
  */
 
+#include <stddef.h>
+#include <inttypes.h>
 
 #include "fatal_error.h"
 
@@ -29,7 +31,7 @@ __WEAK void log_error(char *file, uint32_t line, uint32_t err, void *sp, bool is
         }
 
         if (err != 0) {
-            printf("%08X ", err);
+            printf("%08"PRIx32" ", err);
         }
 
         if (file != NULL) {
@@ -37,11 +39,11 @@ __WEAK void log_error(char *file, uint32_t line, uint32_t err, void *sp, bool is
         }
 
         if (line != 0) {
-            printf("at line %u ", line);
+            printf("at line %"PRIu32" ", line);
         }
 
         if (sp != NULL) {
-            printf("with SP=%p ", sp);
+            printf("with SP=0x%"PRIx32" ", (uint32_t)sp);
         }
 
         printf("\r\n");
