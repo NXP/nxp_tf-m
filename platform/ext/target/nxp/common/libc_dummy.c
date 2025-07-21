@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
-#if defined( __MCUXPRESSO ) || defined ( __GNUC__ )
-/* Dummy function to avoid libc_nano.a error during linking */
+#if defined( __MCUXPRESSO )
 __attribute__((weak)) void _close(void)
 {
 }
@@ -21,6 +20,10 @@ __attribute__((weak)) void _lseek(void)
 __attribute__((weak)) void _read(void)
 {
 }
+#endif
+
+#if defined( __MCUXPRESSO ) || defined ( __GNUC__ )
+/* Dummy function to avoid libc_nano.a error during linking */
 __attribute__((weak)) void _getpid_r(void)
 {
 }
