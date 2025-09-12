@@ -1,3 +1,7 @@
+#
+# Copyright 2025 NXP
+#
+# SPDX-License-Identifier: BSD-3-Clause
 # yaml-language-server: $schema=../../scripts/data_schema/example_description_schema.json
 tfm_s_crypto_clients:
   section-type: library
@@ -39,3 +43,4 @@ tfm_s_crypto_clients:
     mcxw72evk@cm33_core0: []
     frdmmcxw23: []
     mcxw23evk: []
+    frdmmcxl255@cm33: []

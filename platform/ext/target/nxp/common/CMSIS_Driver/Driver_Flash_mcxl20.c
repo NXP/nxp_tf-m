@@ -1,0 +1,404 @@
+/*
+ * Copyright (c) 2013-2022 ARM Limited. All rights reserved.
+ * Copyright 2025 NXP
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the License); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include "Driver_Flash.h"
+#include "platform_base_address.h"
+#include "flash_layout.h"
+#include "fsl_romapi.h"
+#include "fsl_common.h"
+
+#if TARGET_DEBUG_LOG
+#include "tfm_spm_log.h"
+#endif
+
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
+#ifndef ARG_UNUSED
+#define ARG_UNUSED(arg)  ((void)arg)
+#endif
+
+/* Driver version */
+#define ARM_FLASH_DRV_VERSION    ARM_DRIVER_VERSION_MAJOR_MINOR(1, 0)
+
+/**
+ * \brief Flash driver capability macro definitions \ref ARM_FLASH_CAPABILITIES
+ */
+/* Flash Ready event generation capability values */
+#define EVENT_READY_NOT_AVAILABLE   (0u)
+#define EVENT_READY_AVAILABLE       (1u)
+
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
+/*! @brief Flash driver Structure */
+static flash_config_t s_flashDriver;
+
+#if TARGET_DEBUG_LOG
+static uint32_t flash_destAdrss; /* Address of the target location */
+static uint32_t i, failedAddress, failedData;
+static uint32_t pflashBlockBase  = 0U;
+static uint32_t pflashTotalSize  = 0U;
+static uint32_t pflashSectorSize = 0U;
+static uint32_t PflashPageSize   = 0U;
+#endif
+
+/*-------------------------------------------------------*/
+
+/* Data access size values */
+ enum {
+    DATA_WIDTH_8BIT   = 0u,
+    DATA_WIDTH_16BIT,
+    DATA_WIDTH_32BIT,
+    DATA_WIDTH_ENUM_SIZE
+};
+
+static const uint32_t data_width_byte[DATA_WIDTH_ENUM_SIZE] = {
+    sizeof(uint8_t),
+    sizeof(uint16_t),
+    sizeof(uint32_t),
+};
+
+/* Chip erase capability values */
+#define CHIP_ERASE_NOT_SUPPORTED    (0u)
+#define CHIP_ERASE_SUPPORTED        (1u)
+
+/* ARM FLASH device structure */
+struct arm_flash_dev_t {
+    ARM_FLASH_INFO *data;         /*!< FLASH data */
+    flash_config_t flashInstance; /*!< FLASH config*/
+};
+
+/* Flash Status */
+static ARM_FLASH_STATUS FlashStatus = {0, 0, 0};
+
+/* Driver Version */
+static const ARM_DRIVER_VERSION DriverVersion = {
+    ARM_FLASH_API_VERSION,
+    ARM_FLASH_DRV_VERSION
+};
+
+/* Driver Capabilities */
+static const ARM_FLASH_CAPABILITIES DriverCapabilities = {
+    EVENT_READY_NOT_AVAILABLE,
+    DATA_WIDTH_8BIT,
+    CHIP_ERASE_SUPPORTED
+};
+
+static ARM_FLASH_INFO ARM_FLASH0_DEV_DATA = {
+    .sector_info  = NULL,                  /* Uniform sector layout */
+    .sector_count = FLASH0_SIZE / FLASH0_SECTOR_SIZE,
+    .sector_size  = FLASH0_SECTOR_SIZE,
+    .page_size    = FLASH0_PAGE_SIZE,
+    .program_unit = FLASH0_PROGRAM_UNIT,
+    .erased_value = 0xFF};
+
+static struct arm_flash_dev_t ARM_FLASH0_DEV = {
+    .data        = &(ARM_FLASH0_DEV_DATA)};
+
+static struct arm_flash_dev_t *FLASH0_DEV = &ARM_FLASH0_DEV;
+
+/* Prototypes */
+static bool is_range_valid(struct arm_flash_dev_t *flash_dev,
+                           uint32_t offset);
+static bool is_write_aligned(struct arm_flash_dev_t *flash_dev,
+                             uint32_t param);
+
+/* Functions */
+static ARM_DRIVER_VERSION ARM_Flash_GetVersion(void)
+{
+    return DriverVersion;
+}
+
+static ARM_FLASH_CAPABILITIES ARM_Flash_GetCapabilities(void)
+{
+    return DriverCapabilities;
+}
+
+static void speculation_buffer_clear(void)
+{
+    /* Clear Flash/Flash data speculation. */
+    if(((SYSCON->NVM_CTRL & SYSCON_NVM_CTRL_DIS_MBECC_ERR_INST_MASK) == 0U) 
+        && ((SYSCON->NVM_CTRL & SYSCON_NVM_CTRL_DIS_MBECC_ERR_DATA_MASK) == 0U))
+    {
+        if((SYSCON->NVM_CTRL & SYSCON_NVM_CTRL_DIS_FLASH_SPEC_MASK) == 0U)
+        {
+            /* Disable flash speculation first. */
+            SYSCON->NVM_CTRL |= SYSCON_NVM_CTRL_DIS_FLASH_SPEC_MASK;          
+            /* Re-enable flash speculation. */
+            SYSCON->NVM_CTRL &= ~SYSCON_NVM_CTRL_DIS_FLASH_SPEC_MASK;
+        }
+        if((SYSCON->NVM_CTRL & SYSCON_NVM_CTRL_DIS_DATA_SPEC_MASK) == 0U)
+        {
+            /* Disable flash data speculation first. */
+            SYSCON->NVM_CTRL |= SYSCON_NVM_CTRL_DIS_DATA_SPEC_MASK;          
+            /* Re-enable flash data speculation. */
+            SYSCON->NVM_CTRL &= ~SYSCON_NVM_CTRL_DIS_DATA_SPEC_MASK;
+        }
+    }
+}
+/*
+ * @brief Clear L1 low power cache.
+ *
+ */
+static void lpcac_clear(void)
+{
+    /* Clear L1 low power cache. */
+    if((SYSCON->LPCAC_CTRL & SYSCON_LPCAC_CTRL_DIS_LPCAC_MASK) == 0U)
+    {
+        SYSCON->LPCAC_CTRL |= SYSCON_LPCAC_CTRL_CLR_LPCAC_MASK;
+    }
+}
+
+
+static bool flash_init_is_done = false;
+static int32_t ARM_Flash_Initialize(ARM_Flash_SignalEvent_t cb_event)
+{
+    ARG_UNUSED(cb_event);
+    status_t status;
+
+
+    if (flash_init_is_done == false)
+    {
+        if (DriverCapabilities.data_width >= DATA_WIDTH_ENUM_SIZE) {
+            return ARM_DRIVER_ERROR;
+        }
+
+        /* Clean up Flash, Cache driver Structure*/
+        memset(&s_flashDriver, 0, sizeof(flash_config_t));
+        
+        /* Call initialization from Flash API */
+        status = FLASH_API->flash_init(&s_flashDriver);
+
+        if(status != kStatus_Success){
+            return ARM_DRIVER_ERROR;
+        }
+    
+        /* Disable Error Detection functionality */
+        flash_init_is_done = true;
+    }
+
+#if TARGET_DEBUG_LOG
+    /* Get flash properties kFLASH_ApiEraseKey */
+    FLASH_API->flash_get_property(&s_flashDriver, kFLASH_PropertyPflashBlockBaseAddr, &pflashBlockBase);
+    FLASH_API->flash_get_property(&s_flashDriver, kFLASH_PropertyPflashSectorSize, &pflashSectorSize);
+    FLASH_API->flash_get_property(&s_flashDriver, kFLASH_PropertyPflashTotalSize, &pflashTotalSize);
+    FLASH_API->flash_get_property(&s_flashDriver, kFLASH_PropertyPflashPageSize, &PflashPageSize);
+
+    /* Print flash information - PFlash. */
+    SPMLOG_INFMSGVAL("\r\n kFLASH_PropertyPflashBlockBaseAddr: ",pflashBlockBase);
+    SPMLOG_INFMSGVAL("\r\n kFLASH_PropertyPflashSectorSize: ",pflashSectorSize);
+    SPMLOG_INFMSGVAL("\r\n kFLASH_PropertyPflashTotalSize: ",pflashTotalSize);
+    SPMLOG_INFMSGVAL("\r\n kFLASH_PropertyPflashPageSize: ",PflashPageSize);
+#endif
+    
+    return ARM_DRIVER_OK;
+}
+
+static int32_t ARM_Flash_Uninitialize(void)
+{
+    flash_init_is_done = false;
+    /* Nothing to be done */
+    return ARM_DRIVER_OK;
+}
+
+static int32_t ARM_Flash_PowerControl(ARM_POWER_STATE state)
+{
+    switch (state) {
+    case ARM_POWER_FULL:
+        /* Nothing to be done */
+        return ARM_DRIVER_OK;
+
+    case ARM_POWER_OFF:
+    case ARM_POWER_LOW:
+    default:
+        return ARM_DRIVER_ERROR_UNSUPPORTED;
+    }
+}
+#ifndef SECTOR_INDEX_FROM_END
+#define SECTOR_INDEX_FROM_END 2U
+#endif
+static int32_t ARM_Flash_ReadData(uint32_t addr, void *data, uint32_t cnt)
+{
+    static uint32_t status;
+    /* Conversion between data items and bytes */
+    cnt *= data_width_byte[DriverCapabilities.data_width];
+    
+    /* Check Flash memory boundaries */
+    is_range_valid(FLASH0_DEV, addr + cnt);
+    if(status != kStatus_Success) {
+#if TARGET_DEBUG_LOG
+      SPMLOG_INFMSGVAL("ARM_Flash_ReadData addr:",addr);
+      SPMLOG_INFMSGVAL("ARM_Flash_ReadData cnt:",cnt);
+      SPMLOG_INFMSGVAL("ARM_Flash_ReadData status:",status);
+      SPMLOG_DBGMSG("\r\n***NOR Flash Read error parameters!***\r\n");
+#endif
+        return ARM_DRIVER_ERROR_PARAMETER;
+    }
+
+    /* Read Data */
+    (void)memcpy(data, (uint8_t *)addr, cnt);
+
+    return ARM_DRIVER_OK;;
+}
+
+static int32_t ARM_Flash_ProgramData(uint32_t addr, const void *data, uint32_t cnt)
+{
+    static uint32_t status;
+    uint32_t failedAddress, failedData;
+    /* Conversion between data items and bytes */
+    cnt *= data_width_byte[DriverCapabilities.data_width];
+
+    /* Check Flash memory boundaries */
+    status = is_range_valid(FLASH0_DEV, addr);
+    status |= is_write_aligned(FLASH0_DEV, addr);
+    status |= is_write_aligned(FLASH0_DEV, cnt);
+    if(status != kStatus_Success) {
+        return ARM_DRIVER_ERROR_PARAMETER;
+    }
+    /* Clear speculation buffer and lpcac. */
+    speculation_buffer_clear();
+    lpcac_clear();
+    
+    /* Disable interrupts*/
+    uint32_t regPrimask = DisableGlobalIRQ();
+    
+    /* write to flash */
+    status = FLASH_API->flash_program_page(&s_flashDriver, addr, (uint8_t *)data, cnt);
+    /* Enable interrupts*/
+    EnableGlobalIRQ(regPrimask);
+
+    /* Clear speculation buffer and lpcac. */
+    speculation_buffer_clear();
+    lpcac_clear();
+
+    /* check flash write status*/
+    if (status != kStatus_Success) 
+    {
+#if TARGET_DEBUG_LOG
+        SPMLOG_INFMSGVAL("flash_program_page status:",status);
+#endif
+        return ARM_DRIVER_ERROR;
+    }
+
+    /* Disable interrupts*/
+    regPrimask = DisableGlobalIRQ();    
+
+    /* Verify flash write*/
+    status = FLASH_API->flash_verify_program(&s_flashDriver, addr, cnt, (const uint8_t *)data,
+                                             &failedAddress, &failedData);
+
+    /* Enable interrupts*/
+    EnableGlobalIRQ(regPrimask);
+
+    /* Clear speculation buffer and lpcac. */
+    speculation_buffer_clear();
+    lpcac_clear();
+    
+    if (status != kStatus_Success) 
+    {
+#if TARGET_DEBUG_LOG
+        SPMLOG_INFMSGVAL("flash_verify_program status:",status);
+#endif
+        return ARM_DRIVER_ERROR;
+    }
+    cnt /= data_width_byte[DriverCapabilities.data_width];
+
+    return cnt;
+}
+
+
+static int32_t ARM_Flash_EraseSector(uint32_t addr)
+{
+    static uint32_t status;
+
+    status = is_range_valid(FLASH0_DEV, addr);
+    status |= is_write_aligned(FLASH0_DEV, addr);
+    if(status != kStatus_Success) {
+        return ARM_DRIVER_ERROR_PARAMETER;
+    }
+
+    /* Disable interrupts*/
+    uint32_t regPrimask = DisableGlobalIRQ();    
+
+    /* flash erase call*/
+    status = FLASH_API->flash_erase_sector(&s_flashDriver, addr, s_flashDriver.PFlashSectorSize, kFLASH_ApiEraseKey);
+    if (status != kStatus_Success) 
+    {
+#if TARGET_DEBUG_LOG
+      SPMLOG_INFMSGVAL("flash_erase_sector addr:",addr);
+      SPMLOG_INFMSGVAL("flash_erase_sector status:",status);
+      SPMLOG_DBGMSG("\r\n***NOR Flash erase error parameters!***\r\n");
+#endif
+        return ARM_DRIVER_ERROR;
+    }
+
+    /* Enable interrupts*/
+    EnableGlobalIRQ(regPrimask);
+
+    return ARM_DRIVER_OK;
+}
+
+static ARM_FLASH_STATUS ARM_Flash_GetStatus(void)
+{
+    return FlashStatus;
+}
+
+static ARM_FLASH_INFO * ARM_Flash_GetInfo(void)
+{
+    return FLASH0_DEV->data;
+}
+
+ARM_DRIVER_FLASH Driver_FLASH0 = {
+    .GetVersion = ARM_Flash_GetVersion,
+    .GetCapabilities = ARM_Flash_GetCapabilities,
+    .Initialize = ARM_Flash_Initialize,
+    .Uninitialize = ARM_Flash_Uninitialize,
+    .PowerControl = ARM_Flash_PowerControl,
+    .ReadData = ARM_Flash_ReadData,
+    .ProgramData = ARM_Flash_ProgramData,
+    .EraseSector = ARM_Flash_EraseSector,
+    .GetStatus = ARM_Flash_GetStatus,
+    .GetInfo = ARM_Flash_GetInfo
+};
+
+/**
+ * \brief      Check if the Flash memory boundaries are not violated.
+ * \param[in]  flash_dev  Flash device structure \ref arm_flash_dev_t
+ * \param[in]  offset     Highest Flash memory address which would be accessed.
+ * \return     Returns true if Flash memory boundaries are not violated, false
+ *             otherwise.
+ */
+static bool is_range_valid(struct arm_flash_dev_t *flash_dev,
+                           uint32_t offset)
+{
+    uint32_t flash_limit = 0;
+
+    /* Calculating the highest address of the Flash memory address range */
+    flash_limit = FLASH0_SIZE - 1;
+
+    return (offset > flash_limit) ? (kStatus_Fail) : (kStatus_Success) ;
+}
+
+/* Check if the parameter is aligned to program_unit. */
+static bool is_write_aligned(struct arm_flash_dev_t *flash_dev,
+                             uint32_t param)
+{
+    return ((param % flash_dev->data->program_unit) != 0) ? (kStatus_Fail) : (kStatus_Success);
+}
