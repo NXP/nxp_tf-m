@@ -140,6 +140,9 @@ typedef union {
     els_pkc_transparent_cipher_operation_t transparent_els_pkc_driver_ctx;
     els_pkc_opaque_cipher_operation_t opaque_els_pkc_driver_ctx;
 #endif
+#if defined(PSA_CRYPTO_DRIVER_SGI)
+    sgi_cipher_operation_t sgi_driver_ctx;
+#endif
 } psa_driver_cipher_context_t;
 
 #endif /* PSA_CRYPTO_DRIVER_CONTEXTS_PRIMITIVES_H */
