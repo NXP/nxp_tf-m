@@ -40,6 +40,9 @@ MEMORY
 #if defined(S_RAM_CODE_START)
   CODE_RAM (rwx) : ORIGIN = S_RAM_CODE_START, LENGTH = S_RAM_CODE_SIZE
 #endif
+#ifdef TFM_NCACHE_REGION_ENABLE
+  m_ncache (rw) : ORIGIN = 0x30200000, LENGTH = 0x00200000 //NXP
+#endif
 }
 
 #ifndef TFM_LINKER_VENEERS_START
@@ -702,7 +705,29 @@ SECTIONS
     /* CMPA region for EL2GO apps, made accessible to NS application. */
     Load$$LR$$LR_EL2GO_CMPA_REGION$$Base = EL2GO_CMPA_REGION_START;
 #endif /* TFM_EL2GO_CMPA_REGION */
-// --------- NXP end --------------
 
+/* ncache is a non-cacheable memory region intended for data that must bypass cache operations, such as DMA buffers or shared memory with peripherals. */
+#ifdef TFM_NCACHE_REGION_ENABLE
+  /* Non-cacheable data section */
+  __NCACHE_REGION_START = 0x30200000;
+  __NCACHE_REGION_SIZE  = 0x00200000;
+  __base_NCACHE_REGION = __NCACHE_REGION_START;
+  __top_NCACHE_REGION  = __NCACHE_REGION_SIZE;
+  .ncache.init : 
+  {
+    __noncachedata_start__ = .;   /* create a global symbol at ncache data start */
+    *(NonCacheable.init)
+    . = ALIGN(4);
+    __noncachedata_init_end__ = .;   /* create a global symbol at initialized ncache data end */
+  } > m_ncache
+  . = __noncachedata_init_end__;
+  .ncache :
+  {
+    *(NonCacheable)
+    . = ALIGN(4);
+    __noncachedata_end__ = .;     /* define a global symbol at ncache data end */
+  } > m_ncache
+#endif /* TFM_NCACHE_REGION_ENABLE */
+// --------- NXP end --------------
     PROVIDE(__stack = Image$$ARM_LIB_STACK$$ZI$$Limit);
 }

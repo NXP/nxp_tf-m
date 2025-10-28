@@ -43,3 +43,21 @@ LR_CODE NS_CODE_START {
      */
     ScatterAssert(ImageLimit(SRAM_WATERMARK) <= NS_DATA_START + NS_DATA_SIZE)
 }
+
+/* ncache is a non-cacheable memory region intended for data that must bypass cache operations, such as DMA buffers or shared memory with peripherals. */
+#ifdef TFM_NCACHE_REGION_ENABLE
+
+#define m_ncache_start               0x30200000
+#define m_ncache_size                0x00200000
+
+LR_NCACHE m_ncache_start{
+    RW_m_ncache m_ncache_start m_ncache_size{
+        *(NonCacheable.init)
+        *(NonCacheable)
+    }
+    RW_m_ncache_unused (m_ncache_start + m_ncache_size) 
+    {
+        ; Empty region added for MPU configuration
+    }
+}
+#endif /*TFM_NCACHE_REGION_ENABLE*/

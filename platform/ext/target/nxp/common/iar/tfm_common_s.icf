@@ -529,4 +529,16 @@ place at address EL2GO_DATA_IMPORT_REGION_START { block LR_EL2GO_DATA_IMPORT_REG
 define block LR_EL2GO_CMPA_REGION with size = EL2GO_CMPA_REGION_SIZE { };
 place at address EL2GO_CMPA_REGION_START { block LR_EL2GO_CMPA_REGION };
 #endif /* TFM_EL2GO_CMPA_REGION */
+
+/* ncache is a non-cacheable memory region intended for data that must bypass cache operations, such as DMA buffers or shared memory with peripherals. */
+#ifdef TFM_NCACHE_REGION_ENABLE
+define symbol m_ncache_start                   = 0x30200000;
+define symbol m_ncache_end                     = 0x303FFFFF;
+define exported symbol __NCACHE_REGION_START   = m_ncache_start;
+define exported symbol __NCACHE_REGION_SIZE    = m_ncache_end - __NCACHE_REGION_START + 1;
+define region NCACHE_region           = mem:[from m_ncache_start to m_ncache_end];
+define block NCACHE_VAR    { section NonCacheable , section NonCacheable.init };
+place in NCACHE_region                      { block NCACHE_VAR };
+#endif /* TFM_NCACHE_REGION_ENABLE */
+
 // --------- NXP end --------------
