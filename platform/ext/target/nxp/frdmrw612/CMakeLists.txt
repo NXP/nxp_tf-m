@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2020-2022, Arm Limited. All rights reserved.
-# Copyright 2023-2025 NXP
+# Copyright 2023-2024 NXP
 # Copyright (c) 2020, Linaro. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -29,6 +29,12 @@ set(CONFIG_EXPORT_MCUX_ELS_PKC_TARGETS ON)
 
 #add_t
 set(CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
+
+string(TOLOWER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_LOWER)
+if (BL2 AND ${BUILD_TYPE_LOWER} STREQUAL "debug")
+    Message(FATAL_ERROR "If BL2 is enabled, \"${CMAKE_BUILD_TYPE}\" build type cannot be selected as it is currently not \
+                         supported on ${TFM_PLATFORM}. For more information please refer to the platform's README file.")
+endif()
 
 set(HARDENING_COMPILE_DEFINITION "HARDENING_MACROS_ENABLED")
 if (DEFINED USE_HARDENED_PLATFORM_INIT)
@@ -59,10 +65,26 @@ target_compile_definitions(psa_interface
         ${TFM_WIFI_FLASH_REGION_COMPILE_DEFINITION}
 )
 
+target_compile_definitions(tfm_s
+    PUBLIC
+        BOOT_HEADER_ENABLE=1
+    )
+
 # Specify the location of platform specific build dependencies.
 target_sources(tfm_s
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/Device/Source/startup_frdmrw612.c
+)
+
+# Provide with the flash config files for rw61x
+target_sources(tfm_s
+    PUBLIC
+        ${NXP_HAL_FILE_PATH}/frdmrw612/project_template/flash_config/flash_config.c
+)
+
+target_include_directories(tfm_s
+    PUBLIC
+        ${NXP_HAL_FILE_PATH}/frdmrw612/project_template/flash_config
 )
 
 target_add_scatter_file(tfm_s
@@ -71,48 +93,7 @@ target_add_scatter_file(tfm_s
     $<$<C_COMPILER_ID:IAR>:${CMAKE_SOURCE_DIR}/platform/ext/target/nxp/common/iar/tfm_common_s.icf>
 )
 
-if(BL2)
-    target_compile_definitions(tfm_s
-    PUBLIC
-        BOOT_HEADER_ENABLE=0
-    )
-    target_compile_definitions(bl2
-    PUBLIC
-        BOOT_HEADER_ENABLE=1
-    )
 
-    target_include_directories(bl2
-        PRIVATE
-            ${NXP_HAL_FILE_PATH}/frdmrw612/project_template/flash_config
-    )
-
-    target_sources(bl2
-        PRIVATE
-		    ${NXP_HAL_FILE_PATH}/frdmrw612/project_template/flash_config/flash_config.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/Device/Source/startup_frdmrw612.c
-    )
-    target_add_scatter_file(bl2
-            $<$<C_COMPILER_ID:ARMClang>:${PLATFORM_DIR}/platform/ext/target/nxp/common/armclang/tfm_common_bl2.sct>
-            $<$<C_COMPILER_ID:GNU>:${CMAKE_SOURCE_DIR}/platform/ext/target/nxp/common/gcc/tfm_common_bl2.ld>
-            $<$<C_COMPILER_ID:IAR>:${CMAKE_SOURCE_DIR}/platform/ext/target/nxp/common/iar/tfm_common_bl2.icf>
-    )
-else()
-    # when BL2 is not enabled
-    target_compile_definitions(tfm_s
-        PUBLIC
-            BOOT_HEADER_ENABLE=1
-        )
-    # Provide with the flash config files for frdmrw612
-    target_sources(tfm_s
-        PUBLIC
-            ${NXP_HAL_FILE_PATH}/frdmrw612/project_template/flash_config/flash_config.c
-    )
-    
-    target_include_directories(tfm_s
-        PUBLIC
-            ${NXP_HAL_FILE_PATH}/frdmrw612/project_template/flash_config
-    )
-endif()
 
 #========================= Platform Secure ====================================#
 
@@ -236,107 +217,6 @@ target_sources(tfm_s
     PRIVATE
         project_template/s/hardware_init.c
 )
-
-#========================= Platform BL2 =======================================#
-if(BL2)
-
-    target_compile_definitions(platform_bl2
-    PRIVATE
-        PLATFORM_BUILD_BL2=1
-    )
-
-    target_include_directories(platform_bl2
-        PUBLIC
-            partition
-            Device/Include
-            project_template/bl2
-            ${PLATFORM_DIR}/ext/target/nxp/common
-            ${PLATFORM_DIR}/ext/target/nxp/common/Device/Include
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/drivers
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers
-        PRIVATE
-            .
-            ${PLATFORM_DIR}/ext/target/nxp/common/Device/Config
-            ${PLATFORM_DIR}/ext/target/nxp/common/Device/Include
-
-            ${NXP_HAL_FILE_PATH}/frdmrw612/CMSIS_Driver
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/drivers
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/drivers/romapi
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/drivers/romapi
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/drivers/romapi/bootloader
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/drivers/romapi/flexspi
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/drivers/romapi/iap
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/drivers/romapi/nboot
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/drivers/romapi/otp
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/components/lists
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/components/serial_manager
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/components/uart
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/utilities/debug_console
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/utilities/str
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/components/serial_manager
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/components/uart
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/utilities/debug_console
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/utilities/str
-            "$<TARGET_PROPERTY:McuxElsPkc,INTERFACE_INCLUDE_DIRECTORIES>"
-    )
-    target_sources(platform_bl2
-        PRIVATE
-            project_template/bl2/board.c
-            project_template/bl2/clock_config.c
-            project_template/bl2/pin_mux.c
-            ${NXP_COMMON_DIR}/CMSIS_Driver/Driver_USART.c
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/system_RW612.c
-            ${NXP_COMMON_DIR}/CMSIS_Driver/Driver_USART.c
-            ${PLATFORM_DIR}/ext/target/nxp/frdmrw612/CMSIS_Driver/Driver_Flash_iap_frdmrw612.c
-            ${PLATFORM_DIR}/ext/target/nxp/frdmrw612/CMSIS_Driver/Driver_Flash_iap_frdmrw612_iped.c
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/drivers/fsl_clock.c
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/drivers/fsl_iped.c
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/drivers/fsl_power.c
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/drivers/fsl_reset.c
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/drivers/fsl_ocotp.c
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/drivers/romapi/bootloader/fsl_romapi.c
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/drivers/romapi/flexspi/fsl_romapi_flexspi.c
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/drivers/romapi/iap/fsl_romapi_iap.c
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/drivers/romapi/nboot/fsl_romapi_nboot.c
-            ${NXP_HAL_FILE_PATH}/frdmrw612/Native_Driver/drivers/romapi/otp/fsl_romapi_otp.c
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/fsl_common.c
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/fsl_common_arm.c
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/fsl_ctimer.c
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/fsl_flexcomm.c
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/fsl_gpio.c
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/fsl_cache.c
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/fsl_flexspi.c
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/fsl_trng.c
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/fsl_usart.c
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/utilities/fsl_assert.c
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/utilities/debug_console/fsl_debug_console.c
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/components/serial_manager/fsl_component_serial_manager.c
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/components/serial_manager/fsl_component_serial_port_uart.c
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/components/uart/fsl_adapter_usart.c
-            ${NXP_HAL_FILE_PATH}/common/Native_Driver/utilities/str/fsl_str.c
-            $<$<NOT:$<BOOL:${PLATFORM_DEFAULT_NV_COUNTERS}>>:${PLATFORM_DIR}/ext/target/nxp/frdmrw612/nv_counters.c>
-    )
-
-    # GNU ld has some strange behaviour to do with weak functions, and does not deal
-    # well with strong functions in static libraries overriding weak functions in
-    # object files. For this reason, the file hardware_init is linked directly to
-    # the s binary as an object file. This issue does not affect armclang, but the
-    # fix is compatible.
-    target_sources(bl2
-    PRIVATE
-        project_template/bl2/hardware_init.c
-    )
-
-    target_link_libraries(platform_bl2
-        PRIVATE
-            McuxElsPkc
-    )
-
-endif()
-
 
 #========================= Platform customizations ============================================#
 
