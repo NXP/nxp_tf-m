@@ -153,7 +153,6 @@ if(CONFIG_BUILD_WITH_TFM)
             ${TFM_SOURCE_DIR}/interface/include
             ${TFM_SOURCE_DIR}/platform/include
             ${TFM_SOURCE_DIR}/secure_fw/include
-            ${TFM_SOURCE_DIR}/secure_fw/spm/include
             ${TFM_SOURCE_DIR}/secure_fw/partitions/lib/runtime/include
             ${TFM_SOURCE_DIR}/secure_fw/partitions/crypto
             ${TFM_SOURCE_DIR}/secure_fw/partitions/crypto/psa_driver_api

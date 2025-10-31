@@ -54,9 +54,6 @@ set(TFM_MBEDCRYPTO_PLATFORM_EXTRA_CONFIG_PATH ""    CACHE PATH      "Config to a
 set(ITS_RAM_FS ON CACHE BOOL "")
 set(PS_RAM_FS ON CACHE BOOL "")
 
-############################ TF-M Profile #########################
-set(TFM_PROFILE                        "profile_large"    CACHE STRING "The TF-M profile")
-
 ################################## Adding Platform Specific Partition ################################
 set(TFM_EXTRA_MANIFEST_LIST_FILES "${CMAKE_CURRENT_SOURCE_DIR}/platform/ext/target/nxp/rdrw61x/partitions/tfm_manifest_list.yaml;"  CACHE PATH "Path to extra generated file list. Appended to stardard TFM generated file list." FORCE)
 set(TFM_EXTRA_PARTITION_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/platform/ext/target/nxp/rdrw61x/partitions/loader_service;"  CACHE PATH "Path to extra generated file list. Appended to stardard TFM generated file list." FORCE)
