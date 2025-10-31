@@ -1582,12 +1582,9 @@ status_t load_service(LOAD_Target_Type loadTarget, uint32_t sourceAddr)
         (void)__OtpDeInit();
     }
 
-    if (LOAD_WIFI_FIRMWARE == loadTarget)
-    {
-        cau_temperature_enable_impl();
-        cau_pmip_v33_enable();
-        cau_temperature_write_to_firmware_impl();
-    }
+    cau_temperature_enable_impl();
+    cau_pmip_v33_enable();
+    cau_temperature_write_to_firmware_impl();
 
     if (status == kStatus_Success)
     {
@@ -1678,12 +1675,9 @@ static status_t load_service_monolithic(LOAD_Target_Type loadTarget, uint32_t so
         (void)__OtpDeInit();
     }
 
-    if (LOAD_WIFI_FIRMWARE == loadTarget)
-    {
-        cau_temperature_enable_impl();
-        cau_pmip_v33_enable();
-        cau_temperature_write_to_firmware_impl();
-    }
+    cau_temperature_enable_impl();
+    cau_pmip_v33_enable();
+    cau_temperature_write_to_firmware_impl();
 
     if (status == kStatus_Success)
     {
