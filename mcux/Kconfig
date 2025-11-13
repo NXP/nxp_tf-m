@@ -58,6 +58,7 @@ menu "TF-M (Trusted Firmware-M)"
                 select MCUX_COMPONENT_component.psa_crypto_driver.els_pkc if ((MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612 || MCUX_HW_DEVICE_MCXN235 || MCUX_HW_DEVICE_MCXN236 || MCUX_HW_DEVICE_MCXN546 || MCUX_HW_DEVICE_MCXN547 || MCUX_HW_DEVICE_MCXN946 || MCUX_HW_DEVICE_MCXN947 || MCUX_HW_DEVICE_MIMXRT735S || MCUX_HW_DEVICE_MIMXRT758S || MCUX_HW_DEVICE_MIMXRT798S))
                 select MCUX_COMPONENT_component.psa_crypto_driver.ele_s200 if ((MCUX_HW_DEVICE_KW45Z41052 || MCUX_HW_DEVICE_KW45Z41053 || MCUX_HW_DEVICE_KW45Z41082 || MCUX_HW_DEVICE_KW45Z41083 || MCUX_HW_DEVICE_KW45B41Z82 || MCUX_HW_DEVICE_KW45B41Z52 || MCUX_HW_DEVICE_KW45B41Z53 || MCUX_HW_DEVICE_KW45B41Z83 || MCUX_HW_DEVICE_MCXW716C || MCUX_HW_DEVICE_MCXW716A || MCUX_HW_DEVICE_MCXW727A || MCUX_HW_DEVICE_MCXW727C || MCUX_HW_DEVICE_MCXW727D || MCUX_HW_DEVICE_KW47B42Z83 || MCUX_HW_DEVICE_KW47B42Z96 || MCUX_HW_DEVICE_KW47B42Z97 || MCUX_HW_DEVICE_KW47B42ZB2 || MCUX_HW_DEVICE_KW47B42ZB3 || MCUX_HW_DEVICE_KW47B42ZB6 || MCUX_HW_DEVICE_KW47B42ZB7 || MCUX_HW_DEVICE_KW47Z42082 || MCUX_HW_DEVICE_KW47Z42092 || MCUX_HW_DEVICE_KW47Z420B2 || MCUX_HW_DEVICE_KW47Z420B3))
                 select MCUX_COMPONENT_middleware.mbedtls3x.crypto if (MCUX_HW_DEVICE_MCXW236 || MCUX_HW_DEVICE_MCXL255)
+                select MCUX_COMPONENT_middleware.mbedtls3x.p256m if (MCUX_COMPONENT_middleware.tfm.profile_medium && MCUX_COMPONENT_middleware.tfm.s)
 
             menu "Initial Attestation"
                 config MCUX_COMPONENT_middleware.tfm.s.initial_attestation
@@ -147,6 +148,13 @@ menu "TF-M (Trusted Firmware-M)"
             config MCUX_COMPONENT_middleware.tfm.usart
                 bool "USART"
                 select MCUX_COMPONENT_driver.flexcomm_usart
+        endmenu
+
+        menu "Crypto cipher module with Medium profile"
+            config MCUX_COMPONENT_middleware.tfm.enable_crypto_cipher_module
+                bool "Enable Crypto Cipher Module"
+                default y if (MCUX_COMPONENT_middleware.tfm.profile_medium && MCUX_COMPONENT_middleware.tfm.s)
+
         endmenu
     endmenu
 
@@ -456,6 +464,9 @@ menu "TF-M (Trusted Firmware-M)"
         menu "Tests Suites"
             config MCUX_COMPONENT_middleware.psatest.ns.crypto
                 bool "Crypto"
+
+            config MCUX_COMPONENT_middleware.psatest.ns.disable_crypto_cipher_module
+                bool "Disable crypto cipher module tests"
 
             config MCUX_COMPONENT_middleware.psatest.ns.initial_attestation
                 bool "Initial Attestation"
