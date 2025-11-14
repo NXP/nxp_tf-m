@@ -329,7 +329,6 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.enable_crypto_cipher_module)
     )
 endif()
 
-
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.platform_common)
     mcux_add_macro(
     

@@ -23,6 +23,11 @@
 #include "fsl_flash.h"
 #include "fsl_flash_ffr.h"
 
+#define TARGET_DEBUG_LOG 0
+#if TARGET_DEBUG_LOG
+#include "tfm_spm_log.h"
+#endif
+
 #ifndef ARG_UNUSED
 #define ARG_UNUSED(arg)  ((void)arg)
 #endif
@@ -195,10 +200,8 @@ static int32_t ARM_Flash_ReadData(uint32_t addr, void *data, uint32_t cnt)
 
     /* Read Data */
     if(cnt) {
-        status  = FLASH_Read(&FLASH0_DEV->flashInstance, addr, (uint8_t *)data, cnt);
-        if(status != kStatus_Success) {
-            return ARM_DRIVER_ERROR;
-        }
+        /* Read Data */
+        (void)memcpy(data, (void *)(FLASH_BASE_ADDRESS + addr), cnt);
     }
 
     cnt /= data_width_byte[DriverCapabilities.data_width];
@@ -225,11 +228,13 @@ static int32_t ARM_Flash_ProgramData(uint32_t addr, const void *data, uint32_t c
         return ARM_DRIVER_ERROR;
     }
 
+#if defined(FLASH_DEBUG) /*Disabled flash program verify*/ 
     status = FLASH_VerifyProgram(&FLASH0_DEV->flashInstance, addr, cnt, (const uint8_t *)data,
 				 &failedAddress, &failedData);
     if (status != kStatus_Success) {
         return ARM_DRIVER_ERROR;
     }
+#endif
 
     cnt /= data_width_byte[DriverCapabilities.data_width];
     return cnt;
