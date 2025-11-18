@@ -40,11 +40,6 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
     # mbedtls3x related config handling
     mcux_remove_macro("-DMBEDTLS_CONFIG_FILE=\\\"mcux_mbedtls_psa_crypto_config.h\\\"")
     mcux_remove_configuration("-DMBEDTLS_CONFIG_FILE=\\\"mcux_mbedtls_psa_crypto_config.h\\\"")
-    mcux_add_macro(
-         CC "-DCRYPTO_HW_ACCELERATOR\
-           "
-    )
-
     mcux_add_source(
         SOURCES 
         tf-m/lib/fih/inc/fih.h
@@ -318,13 +313,22 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_small.s_configs)
     )
 endif()
 
-
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.enable_crypto_cipher_module)
     mcux_add_macro(
          CC "-DPSA_WANT_ALG_CBC_NO_PADDING=1\
              -DPSA_WANT_ALG_CMAC=1\
              -DPSA_WANT_ALG_DETERMINISTIC_ECDSA=1\
              -DPSA_WANT_KEY_TYPE_ECC_KEY_PAIR=1\
+            "
+    )
+endif()
+
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.enable_platform_no_flash)
+    mcux_add_macro(
+ 		CC "-DPLATFORM_NO_FLASH\
+            -DPS_RAM_FS\
+            -DITS_RAM_FS\
+			-DOTP_NV_COUNTERS_RAM_EMULATION\
             "
     )
 endif()
@@ -345,6 +349,31 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.platform_common)
         INCLUDES tf-m/platform/include
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
+endif()
+
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.platform_nv_seed)
+    mcux_add_macro(
+    
+        CC "-DPLATFORM_DEFAULT_NV_SEED\
+           "
+    )
+    mcux_add_source(
+        SOURCES 
+        tf-m/platform/ext/common/template/crypto_nv_seed.c 
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES tf-m/platform/include
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.accelerator)
+    mcux_add_macro(
+         CC "-DCRYPTO_HW_ACCELERATOR\
+           "
+    )
+
 endif()
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.loader_service)
@@ -488,6 +517,14 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.flash_k4_romapi)
     mcux_add_source(
         SOURCES 
         tf-m/platform/ext/target/nxp/common/CMSIS_Driver/Driver_Flash_k4.c
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.flash_dummy)
+    mcux_add_source(
+        SOURCES 
+        tf-m/platform/ext/target/nxp/common/CMSIS_Driver/Driver_Flash_dummy.c
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()

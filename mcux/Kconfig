@@ -39,6 +39,13 @@ menu "TF-M (Trusted Firmware-M)"
             select MCUX_COMPONENT_middleware.tfm.s.loader_service
             depends on MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612
 
+        config MCUX_COMPONENT_middleware.tfm.s.platform_nv_seed
+            bool "Use Default NV seed in RAM"
+
+        config MCUX_COMPONENT_middleware.tfm.s.accelerator
+			default y
+            bool "Use Crypto HW Accelerator"
+
         menu "Partitions"
             config MCUX_COMPONENT_middleware.tfm.s.platform
                 bool "Platform"
@@ -139,6 +146,9 @@ menu "TF-M (Trusted Firmware-M)"
             config MCUX_COMPONENT_middleware.tfm.flash_rt700
                 bool "RT700"
                 select MCUX_COMPONENT_component.mflash_offchip
+
+            config MCUX_COMPONENT_middleware.tfm.flash_dummy
+                bool "Dummy flash Driver for platforms with no Flash"
         endmenu
 
         menu "Serial Comm Drivers"
@@ -156,6 +166,13 @@ menu "TF-M (Trusted Firmware-M)"
                 default y if (MCUX_COMPONENT_middleware.tfm.profile_medium && MCUX_COMPONENT_middleware.tfm.s)
 
         endmenu
+
+        menu "Option to use RAM FS for platform with no flash option"
+            config MCUX_COMPONENT_middleware.tfm.enable_platform_no_flash
+                bool "Enable ITS, PSA and OTP/NC Counters on RAM FS"
+
+        endmenu
+
     endmenu
 
     # -------- secure processing environment configs end here ----------------

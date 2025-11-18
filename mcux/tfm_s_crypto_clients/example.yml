@@ -51,3 +51,4 @@ tfm_s_crypto_clients:
     - -iar@flash_release
     - -mdk@flash_debug
     - -mdk@flash_release
+    mcimx93evk: []
