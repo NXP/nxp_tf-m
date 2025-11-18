@@ -211,7 +211,9 @@ static int32_t ARM_Flash_ReadData(uint32_t addr, void *data, uint32_t cnt)
 static int32_t ARM_Flash_ProgramData(uint32_t addr, const void *data, uint32_t cnt)
 {
     static uint32_t status;
+#if defined(FLASH_DEBUG)
     uint32_t failedAddress, failedData;
+#endif
     /* Conversion between data items and bytes */
     cnt *= data_width_byte[DriverCapabilities.data_width];
 
