@@ -43,7 +43,7 @@ menu "TF-M (Trusted Firmware-M)"
             bool "Use Default NV seed in RAM"
 
         config MCUX_COMPONENT_middleware.tfm.s.accelerator
-			default y
+			default y if (MCUX_COMPONENT_middleware.tfm.s && !MCUX_COMPONENT_middleware.tfm.s.platform_nv_seed)
             bool "Use Crypto HW Accelerator"
 
         menu "Partitions"
