@@ -51,3 +51,4 @@ tfm_s_reg_suites:
     - -iar@flash_release
     - -mdk@flash_debug
     - -mdk@flash_release
+    mcimx93evk: []
