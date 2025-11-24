@@ -308,6 +308,12 @@ define block TFM_QUICK_ACESS_RO with alignment = 4 {
     ro code section CodeQuickAccess
        };  //NXP
 
+define block TFM_DATA_QUICK_ACESS_ZI with alignment = 4 {
+    zi section .bss.DataQuickAccess
+       };  //NXP
+define block TFM_DATA_QUICK_ACESS_RO with alignment = 4 {
+    ro code section DataQuickAccess
+       };  //NXP
     /*
      * This empty, zero long execution region is here to mark the end address
      * of PSA RoT RW and Stack.
@@ -342,7 +348,8 @@ define block LR_CODE with fixed order, maximum size = S_CODE_SIZE {
 
        block TFM_PSA_CODE_END,
 
-       block TFM_QUICK_ACESS_RO,
+       block TFM_QUICK_ACESS_RO,      //NXP
+       block TFM_DATA_QUICK_ACESS_RO, //NXP
 
 /**** APPLICATION RoT RO part (CODE + RODATA) start here */
     /*
@@ -447,7 +454,7 @@ define block PRIV_DATA with fixed order {
     block ARM_LIB_HEAP,
 #endif
     block TFM_QUICK_ACESS_ZI, //NXP
-    section DataQuickAccess,  //NXP
+    block TFM_DATA_QUICK_ACESS_ZI, //NXP
 
     block ER_TFM_DATA,
 
