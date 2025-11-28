@@ -11,15 +11,15 @@
 #define TRDC_N_BASE TRDC4_BASE
 
 #define TCM_CODE_START          (0x0FFE0000u)
-#define TCM_CODE_END            (0x0FFFFFFFu)
+#define TCM_CODE_SIZE           (0x20000u)
 #define TCM_DATA_START          (0x20000000u)
-#define TCM_DATA_END            (0x2001FFFFu)
+#define TCM_DATA_SIZE           (0x20000u)
 #define OCRAM_START             (0x20480000u)
-#define OCRAM_END               (0x2051FFFFu)
+#define OCRAM_SIZE              (0xA0000u)
 
 #define TCM_MBC_IDX                 1u
 #define TCM_CODE_SLV_IDX            0u 
-#define TCM_DATA_SLV_IDX            0u 
+#define TCM_DATA_SLV_IDX            1u 
 #define TCM_GLBAC_ALL_PERM_IDX      2u
 #define TCM_SUBREGION_SZ            (0x1000u) 
 

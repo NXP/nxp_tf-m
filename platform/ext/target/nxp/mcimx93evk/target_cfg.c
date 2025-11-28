@@ -84,8 +84,8 @@ int trdc_set_mbc_nse(uint32_t region_start, uint32_t region_end)
     trdc_mbc_memory_block_config_t mbcBlockConfig;
     (void)memset(&mbcBlockConfig, 0, sizeof(mbcBlockConfig));
 
-    if (region_start >= TCM_CODE_START && region_start <= TCM_CODE_END && 
-        region_end >= TCM_CODE_START && region_end <= TCM_CODE_END)
+    if (region_start >= TCM_CODE_START && region_start < (TCM_CODE_START + TCM_CODE_SIZE) && 
+        region_end >= TCM_CODE_START && region_end <= (TCM_CODE_START + TCM_CODE_SIZE))
     {
     	/* The regions have to be alligned to TCM_SUBREGION_SIZE*/
 	    assert(((region_start - TCM_CODE_START) % TCM_SUBREGION_SZ) == 0);
@@ -110,8 +110,8 @@ int trdc_set_mbc_nse(uint32_t region_start, uint32_t region_end)
         }
     }
     else
-    if (region_start >= TCM_DATA_START && region_start <= TCM_DATA_END &&
-    	region_end >= TCM_DATA_START && region_end <= TCM_DATA_END)
+    if (region_start >= TCM_DATA_START && region_start < (TCM_DATA_START + TCM_DATA_SIZE) &&
+    	region_end >= TCM_DATA_START && region_end <= (TCM_DATA_START + TCM_DATA_SIZE))
     {
         /* Check TF-A for GLBAC config for this memory */
         mbcBlockConfig.memoryAccessControlSelect = TCM_GLBAC_ALL_PERM_IDX;
@@ -136,7 +136,8 @@ int trdc_set_mbc_nse(uint32_t region_start, uint32_t region_end)
         }
     }
     else
-    if (region_start >= OCRAM_START && region_start <= OCRAM_END)
+    if (region_start >= OCRAM_START && region_start < (OCRAM_START + OCRAM_SIZE) &&
+		region_end >= OCRAM_START && region_end <= (OCRAM_START + OCRAM_SIZE))
     {
     	/* The regions have to be aligned to OCRAM_SUBREGION_SIZE*/
 	    assert(((region_start - OCRAM_START) % OCRAM_SUBREGION_SZ) == 0);
