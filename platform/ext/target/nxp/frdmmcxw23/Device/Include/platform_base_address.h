@@ -24,15 +24,15 @@
 #define __PLATFORM_BASE_ADDRESS_H__
 
 #include "platform_regs.h"           /* Platform registers */
-#include "MCXW236.h"
+#include "fsl_device_registers.h"
 
 /* Internal Flash memory */
 #define FLASH0_BASE_S                 (0x10000000)
 #define FLASH0_BASE_NS                (0x00000000)
 #define FLASH0_SIZE                   (FLASH_TOTAL_SIZE)              /* 1 MB */
 #define FLASH0_SECTOR_SIZE            (FLASH_AREA_IMAGE_SECTOR_SIZE)  /* Erase command is executed on sector (8K-byte), or whole chip */
-#define FLASH0_PAGE_SIZE              (FLASH_AREA_PROGRAM_SIZE)       /* Page (128 bytes) basis, or word basis. NOTE: currently set to 512 bytes */
-#define FLASH0_PROGRAM_UNIT           (FLASH_AREA_IMAGE_PHRASE_SIZE)  /* Minimum write size. RM mentions this as 16 bytes but ROM API's need the writes to be aligned to page size*/
+#define FLASH0_PAGE_SIZE              (FLASH_AREA_PROGRAM_SIZE)       /* Page (128 bytes) basis, or word basis */
+#define FLASH0_PROGRAM_UNIT           (FLASH_AREA_IMAGE_PHRASE_SIZE)  /* Minimum write size. RM mentions this as 16 bytes */
 
 
 #define USART_BASE                    USART0

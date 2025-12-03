@@ -44,13 +44,18 @@
 #define FLASH_NS_PARTITION_SIZE             (192 * 1024)       /* NS partition: 192 KB : (0x30000)  */
 
 /* Sector size of flash hardware (erase/program) */
-#define FLASH_AREA_IMAGE_SECTOR_SIZE        (8192U)             /* 8k. Flash memory erase operation granularity. FSL_FEATURE_SYSCON_FLASH_SECTOR_SIZE_BYTES */
-#define FLASH_AREA_PROGRAM_SIZE             (512U)              /* 512 B as page size*/
-#define FLASH_AREA_IMAGE_PHRASE_SIZE        (16U)              /* 16 B for write */
+#define FLASH_AREA_IMAGE_SECTOR_SIZE        (8192U)            /* 8k. Flash memory erase operation granularity. FSL_FEATURE_SYSCON_FLASH_SECTOR_SIZE_BYTES */
+#define FLASH_AREA_PROGRAM_SIZE             (128U)             /* 128 B as page size, FSL_FEATURE_SYSCON_FLASH_PAGE_SIZE_BYTES*/
+#define FLASH_AREA_IMAGE_PHRASE_SIZE        (16U)              /* 16 B for write, FSL_FEATURE_SYSCON_FLASH_PHRASE_SIZE_BYTES */
 
+#ifdef MCXW235_SERIES
 /* FLASH size */
-#define FLASH_TOTAL_SIZE                    (1040384U)    /* less than 1 MB  FSL_FEATURE_SYSCON_FLASH_SIZE_BYTES (1040384, or 0xFE000),  0xFE000-0xFFFFF is reserved for CFPA scratch */
-                                                            
+#define FLASH_TOTAL_SIZE                    (524288U)          /* 512 KB  FSL_FEATURE_SYSCON_FLASH_SIZE_BYTES (524288, or 0x80000)*/
+#else /* Device MCXW236 case*/
+/* FLASH size */
+#define FLASH_TOTAL_SIZE                    (1040384U)         /* less than 1 MB  FSL_FEATURE_SYSCON_FLASH_SIZE_BYTES (1040384, or 0xFE000),  0xFE000-0xFFFFF is reserved for CFPA scratch */
+#endif /* MCXW235_SERIES */
+
 /* Flash layout info for BL2 bootloader */
 #define FLASH_BASE_ADDRESS                  (0x00000000)
 #define FLASH_BASE_S                        (0x10000000)
@@ -179,6 +184,13 @@
 #define RESERVED_RAM_SIZE   0  /* PKC uses SRAMX, which is seperate, no need of reserved ram */
 
 #define TOTAL_ROM_SIZE      FLASH_TOTAL_SIZE
-#define TOTAL_RAM_SIZE      (0x0001C000)     /* 112 KB RAM (without SRAMX, without RAMX, without BLE-RAM) */
+
+#ifdef MCXW235_SERIES
+#define DEVICE_RAM_SIZE     (0x00014000)     /* 80 KB RAM (without SRAMX, without RAMX, without BLE-RAM) */
+#else /* Device MCXW236 case*/
+#define DEVICE_RAM_SIZE     (0x0001C000)     /* 112 KB RAM (without SRAMX, without RAMX, without BLE-RAM) */
+#endif /* MCXW235_SERIES */
+
+#define TOTAL_RAM_SIZE      DEVICE_RAM_SIZE
 
 #endif /* __FLASH_LAYOUT_H__ */
