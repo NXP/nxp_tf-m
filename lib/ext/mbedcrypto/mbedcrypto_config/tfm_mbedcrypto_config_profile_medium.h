@@ -610,7 +610,7 @@
 #endif
 
 #ifdef CRYPTO_HW_ACCELERATOR
-#include "mcux_mbedtls_accelerator_config.h"
+#include "mbedtls_accelerator_config.h"
 #endif
 
 #endif /* PROFILE_M_MBEDTLS_CONFIG_H */
