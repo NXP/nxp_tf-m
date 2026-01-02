@@ -14,8 +14,13 @@
 #include "config_tfm.h"
 
 /* Backends */
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
 #define CONFIG_TFM_SPM_BACKEND_IPC                               1
 #define CONFIG_TFM_SPM_BACKEND_SFN                               0
+#else
+#define CONFIG_TFM_SPM_BACKEND_IPC                               0
+#define CONFIG_TFM_SPM_BACKEND_SFN                               1
+#endif
 
 #define CONFIG_TFM_CONNECTION_BASED_SERVICE_API                  1
 #define CONFIG_TFM_MMIO_REGION_ENABLE                            1

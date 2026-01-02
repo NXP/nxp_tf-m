@@ -16,7 +16,7 @@ extern "C" {
 
 #define TFM_SP_CRYPTO_MODEL_IPC                                 0
 #define TFM_SP_CRYPTO_MODEL_SFN                                 1
-
+  
 psa_status_t tfm_crypto_sfn(const psa_msg_t* msg);
 
 

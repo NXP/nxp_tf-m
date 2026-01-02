@@ -40,10 +40,12 @@ REGION_DECLARE(Image$$, PT_TFM_SP_PS_TEST_PRIVATE, _DATA_START$$Base);
 REGION_DECLARE(Image$$, PT_TFM_SP_PS_TEST_PRIVATE, _DATA_END$$Base);
 #endif
 
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
 extern uint8_t tfm_sp_ps_test_stack[];
 
 /* Entrypoint function declaration */
 extern void tfm_ps_test_init(void);
+#endif
 
 /* Interrupt init functions */
 
@@ -73,18 +75,29 @@ const struct partition_tfm_sp_ps_test_load_info_t tfm_sp_ps_test_load
         .psa_ff_ver                 = 0x0101 | PARTITION_INFO_MAGIC,
         .pid                        = TFM_SP_PS_TEST,
         .flags                      = 0
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
                                     | PARTITION_MODEL_IPC
+#endif
                                     | PARTITION_MODEL_PSA_ROT
                                     | PARTITION_PRI_NORMAL,
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
         .entry                      = ENTRY_TO_POSITION(tfm_ps_test_init),
         .stack_size                 = 0x500,
+#else
+        .entry                      = ENTRY_TO_POSITION(0),
+        .stack_size                 = 0,
+#endif
         .heap_size                  = 0,
         .ndeps                      = TFM_SP_PS_TEST_NDEPS,
         .nservices                  = TFM_SP_PS_TEST_NSERVS,
         .nassets                    = TFM_SP_PS_TEST_NASSETS,
         .nirqs                      = TFM_SP_PS_TEST_NIRQS,
     },
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
     .stack_addr                     = (uintptr_t)tfm_sp_ps_test_stack,
+#else
+    .stack_addr                     = 0,
+#endif
     .heap_addr                      = 0,
     .deps = {
         TFM_CRYPTO_SID,
@@ -93,9 +106,13 @@ const struct partition_tfm_sp_ps_test_load_info_t tfm_sp_ps_test_load
     .services = {
         {
             .name_strid             = STRING_PTR_TO_STRID("TFM_PS_TEST_PREPARE"),
+
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
             .sfn                    = 0,
             .signal                 = TFM_PS_TEST_PREPARE_SIGNAL,
-
+#else
+            .sfn                    = ENTRY_TO_POSITION(tfm_ps_test_prepare_sfn),
+#endif
             .sid                    = 0x0000F0C0,
             .flags                  = 0
                                     | SERVICE_VERSION_POLICY_STRICT,

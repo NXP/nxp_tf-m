@@ -40,10 +40,12 @@ REGION_DECLARE(Image$$, PT_TFM_SP_SECURE_CLIENT_2_PRIVATE, _DATA_START$$Base);
 REGION_DECLARE(Image$$, PT_TFM_SP_SECURE_CLIENT_2_PRIVATE, _DATA_END$$Base);
 #endif
 
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
 extern uint8_t tfm_sp_secure_client_2_stack[];
 
 /* Entrypoint function declaration */
 extern void tfm_secure_client_2_init(void);
+#endif
 
 /* Interrupt init functions */
 
@@ -73,17 +75,28 @@ const struct partition_tfm_sp_secure_client_2_load_info_t tfm_sp_secure_client_2
         .psa_ff_ver                 = 0x0101 | PARTITION_INFO_MAGIC,
         .pid                        = TFM_SP_SECURE_CLIENT_2,
         .flags                      = 0
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
                                     | PARTITION_MODEL_IPC
+#endif
                                     | PARTITION_PRI_NORMAL,
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
         .entry                      = ENTRY_TO_POSITION(tfm_secure_client_2_init),
         .stack_size                 = 0x300,
+#else
+        .entry                      = ENTRY_TO_POSITION(0),
+        .stack_size                 = 0,
+#endif
         .heap_size                  = 0,
         .ndeps                      = TFM_SP_SECURE_CLIENT_2_NDEPS,
         .nservices                  = TFM_SP_SECURE_CLIENT_2_NSERVS,
         .nassets                    = TFM_SP_SECURE_CLIENT_2_NASSETS,
         .nirqs                      = TFM_SP_SECURE_CLIENT_2_NIRQS,
     },
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
     .stack_addr                     = (uintptr_t)tfm_sp_secure_client_2_stack,
+#else
+    .stack_addr                     = 0,
+#endif
     .heap_addr                      = 0,
     .deps = {
 #ifdef TFM_CRYPTO_SID
@@ -96,9 +109,12 @@ const struct partition_tfm_sp_secure_client_2_load_info_t tfm_sp_secure_client_2
     .services = {
         {
             .name_strid             = STRING_PTR_TO_STRID("TFM_SECURE_CLIENT_2"),
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
             .sfn                    = 0,
             .signal                 = TFM_SECURE_CLIENT_2_SIGNAL,
-
+#else
+            .sfn                    = ENTRY_TO_POSITION(tfm_secure_client_2_sfn),
+#endif
             .sid                    = 0x0000F0E0,
             .flags                  = 0
                                     | SERVICE_VERSION_POLICY_STRICT,

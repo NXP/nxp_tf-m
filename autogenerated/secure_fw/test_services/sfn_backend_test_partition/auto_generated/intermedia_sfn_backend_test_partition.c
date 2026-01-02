@@ -10,4 +10,6 @@
 #include <stdint.h>
 #include "config_tfm.h"
 
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
 uint8_t tfm_sfn_partition1_stack[0x200] __attribute__((aligned(8)));
+#endif

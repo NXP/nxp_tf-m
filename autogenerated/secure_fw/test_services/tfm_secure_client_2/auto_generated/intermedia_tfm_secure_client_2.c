@@ -10,4 +10,6 @@
 #include <stdint.h>
 #include "config_tfm.h"
 
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
 uint8_t tfm_sp_secure_client_2_stack[0x300] __attribute__((aligned(8)));
+#endif

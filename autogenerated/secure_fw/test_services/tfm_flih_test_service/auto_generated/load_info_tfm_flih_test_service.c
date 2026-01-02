@@ -40,10 +40,12 @@ REGION_DECLARE(Image$$, PT_TFM_SP_FLIH_TEST_PRIVATE, _DATA_START$$Base);
 REGION_DECLARE(Image$$, PT_TFM_SP_FLIH_TEST_PRIVATE, _DATA_END$$Base);
 #endif
 
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
 extern uint8_t tfm_sp_flih_test_stack[];
 
 /* Entrypoint function declaration */
 extern void tfm_flih_test_service_entry(void);
+#endif
 
 /* Interrupt init functions */
 extern enum tfm_hal_status_t tfm_timer0_irq_init(void *p_pt,
@@ -76,10 +78,17 @@ const struct partition_tfm_sp_flih_test_load_info_t tfm_sp_flih_test_load
         .psa_ff_ver                 = 0x0101 | PARTITION_INFO_MAGIC,
         .pid                        = TFM_SP_FLIH_TEST,
         .flags                      = 0
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
                                     | PARTITION_MODEL_IPC
+#endif
                                     | PARTITION_PRI_NORMAL,
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
         .entry                      = ENTRY_TO_POSITION(tfm_flih_test_service_entry),
         .stack_size                 = 0x0400,
+#else
+        .entry                      = ENTRY_TO_POSITION(0),
+        .stack_size                 = 0,
+#endif
         .heap_size                  = 0,
         .ndeps                      = TFM_SP_FLIH_TEST_NDEPS,
         .nservices                  = TFM_SP_FLIH_TEST_NSERVS,
@@ -91,9 +100,12 @@ const struct partition_tfm_sp_flih_test_load_info_t tfm_sp_flih_test_load
     .services = {
         {
             .name_strid             = STRING_PTR_TO_STRID("TFM_FLIH_TEST_CASE"),
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
             .sfn                    = 0,
             .signal                 = TFM_FLIH_TEST_CASE_SIGNAL,
-
+#else
+            .sfn                    = ENTRY_TO_POSITION(tfm_flih_test_case_sfn),	
+#endif
             .sid                    = 0x0000F0B0,
             .flags                  = 0
                                     | SERVICE_FLAG_NS_ACCESSIBLE

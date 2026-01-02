@@ -40,7 +40,9 @@ REGION_DECLARE(Image$$, PT_TFM_SP_SECURE_TEST_PARTITION_PRIVATE, _DATA_START$$Ba
 REGION_DECLARE(Image$$, PT_TFM_SP_SECURE_TEST_PARTITION_PRIVATE, _DATA_END$$Base);
 #endif
 
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
 extern uint8_t tfm_sp_secure_test_partition_stack[];
+#endif
 
 /* Entrypoint function declaration */
 extern void tfm_secure_client_service_init(void);
@@ -74,18 +76,28 @@ const struct partition_tfm_sp_secure_test_partition_load_info_t tfm_sp_secure_te
         .psa_ff_ver                 = 0x0101 | PARTITION_INFO_MAGIC,
         .pid                        = TFM_SP_SECURE_TEST_PARTITION,
         .flags                      = 0
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
                                     | PARTITION_MODEL_IPC
+#endif
                                     | PARTITION_MODEL_PSA_ROT
                                     | PARTITION_PRI_LOW,
         .entry                      = ENTRY_TO_POSITION(tfm_secure_client_service_init),
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
         .stack_size                 = 0x0D00,
+#else
+        .stack_size                 = 0,
+#endif
         .heap_size                  = 0,
         .ndeps                      = TFM_SP_SECURE_TEST_PARTITION_NDEPS,
         .nservices                  = TFM_SP_SECURE_TEST_PARTITION_NSERVS,
         .nassets                    = TFM_SP_SECURE_TEST_PARTITION_NASSETS,
         .nirqs                      = TFM_SP_SECURE_TEST_PARTITION_NIRQS,
     },
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
     .stack_addr                     = (uintptr_t)tfm_sp_secure_test_partition_stack,
+#else
+    .stack_addr                     = 0,
+#endif
     .heap_addr                      = 0,
     .deps = {
         TFM_SECURE_CLIENT_2_SID,
@@ -156,9 +168,12 @@ const struct partition_tfm_sp_secure_test_partition_load_info_t tfm_sp_secure_te
     .services = {
         {
             .name_strid             = STRING_PTR_TO_STRID("TFM_SECURE_CLIENT_SRV_DUMMY"),
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
             .sfn                    = 0,
             .signal                 = TFM_SECURE_CLIENT_SRV_DUMMY_SIGNAL,
-
+#else
+            .sfn                    = ENTRY_TO_POSITION(tfm_secure_client_srv_dummy_sfn), 
+#endif
             .sid                    = 0x0000F000,
             .flags                  = 0
                                     | SERVICE_VERSION_POLICY_STRICT,

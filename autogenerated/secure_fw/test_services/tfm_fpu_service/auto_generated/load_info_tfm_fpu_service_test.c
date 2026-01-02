@@ -40,10 +40,12 @@ REGION_DECLARE(Image$$, PT_TFM_SP_FPU_SERVICE_TEST_PRIVATE, _DATA_START$$Base);
 REGION_DECLARE(Image$$, PT_TFM_SP_FPU_SERVICE_TEST_PRIVATE, _DATA_END$$Base);
 #endif
 
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
 extern uint8_t tfm_sp_fpu_service_test_stack[];
 
 /* Entrypoint function declaration */
 extern void fpu_service_test_main(void);
+#endif
 
 /* Interrupt init functions */
 
@@ -72,10 +74,17 @@ const struct partition_tfm_sp_fpu_service_test_load_info_t tfm_sp_fpu_service_te
         .psa_ff_ver                 = 0x0101 | PARTITION_INFO_MAGIC,
         .pid                        = TFM_SP_FPU_SERVICE_TEST,
         .flags                      = 0
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
                                     | PARTITION_MODEL_IPC
+#endif
                                     | PARTITION_PRI_NORMAL,
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
         .entry                      = ENTRY_TO_POSITION(fpu_service_test_main),
         .stack_size                 = 0x0400,
+#else
+        .entry                      = ENTRY_TO_POSITION(0),
+        .stack_size                 = 0,
+#endif
         .heap_size                  = 0,
         .ndeps                      = TFM_SP_FPU_SERVICE_TEST_NDEPS,
         .nservices                  = TFM_SP_FPU_SERVICE_TEST_NSERVS,
@@ -87,9 +96,12 @@ const struct partition_tfm_sp_fpu_service_test_load_info_t tfm_sp_fpu_service_te
     .services = {
         {
             .name_strid             = STRING_PTR_TO_STRID("TFM_FPU_CHECK_FP_CALLEE_REGISTER"),
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
             .sfn                    = 0,
             .signal                 = TFM_FPU_CHECK_FP_CALLEE_REGISTER_SIGNAL,
-
+#else
+            .sfn                    = ENTRY_TO_POSITION(tfm_fpu_check_fp_callee_register_sfn),,
+#endif
             .sid                    = 0x0000F091,
             .flags                  = 0
                                     | SERVICE_FLAG_NS_ACCESSIBLE
@@ -98,9 +110,12 @@ const struct partition_tfm_sp_fpu_service_test_load_info_t tfm_sp_fpu_service_te
         },
         {
             .name_strid             = STRING_PTR_TO_STRID("TFM_FPU_TEST_NS_PREEMPT_S"),
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
             .sfn                    = 0,
             .signal                 = TFM_FPU_TEST_NS_PREEMPT_S_SIGNAL,
-
+#else
+            .sfn                    = ENTRY_TO_POSITION(tfm_fpu_test_ns_preempt_s_sfn),,
+#endif
             .sid                    = 0x0000F092,
             .flags                  = 0
                                     | SERVICE_FLAG_NS_ACCESSIBLE

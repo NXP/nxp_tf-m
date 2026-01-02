@@ -13,12 +13,17 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
 #define TFM_SP_PS_TEST_MODEL_IPC                                1
 #define TFM_SP_PS_TEST_MODEL_SFN                                0
 
 #define TFM_PS_TEST_PREPARE_SIGNAL                              (0x10)
+#else
+#define TFM_SP_PS_TEST_MODEL_IPC                                0
+#define TFM_SP_PS_TEST_MODEL_SFN                                1
 
+psa_status_t tfm_ps_test_prepare_sfn(const psa_msg_t* msg);
+#endif
 
 #ifdef __cplusplus
 }

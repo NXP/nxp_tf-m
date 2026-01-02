@@ -40,7 +40,9 @@ REGION_DECLARE(Image$$, PT_TFM_SFN_PARTITION1_PRIVATE, _DATA_START$$Base);
 REGION_DECLARE(Image$$, PT_TFM_SFN_PARTITION1_PRIVATE, _DATA_END$$Base);
 #endif
 
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
 extern uint8_t tfm_sfn_partition1_stack[];
+#endif
 
 extern psa_status_t sfn_test_partition_init(void);
 
@@ -73,25 +75,40 @@ const struct partition_tfm_sfn_partition1_load_info_t tfm_sfn_partition1_load
         .flags                      = 0
                                     | PARTITION_PRI_NORMAL,
         .entry                      = ENTRY_TO_POSITION(sfn_test_partition_init),
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
         .stack_size                 = 0x200,
+#else
+        .stack_size                 = 0,
+#endif
         .heap_size                  = 0,
         .ndeps                      = TFM_SFN_PARTITION1_NDEPS,
         .nservices                  = TFM_SFN_PARTITION1_NSERVS,
         .nassets                    = TFM_SFN_PARTITION1_NASSETS,
         .nirqs                      = TFM_SFN_PARTITION1_NIRQS,
     },
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
     .stack_addr                     = (uintptr_t)tfm_sfn_partition1_stack,
+#else
+    .stack_addr                     = 0,       
+#endif
+
     .heap_addr                      = 0,
     .services = {
         {
             .name_strid             = STRING_PTR_TO_STRID("SFN_TEST_STATELESS"),
             .sfn                    = ENTRY_TO_POSITION(sfn_test_stateless_sfn),
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
             .signal                 = 1,
-
+#endif
             .sid                    = 0x0000F100,
             .flags                  = 0
                                     | SERVICE_FLAG_NS_ACCESSIBLE
-                                    | SERVICE_FLAG_STATELESS | 0xa
+                                    | SERVICE_FLAG_STATELESS 
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
+                                    | 0xa
+#else
+                                    | 0x3
+#endif
                                     | SERVICE_FLAG_MM_IOVEC
                                     | SERVICE_VERSION_POLICY_RELAXED,
             .version                = 1,
@@ -99,8 +116,9 @@ const struct partition_tfm_sfn_partition1_load_info_t tfm_sfn_partition1_load
         {
             .name_strid             = STRING_PTR_TO_STRID("SFN_TEST_CONNECTION_BASED"),
             .sfn                    = ENTRY_TO_POSITION(sfn_test_connection_based_sfn),
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
             .signal                 = 2,
-
+#endif
             .sid                    = 0x0000F101,
             .flags                  = 0
                                     | SERVICE_FLAG_NS_ACCESSIBLE

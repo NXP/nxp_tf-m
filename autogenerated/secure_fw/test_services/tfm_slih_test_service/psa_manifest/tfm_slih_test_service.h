@@ -14,8 +14,13 @@
 extern "C" {
 #endif
 
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
 #define TFM_SP_SLIH_TEST_MODEL_IPC                              1
 #define TFM_SP_SLIH_TEST_MODEL_SFN                              0
+#else
+#define TFM_SP_SLIH_TEST_MODEL_IPC                              0
+#define TFM_SP_SLIH_TEST_MODEL_SFN                              1
+#endif
 
 #define TFM_SLIH_TEST_CASE_SIGNAL                               (0x10)
 

@@ -40,7 +40,9 @@ REGION_DECLARE(Image$$, PT_TFM_SP_PS_PRIVATE, _DATA_START$$Base);
 REGION_DECLARE(Image$$, PT_TFM_SP_PS_PRIVATE, _DATA_END$$Base);
 #endif
 
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
 extern uint8_t tfm_sp_ps_stack[];
+#endif
 
 extern psa_status_t tfm_ps_entry(void);
 
@@ -74,14 +76,23 @@ const struct partition_tfm_sp_ps_load_info_t tfm_sp_ps_load
         .flags                      = 0
                                     | PARTITION_PRI_NORMAL,
         .entry                      = ENTRY_TO_POSITION(tfm_ps_entry),
+
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
         .stack_size                 = PS_STACK_SIZE,
+#else
+        .stack_size                 = 0,
+#endif
         .heap_size                  = 0,
         .ndeps                      = TFM_SP_PS_NDEPS,
         .nservices                  = TFM_SP_PS_NSERVS,
         .nassets                    = TFM_SP_PS_NASSETS,
         .nirqs                      = TFM_SP_PS_NIRQS,
     },
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
     .stack_addr                     = (uintptr_t)tfm_sp_ps_stack,
+#else
+    .stack_addr                     = 0,
+#endif
     .heap_addr                      = 0,
     .deps = {
         TFM_CRYPTO_SID,
@@ -92,8 +103,9 @@ const struct partition_tfm_sp_ps_load_info_t tfm_sp_ps_load
         {
             .name_strid             = STRING_PTR_TO_STRID("TFM_PROTECTED_STORAGE_SERVICE"),
             .sfn                    = ENTRY_TO_POSITION(tfm_protected_storage_service_sfn),
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
             .signal                 = 1,
-
+#endif
             .sid                    = 0x00000060,
             .flags                  = 0
                                     | SERVICE_FLAG_NS_ACCESSIBLE

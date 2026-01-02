@@ -40,7 +40,9 @@ REGION_DECLARE(Image$$, PT_TFM_SP_CRYPTO_PRIVATE, _DATA_START$$Base);
 REGION_DECLARE(Image$$, PT_TFM_SP_CRYPTO_PRIVATE, _DATA_END$$Base);
 #endif
 
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
 extern uint8_t tfm_sp_crypto_stack[];
+#endif
 
 extern psa_status_t tfm_crypto_init(void);
 
@@ -75,14 +77,22 @@ const struct partition_tfm_sp_crypto_load_info_t tfm_sp_crypto_load
                                     | PARTITION_MODEL_PSA_ROT
                                     | PARTITION_PRI_NORMAL,
         .entry                      = ENTRY_TO_POSITION(tfm_crypto_init),
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
         .stack_size                 = CRYPTO_STACK_SIZE,
+#else
+        .stack_size                 = 0,        
+#endif
         .heap_size                  = 0,
         .ndeps                      = TFM_SP_CRYPTO_NDEPS,
         .nservices                  = TFM_SP_CRYPTO_NSERVS,
         .nassets                    = TFM_SP_CRYPTO_NASSETS,
         .nirqs                      = TFM_SP_CRYPTO_NIRQS,
     },
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
     .stack_addr                     = (uintptr_t)tfm_sp_crypto_stack,
+#else
+    .stack_addr                     = 0,    
+#endif
     .heap_addr                      = 0,
     .deps = {
         TFM_INTERNAL_TRUSTED_STORAGE_SERVICE_SID,
@@ -91,8 +101,9 @@ const struct partition_tfm_sp_crypto_load_info_t tfm_sp_crypto_load
         {
             .name_strid             = STRING_PTR_TO_STRID("TFM_CRYPTO"),
             .sfn                    = ENTRY_TO_POSITION(tfm_crypto_sfn),
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
             .signal                 = 1,
-
+#endif
             .sid                    = 0x00000080,
             .flags                  = 0
                                     | SERVICE_FLAG_NS_ACCESSIBLE
