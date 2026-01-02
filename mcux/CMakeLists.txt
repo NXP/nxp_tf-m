@@ -1,11 +1,86 @@
 #
-# Copyright 2024-2025 NXP
+# Copyright 2024-2026 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
 #---------------------------------------------------------------
 #-------------------- tf-m secure specific configs -------------
 #---------------------------------------------------------------
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.isolation_1_cfg)
+    mcux_add_macro(
+            CC "-DTFM_ISOLATION_LEVEL=1\
+			    -DCONFIG_TFM_CONNECTION_POOL_ENABLE\
+			    -DCONFIG_TFM_SPM_BACKEND_SFN=1\
+            "
+    )
+endif()
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.isolation_1)
+    mcux_add_source(
+        SOURCES 
+        tf-m/secure_fw/spm/include/ffm/backend_sfn.h
+        tf-m/secure_fw/spm/core/backend_sfn.c
+		tf-m/secure_fw/spm/core/psa_interface_sfn.c
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES
+        tf-m/secure_fw/spm/include/ffm
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.isolation_2_cfg)
+    mcux_add_macro(
+            CC "-DTFM_ISOLATION_LEVEL=2\
+			    -DCONFIG_TFM_PARTITION_META\
+				-DCONFIG_TFM_SPM_BACKEND_IPC=1\
+            "
+    )
+endif()
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.isolation_2)
+    mcux_add_source(
+        SOURCES 
+		tf-m/secure_fw/spm/include/ffm/backend_ipc.h
+        tf-m/secure_fw/spm/core/backend_ipc.c
+		tf-m/secure_fw/spm/core/psa_interface_thread_fn_call.c
+		tf-m/secure_fw/spm/core/psa_interface_svc.c
+		tf-m/secure_fw/spm/core/thread.c
+		tf-m/secure_fw/spm/core/thread.h
+		tf-m/secure_fw/partitions/lib/runtime/sfn_common_thread.c
+		tf-m/secure_fw/partitions/lib/runtime/psa_api_ipc.c
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES
+		tf-m/secure_fw/spm/include/ffm
+        tf-m/secure_fw/spm/core
+		tf-m/secure_fw/spm/core
+		tf-m/secure_fw/partitions/lib/runtime
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.partition_load_ps)
+    mcux_add_macro(
+            CC "-DPS_ENCRYPTION\
+            -DPS_ROLLBACK_PROTECTION\
+			-DTFM_PARTITION_PROTECTED_STORAGE\
+            "
+    )
+    mcux_add_source(
+        SOURCES 	
+	    tf-m/secure_fw/partitions/protected_storage/auto_generated/load_info_tfm_protected_storage.c
+        tf-m/secure_fw/partitions/protected_storage/psa_manifest/tfm_protected_storage.h
+        tf-m/secure_fw/partitions/protected_storage/crypto/ps_crypto_interface.h
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES 
+		tf-m/secure_fw/partitions/protected_storage/psa_manifest
+		tf-m/secure_fw/partitions/protected_storage/crypto
+        tf-m/secure_fw/partitions/protected_storage	
+        tf-m/secure_fw/partitions/protected_storage/auto_generated		
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
     mcux_add_macro(
             CC "-DCONFIG_TFM_BUILDING_SPE=1\
@@ -16,7 +91,6 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
             -DPLATFORM_DEFAULT_PROVISIONING\
             -DOTP_WRITEABLE\
             -DTFM_DUMMY_PROVISIONING\
-            -DCONFIG_TFM_PARTITION_META\
             -DCONFIG_TFM_FLOAT_ABI=2\
             -DCONFIG_TFM_ENABLE_CP10CP11\
             -DCONFIG_TFM_LAZY_STACKING\
@@ -25,15 +99,12 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
             -DATTEST_TOKEN_PROFILE_PSA_IOT_1\
             -DTEST_NS_ATTESTATION\
             -DTEST_S_ATTESTATION\
-            -DPS_ENCRYPTION\
-            -DPS_ROLLBACK_PROTECTION\
             "
     )
     
     #explicitly adding the partitions flags which are enabled in a secure crypto client lib
     mcux_add_macro(
          CC "-DTFM_PARTITION_INITIAL_ATTESTATION\
-            -DTFM_PARTITION_PROTECTED_STORAGE\
             "
     )
 
@@ -72,12 +143,13 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
         tf-m/platform/ext/target/arm/drivers/mpu/armv8m/mpu_armv8m_drv.c
         tf-m/platform/ext/target/arm/drivers/mpu/armv8m/mpu_armv8m_drv.h
         tf-m/platform/ext/target/nxp/common/crypto_accelerator_config.h
+		tf-m/platform/ext/target/nxp/common/mbedtls_accelerator_config.h
         tf-m/platform/ext/target/nxp/common/libc_dummy.c
         tf-m/platform/ext/target/nxp/common/crypto_hw.c
         tf-m/platform/ext/target/nxp/common/mpc_ppc_faults.c
         tf-m/platform/ext/target/nxp/common/services/src/tfm_platform_system.c
         tf-m/platform/ext/target/nxp/common/mmio_defs.h
-        tf-m/platform/ext/target/nxp/common/plat_huk.c
+        #tf-m/platform/ext/target/nxp/common/plat_huk.c
         tf-m/platform/ext/target/nxp/common/tfm_hal_isolation.c
         tf-m/platform/ext/target/nxp/common/tfm_hal_platform.c
         tf-m/platform/ext/target/nxp/common/Device/Config/device_cfg.h
@@ -104,8 +176,6 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
         tf-m/secure_fw/spm/include/tfm_arch_v8m.h
         tf-m/secure_fw/spm/include/ffm/mailbox_agent_api.h
         tf-m/secure_fw/spm/include/ffm/backend.h
-        tf-m/secure_fw/spm/include/ffm/backend_ipc.h
-        tf-m/secure_fw/spm/include/ffm/backend_sfn.h
         tf-m/secure_fw/spm/include/ffm/psa_api.h
         tf-m/secure_fw/spm/include/private/assert.h
         tf-m/secure_fw/spm/include/load/asset_defs.h
@@ -113,7 +183,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
         tf-m/secure_fw/spm/include/load/partition_defs.h
         tf-m/secure_fw/spm/include/load/service_defs.h
         tf-m/secure_fw/spm/include/load/spm_load_api.h
-        tf-m/secure_fw/spm/core/backend_ipc.c
+
         tf-m/secure_fw/spm/core/psa_api.c
         tf-m/secure_fw/spm/core/psa_call_api.c
         tf-m/secure_fw/spm/core/psa_connection_api.c
@@ -145,12 +215,10 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
         tf-m/secure_fw/partitions/lib/runtime/include/tfm_strnlen.h
         tf-m/secure_fw/partitions/lib/runtime/service_api.c
         tf-m/platform/ext/common/syscalls_stub.c
-        tf-m/secure_fw/partitions/lib/runtime/sfn_common_thread.c
         tf-m/secure_fw/partitions/lib/runtime/sprt_partition_metadata_indicator.c
         tf-m/secure_fw/partitions/lib/runtime/sprt_partition_metadata_indicator.h
         tf-m/secure_fw/partitions/lib/runtime/tfm_sp_log_raw.c
         tf-m/secure_fw/partitions/lib/runtime/crt_strnlen.c
-        tf-m/secure_fw/partitions/lib/runtime/psa_api_ipc.c
         tf-m/interface/src/tfm_psa_call.c
         tf-m/secure_fw/partitions/ns_agent_tz/load_info_ns_agent_tz.c
         tf-m/secure_fw/partitions/ns_agent_tz/ns_agent_tz_v80m.c
@@ -165,21 +233,13 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
         tf-m/secure_fw/spm/core/tfm_svcalls.h
         tf-m/secure_fw/spm/core/arch/tfm_arch.c
         tf-m/secure_fw/spm/core/arch/tfm_arch_v8m_main.c
-        tf-m/secure_fw/spm/core/psa_interface_thread_fn_call.c
-        tf-m/secure_fw/spm/core/psa_interface_svc.c
         tf-m/secure_fw/spm/core/rom_loader.c
         tf-m/secure_fw/spm/core/spm_ipc.c
         tf-m/secure_fw/spm/core/spm.h
         tf-m/secure_fw/spm/core/tfm_svcalls.c
         tf-m/secure_fw/spm/core/tfm_pools.c
-        tf-m/secure_fw/spm/core/thread.c
-        tf-m/secure_fw/spm/core/thread.h
         tf-m/secure_fw/partitions/initial_attestation/auto_generated/load_info_tfm_initial_attestation.c
         tf-m/secure_fw/partitions/initial_attestation/psa_manifest/tfm_initial_attestation.h
-        tf-m/secure_fw/partitions/protected_storage/auto_generated/load_info_tfm_protected_storage.c
-        tf-m/secure_fw/partitions/protected_storage/psa_manifest/tfm_protected_storage.h
-        tf-m/secure_fw/partitions/protected_storage/crypto/ps_crypto_interface.h
-        tf-m/secure_fw/partitions/crypto/auto_generated/load_info_tfm_crypto.c
         tf-m/secure_fw/partitions/crypto/psa_manifest/tfm_crypto.h
         tf-m/secure_fw/partitions/crypto/psa_driver_api/tfm_builtin_key_loader.h
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
@@ -206,7 +266,6 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
         tf-m/secure_fw/spm/include/ffm
         tf-m/secure_fw/spm/include/interface
         tf-m/secure_fw/partitions
-        tf-m/secure_fw/partitions/protected_storage/psa_manifest
         tf-m/secure_fw/partitions/crypto/psa_manifest
         tf-m/secure_fw/partitions/
         tf-m/secure_fw/partitions/initial_attestation/psa_manifest
@@ -215,8 +274,6 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
         tf-m/secure_fw/partitions/lib/runtime/include
         tf-m/secure_fw/partitions/initial_attestation/auto_generated
         tf-m/secure_fw/partitions/initial_attestation
-        tf-m/secure_fw/partitions/protected_storage/auto_generated
-        tf-m/secure_fw/partitions/protected_storage
         tf-m/secure_fw/partitions/crypto/auto_generated
         tf-m/secure_fw/partitions/crypto
         tf-m/secure_fw/partitions/crypto/psa_driver_api
@@ -231,8 +288,7 @@ endif()
 #adding tfm profile related configs when using secure build
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_large.s_configs)
     mcux_add_macro(
-         CC "-DTFM_ISOLATION_LEVEL=2\
-            -DPROJECT_CONFIG_HEADER_FILE=\\\"config_profile_large.h\\\"\
+         CC "-DPROJECT_CONFIG_HEADER_FILE=\\\"config_profile_large.h\\\"\
             -DMBEDTLS_CONFIG_FILE=\\\"tfm_mbedcrypto_config_profile_large.h\\\"\
             -DMBEDTLS_PSA_CRYPTO_CONFIG_FILE=\\\"crypto_config_profile_large.h\\\"\
             -DPS_CRYPTO_AEAD_ALG=PSA_ALG_CCM\
@@ -259,8 +315,7 @@ endif()
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_medium.s_configs)
     mcux_add_macro(
-         CC "-DTFM_ISOLATION_LEVEL=2\
-            -DPROJECT_CONFIG_HEADER_FILE=\\\"config_profile_medium.h\\\"\
+         CC "-DPROJECT_CONFIG_HEADER_FILE=\\\"config_profile_medium.h\\\"\
             -DMBEDTLS_CONFIG_FILE=\\\"tfm_mbedcrypto_config_profile_medium.h\\\"\
             -DMBEDTLS_PSA_CRYPTO_CONFIG_FILE=\\\"crypto_config_profile_medium.h\\\"\
             -DPS_CRYPTO_AEAD_ALG=PSA_ALG_CCM\
@@ -289,8 +344,7 @@ endif()
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_small.s_configs)
     mcux_add_macro(
-         CC "-DTFM_ISOLATION_LEVEL=1\
-            -DPROJECT_CONFIG_HEADER_FILE=\\\"config_profile_small.h\\\"\
+         CC "-DPROJECT_CONFIG_HEADER_FILE=\\\"config_profile_small.h\\\"\
             -DMBEDTLS_CONFIG_FILE=\\\"tfm_mbedcrypto_config_profile_small.h\\\"\
             -DMBEDTLS_PSA_CRYPTO_CONFIG_FILE=\\\"crypto_config_profile_small.h\\\"\
             -DSYMMETRIC_INITIAL_ATTESTATION\
@@ -971,13 +1025,73 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.initial_attestation)
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
-
-if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.ps)
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.secure_crypto_clients)
     mcux_add_macro(
-         CC "-DTFM_PARTITION_PROTECTED_STORAGE\
-            -DTFM_PARTITION_INTERNAL_TRUSTED_STORAGE\
+         CC "-DTFM_PARTITION_INTERNAL_TRUSTED_STORAGE\
             -DPLATFORM_DEFAULT_CRYPTO_KEYS\
             -DMBEDTLS_PSA_CRYPTO_DRIVERS\
+            "
+    )
+    mcux_add_source(
+        SOURCES
+        tf-m/interface/src/tfm_crypto_api.c
+		
+        tf-m/secure_fw/include/config_tfm.h
+        tf-m/secure_fw/include/array.h
+        tf-m/secure_fw/include/async.h
+
+        tf-m/config/config_base.h
+        tf-m/secure_fw/spm/core/spm.h
+        tf-m/secure_fw/spm/include/config_spm.h
+        tf-m/lib/fih/inc/fih.h
+
+        tf-m/secure_fw/partitions/lib/runtime/include/service_api.h
+        tf-m/secure_fw/partitions/lib/runtime/include/tfm_sp_log.h
+        tf-m/platform/ext/common/tfm_hal_sp_logdev.h
+        tf-m/platform/ext/common/tfm_hal_spm_logdev.h
+
+        tf-m/platform/ext/target/nxp/common/Device/Config/device_cfg.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/cmsis.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/device_definition.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/platform_description.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/platform_irq.h
+        tf-m/platform/ext/target/nxp/common/Device/Include/platform_regs.h
+        tf-m/platform/include/cmsis_override.h
+        tf-m/secure_fw/spm/include/interface/runtime_defs.h
+        tf-m/secure_fw/spm/include/interface/svc_num.h
+        tf-m/platform/ext/driver/Driver_Common.h
+        tf-m/platform/ext/driver/Driver_Flash.h
+        tf-m/platform/ext/driver/Driver_MPC.h
+        tf-m/platform/ext/driver/Driver_PPC.h
+        tf-m/platform/ext/driver/Driver_USART.h
+        tf-m/secure_fw/partitions/crypto/crypto_spe.h
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES 
+        tf-m/secure_fw/include
+        tf-m/config
+        tf-m/secure_fw/spm/core
+        tf-m/secure_fw/spm/include
+        tf-m/lib/fih/inc
+        tf-m/secure_fw/partitions/lib/runtime/include
+        tf-m/platform/ext/common
+        tf-m/platform/include
+        tf-m/platform/ext/target/nxp/common/Device/Config
+        tf-m/platform/ext/target/nxp/common/Device/Include
+        tf-m/platform/include
+        tf-m/secure_fw/spm/include/interface
+        tf-m/platform/ext/driver
+        tf-m/secure_fw/partitions/crypto
+        tf-m/interface/src
+        tf-m/secure_fw/partitions/platform
+        tf-m/
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.partition_ps)
+    mcux_add_macro(
+         CC "-DTFM_PARTITION_PROTECTED_STORAGE\
             -DPS_ENCRYPTION\
             -DPS_ROLLBACK_PROTECTION\
             -DPS_CRYPTO_AEAD_ALG=PSA_ALG_CCM\
@@ -1008,66 +1122,17 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.ps)
         tf-m/secure_fw/partitions/protected_storage/psa_manifest/tfm_protected_storage.h
         tf-m/secure_fw/partitions/protected_storage/nv_counters/ps_nv_counters.h
         tf-m/secure_fw/partitions/protected_storage/nv_counters/ps_nv_counters.c
-        tf-m/secure_fw/include/config_tfm.h
-        tf-m/secure_fw/include/array.h
-        tf-m/secure_fw/include/async.h
-
-        tf-m/config/config_base.h
-        tf-m/secure_fw/spm/core/spm.h
-        tf-m/secure_fw/spm/include/config_spm.h
-        tf-m/lib/fih/inc/fih.h
-
-        tf-m/secure_fw/partitions/lib/runtime/include/service_api.h
-        tf-m/secure_fw/partitions/lib/runtime/include/tfm_sp_log.h
-        tf-m/platform/ext/common/tfm_hal_sp_logdev.h
-        tf-m/platform/ext/common/tfm_hal_spm_logdev.h
-        tf-m/lib/ext/mbedcrypto/mbedcrypto_config/tfm_mbedcrypto_config_profile_large_client.h
-        tf-m/lib/ext/mbedcrypto/mbedcrypto_config/crypto_config_profile_large.h
-
-        tf-m/platform/ext/target/nxp/common/Device/Config/device_cfg.h
-        tf-m/platform/ext/target/nxp/common/Device/Include/cmsis.h
-        tf-m/platform/ext/target/nxp/common/Device/Include/device_definition.h
-        tf-m/platform/ext/target/nxp/common/Device/Include/platform_description.h
-        tf-m/platform/ext/target/nxp/common/Device/Include/platform_irq.h
-        tf-m/platform/ext/target/nxp/common/Device/Include/platform_regs.h
-        tf-m/platform/include/cmsis_override.h
-        tf-m/secure_fw/spm/include/interface/runtime_defs.h
-        tf-m/secure_fw/spm/include/interface/svc_num.h
         tf-m/secure_fw/partitions/internal_trusted_storage/tfm_internal_trusted_storage.h
-        tf-m/platform/ext/driver/Driver_Common.h
-        tf-m/platform/ext/driver/Driver_Flash.h
-        tf-m/platform/ext/driver/Driver_MPC.h
-        tf-m/platform/ext/driver/Driver_PPC.h
-        tf-m/platform/ext/driver/Driver_USART.h
-        tf-m/secure_fw/partitions/crypto/crypto_spe.h
-        tf-m/interface/src/tfm_crypto_api.c
-        
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
     mcux_add_include(
         INCLUDES 
-        tf-m/secure_fw/include
-        tf-m/config
-        tf-m/secure_fw/spm/core
-        tf-m/secure_fw/spm/include
-        tf-m/lib/fih/inc
-        tf-m/secure_fw/partitions/lib/runtime/include
-        tf-m/platform/ext/common
-        tf-m/lib/ext/mbedcrypto/mbedcrypto_config
-        tf-m/platform/include
-        tf-m/platform/ext/target/nxp/common/Device/Config
-        tf-m/platform/ext/target/nxp/common/Device/Include
-        tf-m/platform/include
-        tf-m/secure_fw/spm/include/interface
+
         tf-m/secure_fw/partitions/internal_trusted_storage
-        tf-m/platform/ext/driver
-        tf-m/secure_fw/partitions/crypto
         tf-m/interface/src
         tf-m/secure_fw/partitions/protected_storage/crypto
         tf-m/secure_fw/partitions/protected_storage
         tf-m/secure_fw/partitions/protected_storage/nv_counters
-        tf-m/secure_fw/partitions/platform
-        tf-m/
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
@@ -1138,6 +1203,30 @@ endif()
 #---------------------------------------------------------------
 #--------------- tf-m secure Regression Suites configs ---------
 #---------------------------------------------------------------
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test.partition_load_ps_tests)
+    mcux_add_macro(
+         CC "-DTEST_S_PS\
+            "
+    )
+    mcux_add_source(
+        SOURCES 
+        #ps tests
+        tf-m-tests/tests_reg/test/secure_fw/suites/ps/secure/s_test_helpers.h
+        tf-m-tests/tests_reg/test/secure_fw/suites/ps/secure/ps_tests.h
+        tf-m/autogenerated/secure_fw/test_services/tfm_ps_test_service/auto_generated/intermedia_tfm_ps_test_service.c
+        tf-m/autogenerated/secure_fw/test_services/tfm_ps_test_service/auto_generated/load_info_tfm_ps_test_service.c
+        tf-m/autogenerated/secure_fw/test_services/tfm_ps_test_service/psa_manifest/tfm_ps_test_service.h
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+	
+    mcux_add_include(
+        INCLUDES ./ 
+        #ps tests
+        tf-m-tests/tests_reg/test/secure_fw/suites/ps/secure
+        tf-m/autogenerated/secure_fw/test_services/tfm_ps_test_service
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test)
     mcux_add_macro(
          CC "-DTFM_S_REG_TEST\
@@ -1164,29 +1253,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test)
         tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_service/psa_manifest/tfm_secure_client_service.h 
         tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_2/auto_generated/intermedia_tfm_secure_client_2.c 
         tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_2/auto_generated/load_info_tfm_secure_client_2.c 
-        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_2/psa_manifest/tfm_secure_client_2.h 
-
-        #ps tests
-        tf-m-tests/tests_reg/test/secure_fw/suites/ps/secure/s_test_helpers.h
-        tf-m-tests/tests_reg/test/secure_fw/suites/ps/secure/ps_tests.h
-        tf-m/autogenerated/secure_fw/test_services/tfm_ps_test_service/auto_generated/intermedia_tfm_ps_test_service.c
-        tf-m/autogenerated/secure_fw/test_services/tfm_ps_test_service/auto_generated/load_info_tfm_ps_test_service.c
-        tf-m/autogenerated/secure_fw/test_services/tfm_ps_test_service/psa_manifest/tfm_ps_test_service.h
-    
-        #ipc tests (already part of the secure app)
-        tf-m-tests/tests_reg/test/secure_fw/suites/spm/ipc/secure/ipc_s_tests.h
-        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_service/auto_generated/intermedia_tfm_ipc_service_test.c
-        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_service/auto_generated/load_info_tfm_ipc_service_test.c
-        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_service/psa_manifest/tfm_ipc_service_test.h
-        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_client/auto_generated/intermedia_tfm_ipc_client_test.c
-        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_client/auto_generated/load_info_tfm_ipc_client_test.c
-        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_client/psa_manifest/tfm_ipc_client_test.h
-
-        #SLIH
-        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common/spm_test_defs.h 
-        tf-m/autogenerated/secure_fw/test_services/tfm_slih_test_service/auto_generated/intermedia_tfm_slih_test_service.c
-        tf-m/autogenerated/secure_fw/test_services/tfm_slih_test_service/auto_generated/load_info_tfm_slih_test_service.c 
-        tf-m/autogenerated/secure_fw/test_services/tfm_slih_test_service/psa_manifest/tfm_slih_test_service.h        
+        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_2/psa_manifest/tfm_secure_client_2.h      
         
         #platform
         tf-m-tests/tests_reg/test/secure_fw/suites/platform/secure/platform_s_tests.h 
@@ -1206,9 +1273,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test)
             -DTEST_S_ATTESTATION\
             -DTEST_S_ITS\
             -DTFM_PARTITION_TEST_PS\
-            -DTEST_S_PS\
-            -DTFM_PARTITION_SLIH_TEST\
-            "
+			"
     )
     
     mcux_add_include(
@@ -1221,20 +1286,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test)
         tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_service/psa_manifest 
         tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_service 
         tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_2/psa_manifest 
-        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_2
-        
-        #ps tests
-        tf-m-tests/tests_reg/test/secure_fw/suites/ps/secure
-        tf-m/autogenerated/secure_fw/test_services/tfm_ps_test_service
-        
-        #ipc tests (already part of the secure app
-        tf-m-tests/tests_reg/test/secure_fw/suites/spm/ipc/secure
-        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_service
-        tf-m/autogenerated/secure_fw/test_services/tfm_ipc_client
-        
-        #SLIH
-        tf-m-tests/tests_reg/test/secure_fw/suites/spm/common
-        tf-m/autogenerated/secure_fw/test_services/tfm_slih_test_service    
+        tf-m/autogenerated/secure_fw/test_services/tfm_secure_client_2 
        
         #platform
         tf-m-tests/tests_reg/test/secure_fw/suites/platform/secure
@@ -1365,7 +1417,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_small.s_test_configs)
     )
 endif()
 
-if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test.ps)
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test.partition_ps_tests)
     mcux_add_macro(
          CC "-DTFM_PARTITION_PROTECTED_STORAGE\
             -DTFM_PARTITION_TEST_PS\
@@ -1460,6 +1512,15 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test.attestation.symmetric)
         SOURCES 
         tf-m-tests/tests_reg/test/secure_fw/suites/attestation/secure/attest_symmetric_s_interface_testsuite.c 
         tf-m-tests/tests_reg/test/secure_fw/suites/attestation/attest_token_decode_symmetric.c
+        tf-m/secure_fw/partitions/initial_attestation/attest_token.h
+        tf-m/secure_fw/partitions/initial_attestation/attest.h
+        tf-m/lib/ext/t_cose/inc/t_cose_mac0_sign.h
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES 
+        tf-m/lib/ext/t_cose/inc
+        tf-m/secure_fw/partitions/initial_attestation
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()

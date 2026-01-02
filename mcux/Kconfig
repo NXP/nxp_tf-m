@@ -1,5 +1,5 @@
 #
-# Copyright 2024-2025 NXP
+# Copyright 2024-2026 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -20,12 +20,14 @@ menu "TF-M (Trusted Firmware-M)"
             select MCUX_COMPONENT_middleware.tfm.s.crypto
             select MCUX_COMPONENT_middleware.tfm.s.its
             select MCUX_COMPONENT_middleware.tfm.s.board
+            select MCUX_COMPONENT_middleware.tfm.s.protected_storage if (MCUX_COMPONENT_middleware.tfm.profile_large || MCUX_COMPONENT_middleware.tfm.profile_medium)
             select MCUX_COMPONENT_middleware.tfm.driver_headers
             select MCUX_COMPONENT_middleware.tfm.common_headers
             select MCUX_COMPONENT_middleware.tfm.s.platform
             select MCUX_COMPONENT_middleware.tfm.s.platform_common if (!(MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612))
             select MCUX_COMPONENT_middleware.tfm.s.platform_rw61x if (MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612)
-
+            select MCUX_COMPONENT_middleware.tfm.s.partition_load_ps if (MCUX_COMPONENT_middleware.tfm.s.protected_storage)
+            select MCUX_COMPONENT_middleware.tfm.s.test.partition_load_ps_tests if (MCUX_COMPONENT_middleware.tfm.s.test.protected_storage)
         config MCUX_COMPONENT_middleware.tfm.s.board
             bool
             select MCUX_COMPONENT_middleware.tfm.board_headers
@@ -43,7 +45,7 @@ menu "TF-M (Trusted Firmware-M)"
             bool "Use Default NV seed in RAM"
 
         config MCUX_COMPONENT_middleware.tfm.s.accelerator
-			default y if (MCUX_COMPONENT_middleware.tfm.s && !MCUX_COMPONENT_middleware.tfm.s.platform_nv_seed)
+            default y if (MCUX_COMPONENT_middleware.tfm.s && !MCUX_COMPONENT_middleware.tfm.s.platform_nv_seed)
             bool "Use Crypto HW Accelerator"
 
         menu "Partitions"
@@ -83,9 +85,22 @@ menu "TF-M (Trusted Firmware-M)"
                     bool "QCBOR"
             endmenu
 
-            config MCUX_COMPONENT_middleware.tfm.s.ps
-                bool "Protected Storage"
+            config MCUX_COMPONENT_middleware.tfm.s.protected_storage
+                bool "Protected Storage" 
+                default y if (MCUX_COMPONENT_middleware.tfm.profile_large || MCUX_COMPONENT_middleware.tfm.profile_medium)
 
+            config MCUX_COMPONENT_middleware.tfm.s.partition_load_ps
+                bool    
+            
+            config MCUX_COMPONENT_middleware.tfm.s.partition_ps
+                bool    
+            
+            config MCUX_COMPONENT_middleware.tfm.s.test.partition_load_ps_tests
+                bool
+            
+            config MCUX_COMPONENT_middleware.tfm.s.test.partition_ps_tests
+                bool
+        
             config MCUX_COMPONENT_middleware.tfm.s.its
                 bool "Internal Trusted Storage"
                 select MCUX_COMPONENT_middleware.tfm.s.its.load_info_common if (!(MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612))
@@ -178,7 +193,7 @@ menu "TF-M (Trusted Firmware-M)"
     # -------- secure processing environment configs end here ----------------
     config MCUX_COMPONENT_middleware.tfm.secure_crypto_clients
         bool "Secure Crypto Clients"
-        select MCUX_COMPONENT_middleware.tfm.s.ps
+        select MCUX_COMPONENT_middleware.tfm.s.partition_ps if ((MCUX_COMPONENT_middleware.tfm.profile_large || MCUX_COMPONENT_middleware.tfm.profile_medium) || MCUX_COMPONENT_middleware.tfm.s.protected_storage)
         select MCUX_COMPONENT_middleware.tfm.s.initial_attestation
         select MCUX_COMPONENT_middleware.tfm.board_headers
         select MCUX_COMPONENT_middleware.tfm.driver_headers
@@ -188,12 +203,50 @@ menu "TF-M (Trusted Firmware-M)"
         bool "Secure Regression Suites"
         select MCUX_COMPONENT_middleware.tfm.s.test.attestation.asymmetric if (MCUX_COMPONENT_middleware.tfm.profile_large || MCUX_COMPONENT_middleware.tfm.profile_medium)
         select MCUX_COMPONENT_middleware.tfm.s.test.attestation.symmetric if (MCUX_COMPONENT_middleware.tfm.profile_small)
+        select MCUX_COMPONENT_middleware.tfm.s.test.partition_ps_tests if ((MCUX_COMPONENT_middleware.tfm.profile_large || MCUX_COMPONENT_middleware.tfm.profile_medium) || MCUX_COMPONENT_middleware.tfm.s.test.protected_storage)
         select MCUX_COMPONENT_middleware.tfm.s.test.crypto
         select MCUX_COMPONENT_middleware.tfm.s.test.its
         select MCUX_COMPONENT_middleware.tfm.board_headers
         select MCUX_COMPONENT_middleware.tfm.driver_headers
         select MCUX_COMPONENT_middleware.tfm.common_headers
 
+    # -------- Isolation level configs define here ----------------
+    if MCUX_COMPONENT_middleware.tfm.s || MCUX_COMPONENT_middleware.tfm.ns || MCUX_COMPONENT_middleware.tfm.secure_crypto_clients || MCUX_COMPONENT_middleware.tfm.secure_reg_test_enable      
+      choice
+        prompt "TFM Isolation"
+        default MCUX_COMPONENT_middleware.tfm.isolation_level_2 if (MCUX_COMPONENT_middleware.tfm.profile_medium || MCUX_COMPONENT_middleware.tfm.profile_large)
+        default MCUX_COMPONENT_middleware.tfm.isolation_level_1 if (MCUX_COMPONENT_middleware.tfm.profile_small)
+
+        config MCUX_COMPONENT_middleware.tfm.isolation_level_1
+            bool "Level 1"
+
+        config MCUX_COMPONENT_middleware.tfm.isolation_level_2
+            bool "Level 2"
+
+        config MCUX_COMPONENT_middleware.tfm.isolation_level_3
+            bool "Level 3"
+            # Note: This remains available; users can select it explicitly
+      endchoice
+    endif
+
+
+    config MCUX_COMPONENT_middleware.tfm.s.isolation_1
+        bool
+        default y if (MCUX_COMPONENT_middleware.tfm.isolation_level_1 && MCUX_COMPONENT_middleware.tfm.s)
+
+    config MCUX_COMPONENT_middleware.tfm.s.isolation_1_cfg
+        bool
+        default y if (MCUX_COMPONENT_middleware.tfm.isolation_level_1 )
+
+    config MCUX_COMPONENT_middleware.tfm.s.isolation_2
+        bool
+        default y if (MCUX_COMPONENT_middleware.tfm.isolation_level_2 && MCUX_COMPONENT_middleware.tfm.s)
+        
+    config MCUX_COMPONENT_middleware.tfm.s.isolation_2_cfg
+        bool
+        default y if (MCUX_COMPONENT_middleware.tfm.isolation_level_2)
+
+    # -------- TF-M profile configs define here ----------------
     if MCUX_COMPONENT_middleware.tfm.s || MCUX_COMPONENT_middleware.tfm.ns || MCUX_COMPONENT_middleware.tfm.secure_crypto_clients || MCUX_COMPONENT_middleware.tfm.secure_reg_test_enable
       choice
         prompt "TFM Profile"
@@ -268,7 +321,7 @@ menu "TF-M (Trusted Firmware-M)"
 
     #------------------------------------------------End of profile related configs-----------------------------------
     #----------------------------------------------section for profile configs of psa-arch-test --------------------------
-	menu "psa-arch-test-profile"
+    menu "psa-arch-test-profile"
     config MCUX_COMPONENT_middleware.tfm.profile_large.ns_psatest_configs
         bool "large"
         default y if (MCUX_COMPONENT_middleware.tfm.profile_large && MCUX_COMPONENT_middleware.psatest.ns.crypto)
@@ -282,7 +335,7 @@ menu "TF-M (Trusted Firmware-M)"
         default y if (MCUX_COMPONENT_middleware.tfm.profile_small && MCUX_COMPONENT_middleware.psatest.ns.crypto)
     endmenu
 
-    #------------------------------------------------End of psa-profile related configs-----------------------------------		
+    #------------------------------------------------End of psa-profile related configs-----------------------------------        
     menu "Non-Secure Processing Environment"
     config MCUX_COMPONENT_middleware.tfm.ns
         bool "TF-M Non Secure"
@@ -323,8 +376,9 @@ menu "TF-M (Trusted Firmware-M)"
             config MCUX_COMPONENT_middleware.tfm.s.test
                 bool "Secure Test Framework"
 
-            config MCUX_COMPONENT_middleware.tfm.s.test.ps
+            config MCUX_COMPONENT_middleware.tfm.s.test.protected_storage
                 bool "S Protected Storage"
+                default y if (MCUX_COMPONENT_middleware.tfm.s.test && (MCUX_COMPONENT_middleware.tfm.profile_large || MCUX_COMPONENT_middleware.tfm.profile_medium))
 
             config MCUX_COMPONENT_middleware.tfm.s.test.its
                 bool "S Internal Trusted Storage"
@@ -387,7 +441,8 @@ menu "TF-M (Trusted Firmware-M)"
 
             config MCUX_COMPONENT_middleware.tfm.ns.test.ps
                 bool "NS Protected Storage"
-
+                default y if (MCUX_COMPONENT_middleware.tfm.ns.test && (MCUX_COMPONENT_middleware.tfm.profile_large || MCUX_COMPONENT_middleware.tfm.profile_medium))
+            
             config MCUX_COMPONENT_middleware.tfm.ns.test.its
                 bool "NS Internal Trusted Storage"
 
@@ -427,6 +482,7 @@ menu "TF-M (Trusted Firmware-M)"
 
             config MCUX_COMPONENT_middleware.tfm.ns.test.ipc
                 bool "NS IPC Test"
+                default y if (MCUX_COMPONENT_middleware.tfm.ns.test && (MCUX_COMPONENT_middleware.tfm.isolation_level_2 || MCUX_COMPONENT_middleware.tfm.isolation_level_3))
 
             config MCUX_COMPONENT_middleware.tfm.ns.test.irq_slih
                 bool "NS IRQ SLIH Test"

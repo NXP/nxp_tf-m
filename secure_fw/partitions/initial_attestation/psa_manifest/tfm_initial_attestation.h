@@ -13,13 +13,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#if CONFIG_TFM_SPM_BACKEND_IPC == 1
 #define TFM_SP_INITIAL_ATTESTATION_MODEL_IPC                    0
 #define TFM_SP_INITIAL_ATTESTATION_MODEL_SFN                    1
-#else
-#define TFM_SP_INITIAL_ATTESTATION_MODEL_IPC                    0
-#define TFM_SP_INITIAL_ATTESTATION_MODEL_SFN                    1
-#endif
   
 psa_status_t tfm_attestation_service_sfn(const psa_msg_t* msg);
 

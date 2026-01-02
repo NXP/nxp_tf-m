@@ -1,13 +1,15 @@
 #
-# Copyright 2025 NXP
+# Copyright 2025-2026 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
 # It is optional to provide example specific Kconfig.
 
-mainmenu "Mcux tfm_s_reg suites library"
+mainmenu "Mcux tfm_s_reg_suites library"
 
-source "${SdkRootDirPath}/drivers/Kconfig"
+source "${SdkRootDirPath}/examples/Kconfig"
 source "${SdkRootDirPath}/devices/Kconfig"
+source "${SdkRootDirPath}/drivers/Kconfig"
 source "${SdkRootDirPath}/components/Kconfig"
+osource "${SdkRootDirPath}/rtos/freertos/freertos-kernel/Kconfig"
 source "${SdkRootDirPath}/middleware/tfm/tf-m/mcux/Kconfig"
