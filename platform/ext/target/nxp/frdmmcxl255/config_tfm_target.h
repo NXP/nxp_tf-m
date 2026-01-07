@@ -15,8 +15,10 @@
 #define CRYPTO_EXT_RNG       1
 #endif
 
+#ifndef TFM_S_REG_TEST
 /* Enable PSA Crypto Cipher module */
 #define CRYPTO_CIPHER_MODULE_ENABLED           1
+#endif
 
 /* The stack size of the Protected Storage Secure Partition */
 #undef PS_STACK_SIZE
