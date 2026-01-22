@@ -45,6 +45,36 @@
 #endif
 
 #elif CONFIG_TFM_SPM_BACKEND_SFN == 1
+
+/* Helper toggles */
+#if TFM_S_REG_TEST
+#define TFM_REGRESSION_STACK_SIZE \
+        (0x0D00 + 0x0220 + \
+         0x0500 + 0x0300 + \
+         0x0400 + 0x0400 + 0x0400 + \
+         0x0200)
+#else
+#define TFM_REGRESSION_STACK_SIZE  0            /* nothing */
+#endif
+
+#ifdef TFM_PARTITION_NS_AGENT_MAILBOX
+#define ADD_NS_AGENT_MAILBOX_STACK()            + NS_AGENT_MAILBOX_STACK_SIZE
+#else
+#define ADD_NS_AGENT_MAILBOX_STACK()            /* nothing */
+#endif
+
+#ifdef TFM_PARTITION_PROTECTED_STORAGE
+#define ADD_PS_STACK()                          + PS_STACK_SIZE
+#else
+#define ADD_PS_STACK()                          /* nothing */
+#endif
+
+#ifdef TFM_PARTITION_INITIAL_ATTESTATION
+#define ADD_INIT_ATTEST_STACK()                 + ATTEST_STACK_SIZE
+#else
+#define ADD_INIT_ATTEST_STACK()                 /* nothing */
+#endif
+
 /*
  * In isolation level 1 SFN model, all subsequent components work on NS agent
  * stack. It is observed that half of the sum of all partition stack sizes is
@@ -55,7 +85,18 @@
  * The minimum value is 0x400 to satisfy the SPM functional requirement.
  * Manifest tool will assure this.
  */
-#define CONFIG_TFM_TOTAL_STACK_SIZE                              (0 + NS_AGENT_MAILBOX_STACK_SIZE + PS_STACK_SIZE + ITS_STACK_SIZE + CRYPTO_STACK_SIZE + PLATFORM_SP_STACK_SIZE + ATTEST_STACK_SIZE + FWU_STACK_SIZE + 0x0D00 + 0x0220 + 0x0300 + 0x500 + 0x300 + 0x0400 + 0x0400 + 0x0400 + 0x200)
+#define CONFIG_TFM_TOTAL_STACK_SIZE (                  \
+      0                                                \
+    ADD_NS_AGENT_MAILBOX_STACK()                       \
+    + ITS_STACK_SIZE                                   \
+    + CRYPTO_STACK_SIZE                                \
+    + PLATFORM_SP_STACK_SIZE                           \
+    ADD_PS_STACK()                                     \
+    ADD_INIT_ATTEST_STACK()                            \
+    + TFM_REGRESSION_STACK_SIZE                        \
+    + 0x0300                                           \
+)
+
 #if (CONFIG_TFM_TOTAL_STACK_SIZE < 2048)
 #undef CONFIG_TFM_TOTAL_STACK_SIZE                             
 #define CONFIG_TFM_TOTAL_STACK_SIZE                              2048
