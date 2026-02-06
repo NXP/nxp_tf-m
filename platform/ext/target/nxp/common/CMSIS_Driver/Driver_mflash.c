@@ -61,18 +61,13 @@
     DATA_WIDTH_ENUM_SIZE
 };
 
-static const uint32_t data_width_byte[DATA_WIDTH_ENUM_SIZE] = {
-    sizeof(uint8_t),
-    sizeof(uint16_t),
-    sizeof(uint32_t),
-};
-
 /* Chip erase capability values */
 #define CHIP_ERASE_NOT_SUPPORTED    (0u)
 #define CHIP_ERASE_SUPPORTED        (1u)
 
 /* ARM FLASH device structure */
-struct arm_flash_dev_t {
+struct arm_flash_dev_t
+{
     ARM_FLASH_INFO *data;         /*!< FLASH data */
 };
 
@@ -80,19 +75,22 @@ struct arm_flash_dev_t {
 static ARM_FLASH_STATUS FlashStatus = {0, 0, 0};
 
 /* Driver Version */
-static const ARM_DRIVER_VERSION DriverVersion = {
+static const ARM_DRIVER_VERSION DriverVersion =
+{
     ARM_FLASH_API_VERSION,
     ARM_FLASH_DRV_VERSION
 };
 
 /* Driver Capabilities */
-static const ARM_FLASH_CAPABILITIES DriverCapabilities = {
+static const ARM_FLASH_CAPABILITIES DriverCapabilities =
+{
     EVENT_READY_NOT_AVAILABLE,
     DATA_WIDTH_8BIT,
     CHIP_ERASE_SUPPORTED
 };
 
-static ARM_FLASH_INFO ARM_FLASH0_DEV_DATA = {
+static ARM_FLASH_INFO ARM_FLASH0_DEV_DATA =
+{
     .sector_info  = NULL,                  /* Uniform sector layout */
     .sector_count = FLASH0_SIZE / FLASH0_SECTOR_SIZE,
     .sector_size  = FLASH0_SECTOR_SIZE,
@@ -100,8 +98,10 @@ static ARM_FLASH_INFO ARM_FLASH0_DEV_DATA = {
     .program_unit = FLASH0_PROGRAM_UNIT,
     .erased_value = 0xFF};
 
-static struct arm_flash_dev_t ARM_FLASH0_DEV = {
-    .data        = &(ARM_FLASH0_DEV_DATA)};
+static struct arm_flash_dev_t ARM_FLASH0_DEV =
+{
+    .data        = &(ARM_FLASH0_DEV_DATA)
+};
 
 static struct arm_flash_dev_t *FLASH0_DEV = &ARM_FLASH0_DEV;
 
@@ -122,8 +122,6 @@ static ARM_FLASH_CAPABILITIES ARM_Flash_GetCapabilities(void)
     return DriverCapabilities;
 }
 
-
-
 static bool flash_init_is_done = false;
 static int32_t ARM_Flash_Initialize(ARM_Flash_SignalEvent_t cb_event)
 {
@@ -133,21 +131,21 @@ static int32_t ARM_Flash_Initialize(ARM_Flash_SignalEvent_t cb_event)
 
     if (flash_init_is_done == false)
     {
-        if (DriverCapabilities.data_width >= DATA_WIDTH_ENUM_SIZE) {
+        if (DriverCapabilities.data_width >= DATA_WIDTH_ENUM_SIZE)
+        {
             return ARM_DRIVER_ERROR;
         }
 
         /* Driver init call*/
         status = mflash_drv_init();
-        if(status != kStatus_Success) 
+        if(status != kStatus_Success)
         {
             return ARM_DRIVER_ERROR;
-        }        
-    
+        }
+
         /* Disable Error Detection functionality*/
         flash_init_is_done = true;
     }
-    
     return ARM_DRIVER_OK;
 }
 
@@ -160,7 +158,8 @@ static int32_t ARM_Flash_Uninitialize(void)
 
 static int32_t ARM_Flash_PowerControl(ARM_POWER_STATE state)
 {
-    switch (state) {
+    switch (state)
+    {
     case ARM_POWER_FULL:
         /* Nothing to be done */
         return ARM_DRIVER_OK;
@@ -178,7 +177,7 @@ static int32_t ARM_Flash_ReadData(uint32_t addr, void *data, uint32_t cnt)
 
     /* Check Flash memory boundaries */
     status = is_range_valid(FLASH0_DEV, addr + cnt);
-    if(status != kStatus_Success) 
+    if(status != kStatus_Success)
     {
 #if TARGET_DEBUG_LOG
         SPMLOG_INFMSGVAL("ARM_Flash_ReadData addr:",addr);
@@ -211,15 +210,15 @@ static int32_t ARM_Flash_ProgramData(uint32_t addr, const void *data, uint32_t c
     /* Check Flash memory boundaries */
     status = is_range_valid(FLASH0_DEV, addr);
     status |= is_write_aligned(FLASH0_DEV, addr);
-    if(status != kStatus_Success) 
+    if(status != kStatus_Success)
     {
 #if TARGET_DEBUG_LOG
         SPMLOG_INFMSGVAL("\r\nARM_Flash_ProgramData unaligned data addr:\r\n", addr);
 #endif
-    }  
+    }
 
     /* Use program pharase in following case, otherwsie use program page*/
-    if (TFM_HAL_FLASH_PROGRAM_UNIT <= 16) 
+    if (TFM_HAL_FLASH_PROGRAM_UNIT <= 16)
     {
         uint32_t num_pharases = cnt / FLASH0_DEV->data->program_unit;
 #if TARGET_DEBUG_LOG
@@ -227,11 +226,11 @@ static int32_t ARM_Flash_ProgramData(uint32_t addr, const void *data, uint32_t c
 #endif
         /* evaluate align status*/
         data_is_aligned = ((uint32_t)data_p % (sizeof(uint32_t)) != 0) ? (false) : (true);
-        
+
         for (i = 0; i<num_pharases ; i++, data_p = (uint8_t*)data_p + FLASH0_PROGRAM_UNIT, src_addr += FLASH0_PROGRAM_UNIT)
         {
             /* The src address must be 32-bit aligned */
-            if(data_is_aligned) 
+            if(data_is_aligned)
             {
                 input_data = data_p;
             }
@@ -248,19 +247,19 @@ static int32_t ARM_Flash_ProgramData(uint32_t addr, const void *data, uint32_t c
     }
     else
     {
-    
+
         pages = cnt / FLASH0_DEV->data->page_size;
 #if TARGET_DEBUG_LOG
         SPMLOG_INFMSGVAL("flash_program_page pages:",pages);
-#endif    
-        /* eveluate align status*/
+#endif
+        /* evaluate align status*/
         data_is_aligned = ((uint32_t)data_p % (sizeof(uint32_t)) != 0) ? (false) : (true);
-        
+
         /*Iterate over pages to do write*/
         for (i = 0; i < pages; i++, data_p = (uint8_t*)data_p + FLASH0_PAGE_SIZE, src_addr += FLASH0_PAGE_SIZE)
         {
             /* The src address must be 32-bit aligned */
-            if(data_is_aligned) 
+            if(data_is_aligned)
             {
                 input_data = data_p;
             }
@@ -277,37 +276,36 @@ static int32_t ARM_Flash_ProgramData(uint32_t addr, const void *data, uint32_t c
     }
 
     /* check flash write status*/
-    if (status != kStatus_Success) 
+    if (status != kStatus_Success)
     {
 #if TARGET_DEBUG_LOG
         SPMLOG_INFMSGVAL("flash_program_page addr:",addr);
         SPMLOG_INFMSGVAL("flash_program_page cnt:",cnt);
         SPMLOG_INFMSGVAL("ARM_Flash_ProgramData status: ",status);
-#endif 
+#endif
         return ARM_DRIVER_ERROR;
     }
 
     return cnt;
 }
 
-
 static int32_t ARM_Flash_EraseSector(uint32_t addr)
 {
     static uint32_t status;
     status = is_range_valid(FLASH0_DEV, addr);
     status |= is_write_aligned(FLASH0_DEV, addr);
-    if(status != kStatus_Success) 
+    if(status != kStatus_Success)
     {
 #if TARGET_DEBUG_LOG
         SPMLOG_INFMSG("\r\nARM_Flash_EraseSector return ERROR\r\n");
 #endif
         return ARM_DRIVER_ERROR_PARAMETER;
-    }  
+    }
 
     /* flash erase call*/
     status = mflash_drv_sector_erase(addr);
-    
-    if (status != kStatus_Success) 
+
+    if (status != kStatus_Success)
     {
 #if TARGET_DEBUG_LOG
         SPMLOG_INFMSGVAL("flash_erase_sector addr:",addr);
@@ -330,7 +328,8 @@ static ARM_FLASH_INFO * ARM_Flash_GetInfo(void)
     return FLASH0_DEV->data;
 }
 
-ARM_DRIVER_FLASH Driver_FLASH0 = {
+ARM_DRIVER_FLASH Driver_FLASH0 =
+{
     .GetVersion = ARM_Flash_GetVersion,
     .GetCapabilities = ARM_Flash_GetCapabilities,
     .Initialize = ARM_Flash_Initialize,
