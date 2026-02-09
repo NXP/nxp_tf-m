@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2019-2021, Arm Limited. All rights reserved.
- * Copyright 2019-2020, 2025 NXP
+ * Copyright 2019-2020, 2025-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -103,6 +103,9 @@ void tfm_plat_test_secure_timer_start(void)
      * lptmrConfig.value = kLPTMR_Prescale_Glitch_0;
      */
     LPTMR_GetDefaultConfig(&lptmrConfig);
+#ifdef LPTMR_PRE_SCALER_CLOCK
+    lptmrConfig.prescalerClockSource = LPTMR_PRE_SCALER_CLOCK;
+#endif
 
     /* Initialize the LPTMR */
     LPTMR_Init(base, &lptmrConfig);
@@ -191,6 +194,9 @@ void tfm_plat_test_non_secure_timer_start(void)
      * lptmrConfig.value = kLPTMR_Prescale_Glitch_0;
      */
     LPTMR_GetDefaultConfig(&lptmrConfig);
+#ifdef LPTMR_PRE_SCALER_CLOCK
+    lptmrConfig.prescalerClockSource = LPTMR_PRE_SCALER_CLOCK;
+#endif
 
     /* Initialize the LPTMR */
     LPTMR_Init(base, &lptmrConfig);
