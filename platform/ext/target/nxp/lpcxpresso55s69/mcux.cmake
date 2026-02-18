@@ -41,6 +41,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.board)
     mcux_add_source(
         SOURCES 
         ./common/target_cfg_common.h 
+        ./lpcxpresso55s69/platform_psa_hw_accel.h
         ./lpcxpresso55s69/config_tfm_target.h 
         ./lpcxpresso55s69/target_cfg.h 
         ./lpcxpresso55s69/tfm_peripherals_def.h 

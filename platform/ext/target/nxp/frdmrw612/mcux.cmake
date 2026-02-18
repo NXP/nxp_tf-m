@@ -28,6 +28,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.board_headers)
     mcux_add_source(
         SOURCES
         ./common/target_cfg_common.h 
+        ./frdmrw612/platform_psa_hw_accel.h
         ./frdmrw612/config_tfm_target.h 
         ./frdmrw612/target_cfg.h 
         ./frdmrw612/tfm_peripherals_def.h 

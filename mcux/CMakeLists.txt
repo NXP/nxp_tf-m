@@ -319,10 +319,6 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_medium.s_configs)
             -DMBEDTLS_CONFIG_FILE=\\\"tfm_mbedcrypto_config_profile_medium.h\\\"\
             -DMBEDTLS_PSA_CRYPTO_CONFIG_FILE=\\\"crypto_config_profile_medium.h\\\"\
             -DPS_CRYPTO_AEAD_ALG=PSA_ALG_CCM\
-            -DPSA_WANT_ALG_SHA_384\
-            -DPSA_WANT_ALG_SHA_512\
-            -DPSA_WANT_ALG_SHA_512_224\
-            -DPSA_WANT_ALG_SHA_512_256\
             "
     )
     mcux_add_source(
@@ -373,6 +369,23 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.enable_crypto_cipher_module)
              -DPSA_WANT_ALG_CMAC=1\
              -DPSA_WANT_ALG_DETERMINISTIC_ECDSA=1\
              -DPSA_WANT_KEY_TYPE_ECC_KEY_PAIR=1\
+            "
+    )
+endif()
+
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.profile_medium.additional_sha_algo)
+    mcux_add_macro(
+         CC "-DPSA_WANT_ALG_SHA_384\
+            -DPSA_WANT_ALG_SHA_512\
+            -DPSA_WANT_ALG_SHA_512_224\
+            -DPSA_WANT_ALG_SHA_512_256\
+            "
+    )
+endif()
+
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.flash_use_nand_interface)
+    mcux_add_macro(
+         CC "-DUSE_NAND_FLASH_INTERFACE\
             "
     )
 endif()

@@ -28,6 +28,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.board_headers)
     mcux_add_source(
         SOURCES
         ./common/target_cfg_common.h 
+        ./mimxrt700evk/platform_psa_hw_accel.h
         ./mimxrt700evk/config_tfm_target.h 
         ./mimxrt700evk/target_cfg.h 
         ./mimxrt700evk/tfm_peripherals_def.h 

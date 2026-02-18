@@ -166,6 +166,10 @@ menu "TF-M (Trusted Firmware-M)"
 
             config MCUX_COMPONENT_middleware.tfm.flash_dummy
                 bool "Dummy flash Driver for platforms with no Flash"
+
+            config MCUX_COMPONENT_middleware.tfm.flash_use_nand_interface
+                bool "Dummy flash Driver for platforms with no Flash"
+
         endmenu
 
         menu "Serial Comm Drivers"
@@ -182,6 +186,12 @@ menu "TF-M (Trusted Firmware-M)"
                 bool "Enable Crypto Cipher Module"
                 default y if (MCUX_COMPONENT_middleware.tfm.profile_medium && MCUX_COMPONENT_middleware.tfm.s)
 
+        endmenu
+
+        menu "Additional SHA Alg with Medium profile"
+            config MCUX_COMPONENT_middleware.tfm.profile_medium.additional_sha_algo
+                bool "Enable Additional SHA Algorithms"
+                default y if (MCUX_COMPONENT_middleware.tfm.profile_medium && MCUX_COMPONENT_middleware.tfm.s)
         endmenu
 
         menu "Option to use RAM FS for platform with no flash option"
