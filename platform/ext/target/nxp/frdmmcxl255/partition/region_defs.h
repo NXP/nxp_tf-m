@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2017-2021 Arm Limited. All rights reserved.
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 #define __REGION_DEFS_H__
 
 #include "flash_layout.h"
-
 
 #ifdef ENABLE_HEAP
     #define S_HEAP_SIZE         (0x0000400)
@@ -99,8 +98,8 @@
 
 #define S_DATA_START    (S_RAM_ALIAS(0x0 + RESERVED_RAM_SIZE))
 
-/* 92 KB ram is for secure application and rest (112-92) 20 KB Ram is available for non-secure apps*/
-#define S_DATA_SIZE                     (92 * 1024)
+/* 46 KB ram is for secure application and rest 120-46=74 KB / 64-46=18 KB Ram is available for non-secure apps*/
+#define S_DATA_SIZE                     (46 * 1024)
 
 #define S_DATA_LIMIT    (S_DATA_START + S_DATA_SIZE -   1)
 
@@ -143,8 +142,6 @@ security tier by programing corresponding registers in secure AHB controller. */
 #define DATA_REGION0_SUBREGION_NUMBER   (64)
 #define DATA_REGION0_SUBREGION_SIZE     (1024 * 2)      /* 2 KB*/
 #define DATA_REGION0_SIZE               (DATA_REGION0_SUBREGION_NUMBER * DATA_REGION0_SUBREGION_SIZE)      /* 128 KB */
-
-                          
 
 /* NS partition information is used for MPC and SAU configuration */
 #define NS_PARTITION_START \

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2021 Arm Limited. All rights reserved.
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,12 @@
 #ifndef __FLASH_LAYOUT_H__
 #define __FLASH_LAYOUT_H__
 
-/* To use Flash driver in ROM, 16K RAM needs to be reserved. If someone wants
- * to choose this opion and avoid in-ram functions, enable this and choose
- * the right flash driver during compilation. (flash_k4_romapi in board yml). Don't
- * enable this option when using ITS, PS and NV counters emulated in RAM as you will
- * run out of RAM for tfm examples.
- */ 
-// #define K4_FLASH_ROMAPI
 
  /* Flash layout on frdmmcxl255 without BL2:
  *
- * 0x0000_0000 Primary image area(384 KB):
- *    0x0000_0000 Secure     image primary (208 kB)
- *    0x0003_0000 Non-secure image primary (192 kB)
+ * 0x0000_0000 Primary image area(280 KB):
+ *    0x0000_0000 Secure     image primary (144 kB)
+ *    0x0003_0000 Non-secure image primary (136 kB)
  * Reserved area:
  * 0xXXXX_XXXX Secure Binary tail Area (4 KB), if SB is used.
  * 0xXXXX_XXXX Protected Storage Area (16 KB)
@@ -47,16 +40,25 @@
  */
 
 /* Size of a Secure and of a Non-secure image */
-#define FLASH_S_PARTITION_SIZE              (208 * 1024)       /* S partition: 208 KB : (0x34000)  */
-#define FLASH_NS_PARTITION_SIZE             (192 * 1024)       /* NS partition: 192 KB : (0x30000)  */
+#if defined(MCU_SDK_REGRESSION)
+#define FLASH_S_PARTITION_SIZE              (160 * 1024)       /* S partition: 152 KB : (0x280000)  */
+#define FLASH_NS_PARTITION_SIZE             (136 * 1024)       /* NS partition: 136 KB : (0x22000)  */
+#else 
+#define FLASH_S_PARTITION_SIZE              (144 * 1024)       /* S partition: 144 KB : (0x240000)  */
+#define FLASH_NS_PARTITION_SIZE             (136 * 1024)       /* NS partition: 136 KB : (0x22000)  */
+#endif
+
 
 /* Sector size of flash hardware (erase/program) */
 #define FLASH_AREA_IMAGE_SECTOR_SIZE        (8*1024)           /* 8k. Flash memory erase operation granularity. FSL_FEATURE_SYSCON_FLASH_SECTOR_SIZE_BYTES */
 #define FLASH_AREA_PROGRAM_SIZE             (128U)             /* 128 B as page size*/
 #define FLASH_AREA_IMAGE_PHRASE_SIZE        (16U)              /* 16 B for write */
 
-/* FLASH size */
-#define FLASH_TOTAL_SIZE                    (1 * 512 * 1024)    /* 512 KB flash. */
+#ifdef MCXL255_cm33_SERIES
+#define FLASH_TOTAL_SIZE   (1 * 512 * 1024)    /* 512 KB flash */
+#elif defined(MCXL254_cm33_SERIES)
+#define FLASH_TOTAL_SIZE   (1 * 256 * 1024)    /* 256 KB flash */
+#endif
 
 /* Flash layout info for BL2 bootloader */
 #define FLASH_BASE_ADDRESS                  (0x00000000)
@@ -113,8 +115,14 @@
  * Name is defined in flash driver file: Driver_Flash.c
  */
 #define FLASH_DEV_NAME                  Driver_FLASH0
-/* Smallest flash programmable unit in bytes (not used at the moment) */
+
+#ifdef USE_NAND_FLASH_INTERFACE
+/* Smallest flash programmable unit in bytes, flash writes in pages, less wear */
+#define TFM_HAL_FLASH_PROGRAM_UNIT      FLASH_AREA_PROGRAM_SIZE
+#else
+/* Smallest flash programmable unit in bytes, produces smalled ram footprint */
 #define TFM_HAL_FLASH_PROGRAM_UNIT      FLASH_AREA_IMAGE_PHRASE_SIZE
+#endif
 
 /* Protected Storage (PS) Service definitions
  * Note: Further documentation of these definitions can be found in the
@@ -134,7 +142,7 @@
 #define TFM_HAL_PS_SECTORS_PER_BLOCK    1
 
 /* Smallest flash programmable unit in bytes */
-#define TFM_HAL_PS_PROGRAM_UNIT         FLASH_AREA_PROGRAM_SIZE
+#define TFM_HAL_PS_PROGRAM_UNIT         TFM_HAL_FLASH_PROGRAM_UNIT
 /* TBD -- Not sure what is this ? */
 #define PS_FLASH_NAND_BUF_SIZE          (FLASH_AREA_IMAGE_SECTOR_SIZE * \
                                         TFM_HAL_PS_SECTORS_PER_BLOCK)
@@ -158,7 +166,7 @@
 #define TFM_HAL_ITS_SECTORS_PER_BLOCK   1
 
 /* Smallest flash programmable unit in bytes */
-#define TFM_HAL_ITS_PROGRAM_UNIT        FLASH_AREA_PROGRAM_SIZE
+#define TFM_HAL_ITS_PROGRAM_UNIT        TFM_HAL_FLASH_PROGRAM_UNIT
 
 #define ITS_FLASH_NAND_BUF_SIZE        (FLASH_AREA_IMAGE_SECTOR_SIZE * \
                                         TFM_HAL_ITS_SECTORS_PER_BLOCK)
@@ -181,9 +189,14 @@
 #define RESERVED_RAM_SIZE       (0x00002000)  /* Reserved RAM A0: 8 KB 32-bit RAM with ECC (ERM used for capturing memory ECC error information) */
 #define RESERVED_RAM_PKC_SIZE   (0x00002000)  /* Reserved RAM B3: 8 KB 32-bit RAM (PKC_0 SRAM), RAM B4: 4 KB 32-bit RAM (PKC_1 SRAM), total 8 KB for PKC */
 
-
 #define TOTAL_ROM_SIZE      FLASH_TOTAL_SIZE
 
-#define TOTAL_RAM_SIZE      (0x00020000 - RESERVED_RAM_SIZE - RESERVED_RAM_PKC_SIZE)     /* RAM (128- 16) KB RAM for data (without TCM for code)*/
+#ifdef MCXL255_cm33_SERIES  
+/*Totla ram is 128 KB*/
+#define TOTAL_RAM_SIZE      (0x00020000 - RESERVED_RAM_SIZE )  /* RAM (128- 8) KB RAM for data (without TCM for code)*/
+#elif defined(MCXL254_cm33_SERIES) 
+/*Totla ram is 64 KB*/
+#define TOTAL_RAM_SIZE      (0x00010000)                       /* RAM (64) KB RAM for data, ECC is disabled*/
+#endif
 
 #endif /* __FLASH_LAYOUT_H__ */

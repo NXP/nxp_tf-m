@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2022, Arm Limited. All rights reserved.
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -15,14 +15,23 @@
 #define CRYPTO_EXT_RNG       1
 #endif
 
-#if TFM_ISOLATION_LEVEL!=1
-/* Enable PSA Crypto Cipher module */
-#define CRYPTO_CIPHER_MODULE_ENABLED           1
+/* The max number of concurrent operations that can be active (allocated) at any time in Crypto */
+#ifndef CRYPTO_CONC_OPER_NUM
+#define CRYPTO_CONC_OPER_NUM                   4
 #endif
 
-/* The stack size of the Protected Storage Secure Partition */
-#undef PS_STACK_SIZE
-#define PS_STACK_SIZE                          0x780
+
+/* FWU Partition Configs */
+
+/* Size of the FWU internal data transfer buffer */
+#ifndef TFM_FWU_BUF_SIZE
+#define TFM_FWU_BUF_SIZE                       0
+#endif
+
+/* The stack size of the Firmware Update Secure Partition */
+#ifndef FWU_STACK_SIZE
+#define FWU_STACK_SIZE                         0
+#endif
 
 /* The maximum asset size to be stored in the Protected Storage area. */
 #define PS_MAX_ASSET_SIZE    512

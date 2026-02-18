@@ -28,12 +28,14 @@ extern "C" {
 #undef PSA_WANT_ALG_SHA_224
 #endif
 
+#if TFM_ISOLATION_LEVEL!=1
 #if defined(PSA_WANT_ALG_TLS12_PRF)
 #undef PSA_WANT_ALG_TLS12_PRF
 #endif
   
 #if defined(PSA_WANT_ALG_TLS12_PSK_TO_MS)
 #undef PSA_WANT_ALG_TLS12_PSK_TO_MS
+#endif
 #endif
   
 #if defined(PSA_WANT_ALG_SHA_256)

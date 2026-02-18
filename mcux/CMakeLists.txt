@@ -500,7 +500,7 @@ endif()
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.flash_mcxl20)
     mcux_add_source(
         SOURCES 
-        tf-m/platform/ext/target/nxp/common/CMSIS_Driver/Driver_Flash_mcxl20.c
+        tf-m/platform/ext/target/nxp/common/CMSIS_Driver/Driver_mflash.c
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
@@ -1244,6 +1244,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.test)
     mcux_add_macro(
          CC "-DTFM_S_REG_TEST\
             -DUSE_SP_LOG\
+            -DMCU_SDK_REGRESSION\
             "
     )
     mcux_add_source(
@@ -1319,6 +1320,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.secure_reg_test_enable)
     mcux_add_macro(
          CC "-DTFM_S_REG_TEST\
             -DUSE_SP_LOG\
+            -DMCU_SDK_REGRESSION\
             "
     )
 
@@ -2080,6 +2082,7 @@ endif()
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.test.s)
     mcux_add_macro(
          CC "-DTFM_S_REG_TEST\
+             -DMCU_SDK_REGRESSION\
             "
     )
     mcux_add_include(

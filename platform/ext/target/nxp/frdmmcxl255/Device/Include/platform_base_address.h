@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2017-2019 Arm Limited. All rights reserved.
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 #define __PLATFORM_BASE_ADDRESS_H__
 
 #include "platform_regs.h"           /* Platform registers */
-#include "MCXL255_cm33.h"
+#include "fsl_device_registers.h"
 
 /* Internal Flash memory */
 #define FLASH0_BASE_S                 (0x10000000)
@@ -33,7 +33,12 @@
 #define FLASH0_SIZE                   (FLASH_TOTAL_SIZE)              /* 512 KB */
 #define FLASH0_SECTOR_SIZE            (FLASH_AREA_IMAGE_SECTOR_SIZE)  /* Erase command is executed on sector (8K-byte) */
 #define FLASH0_PAGE_SIZE              (FLASH_AREA_PROGRAM_SIZE)       /* Page (128 bytes) basis, or word basis. */
-#define FLASH0_PROGRAM_UNIT           (128)                           /* Minimum write size , Note: Actual value is 16, but it did not work with tfm */
+#ifdef USE_NAND_FLASH_INTERFACE
+#define FLASH0_PROGRAM_UNIT           (FLASH_AREA_PROGRAM_SIZE)  /* Minimum write size (128 bytes) */
+#else
+#define FLASH0_PROGRAM_UNIT           (FLASH_AREA_IMAGE_PHRASE_SIZE)  /* Minimum write size (16 bytes) */
+#endif /* USE_NAND_FLASH_INTERFACE */
+
 
 #define LPUART_BASE                     LPUART0
 
