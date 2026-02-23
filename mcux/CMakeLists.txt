@@ -517,6 +517,14 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.flash_mcxl20)
     )
 endif()
 
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.flash_mcxa)
+    mcux_add_source(
+        SOURCES 
+        tf-m/platform/ext/target/nxp/common/CMSIS_Driver/Driver_mflash.c
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.flash_mcxw23)
     mcux_add_source(
         SOURCES 
@@ -2283,6 +2291,7 @@ endif()
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.test.irq_slih)
     mcux_add_macro(
          CC "-DTFM_PARTITION_SLIH_TEST\
+		     -DTEST_NS_SLIH_IRQ\
             "
     )
     mcux_add_source(
@@ -2308,6 +2317,7 @@ endif()
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.test.irq_flih)
     mcux_add_macro(
          CC "-DTFM_PARTITION_FLIH_TEST\
+		     -DTEST_NS_FLIH_IRQ\
             "
     )
     mcux_add_source(

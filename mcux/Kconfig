@@ -172,6 +172,10 @@ menu "TF-M (Trusted Firmware-M)"
                 bool "RT700"
                 select MCUX_COMPONENT_component.mflash_offchip
 
+            config MCUX_COMPONENT_middleware.tfm.flash_mcxa
+                bool "MCXA57"
+                select MCUX_COMPONENT_driver.romapi
+
             config MCUX_COMPONENT_middleware.tfm.flash_dummy
                 bool "Dummy flash Driver for platforms with no Flash"
 
