@@ -15,8 +15,8 @@ set(TFM_MULTI_CORE_TOPOLOGY         OFF        CACHE BOOL      "Platform has mul
 
 if(BL2)
 ############################ BL2 ########################################
-set(BL2_S_IMAGE_START               "0x8000"   CACHE STRING    "Base address of the secure image in configuration with BL2")
-set(BL2_NS_IMAGE_START              "0x38000"  CACHE STRING    "Base address of the non secure image in configuration with BL2")
+set(BL2_S_IMAGE_START               "0x10000"   CACHE STRING    "Base address of the secure image in configuration with BL2")
+set(BL2_NS_IMAGE_START              "0x40000"  CACHE STRING    "Base address of the non secure image in configuration with BL2")
 endif()
 
 ############################ Platform features ##########################################

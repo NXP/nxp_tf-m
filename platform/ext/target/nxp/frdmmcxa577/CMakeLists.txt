@@ -39,6 +39,18 @@ target_add_scatter_file(tfm_s
     $<$<C_COMPILER_ID:IAR>:${CMAKE_BINARY_DIR}/generated/platform/ext/common/iar/tfm_common_s.icf>
 )
 
+if(BL2)
+    target_sources(bl2
+        PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/Device/Source/startup_frdmmcxa577.c
+    )
+    target_add_scatter_file(bl2
+            $<$<C_COMPILER_ID:ARMClang>:${PLATFORM_DIR}/ext/common/armclang/tfm_common_bl2.sct>
+            $<$<C_COMPILER_ID:GNU>:${PLATFORM_DIR}/ext/common/gcc/tfm_common_bl2.ld>
+            $<$<C_COMPILER_ID:IAR>:${PLATFORM_DIR}/ext/common/iar/tfm_common_bl2.icf>
+    )
+endif()
+
 #========================= Platform Secure ====================================#
 
 if (USE_TFM_LPUART_FEATURE)
@@ -162,7 +174,102 @@ target_sources(tfm_s
 )
 
 #========================= Platform BL2 =======================================#
-#todo
+if(BL2)
+
+    target_compile_definitions(platform_bl2
+        PUBLIC
+            ${TFM_LPUART_FEATURE_COMPILE_DEFINITION}
+    )
+
+    target_include_directories(platform_bl2
+        PUBLIC
+            partition
+            Device/Include
+            project_template/bl2
+            project_template/s
+            ${PLATFORM_DIR}/ext/target/nxp/common
+            ${PLATFORM_DIR}/ext/target/nxp/common/CMSIS_Driver
+            ${PLATFORM_DIR}/ext/target/nxp/common/Device/Config
+            ${PLATFORM_DIR}/ext/target/nxp/common/Device/Include
+            ${NXP_HAL_FILE_PATH}/frdmmcxa577/Native_Driver
+            ${NXP_HAL_FILE_PATH}/frdmmcxa577/Native_Driver/periph4
+            ${NXP_HAL_FILE_PATH}/frdmmcxa577/Native_Driver/drivers
+            ${NXP_HAL_FILE_PATH}/frdmmcxa577/Native_Driver/drivers/romapi
+            ${NXP_HAL_FILE_PATH}/frdmmcxa577/Native_Driver/drivers/romapi/nboot
+            ${NXP_HAL_FILE_PATH}/frdmmcxa577/Native_Driver/drivers/romapi/runbootloader
+            ${NXP_HAL_FILE_PATH}/frdmmcxa577/Native_Driver/drivers/romapi/flash
+            #${NXP_HAL_FILE_PATH}/frdmmcxa577/Native_Driver/drivers/romapi/kbapi
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/components/uart
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/components/flash/mflash
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/components/flash/mflash/mcxa
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/utilities/debug_console_lite
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/utilities/str
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/common
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/ctimer
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/gpio
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/mcx_spc
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/port
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/port
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/crc
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/inputmux
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/trng
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/glikey
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/lpuart
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/trdc_1
+
+        PRIVATE
+            .
+            ${PLATFORM_DIR}/ext/target/nxp/common/Device/Config
+            ${PLATFORM_DIR}/ext/target/nxp/common/Device/Include
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/components/serial_manager
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/components/lists
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/components/uart
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/utilities/debug_console
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/utilities/str
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/utilities/assert
+    )
+    target_sources(platform_bl2
+        PRIVATE
+            project_template/s/board.c
+            project_template/s/clock_config.c
+            project_template/s/pin_mux.c
+            ${NXP_COMMON_DIR}/CMSIS_Driver/Driver_mflash.c
+            ${NXP_COMMON_DIR}/CMSIS_Driver/Driver_LPUART.c
+            ${NXP_HAL_FILE_PATH}/frdmmcxa577/Native_Driver/system_MCXA577.c
+            ${NXP_HAL_FILE_PATH}/frdmmcxa577/Native_Driver/drivers/romapi/flash/fsl_flash.c
+            ${NXP_HAL_FILE_PATH}/frdmmcxa577/Native_Driver/drivers/fsl_clock.c
+            ${NXP_HAL_FILE_PATH}/frdmmcxa577/Native_Driver/drivers/fsl_reset.c
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/common/fsl_common.c
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/common/fsl_common_arm.c
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/crc/fsl_crc.c
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/inputmux/fsl_inputmux.c
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/trng/fsl_trng.c
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/glikey/fsl_glikey.c
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/ctimer/fsl_ctimer.c
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/gpio/fsl_gpio.c
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/mcx_spc/fsl_spc.c
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/lpuart/fsl_lpuart.c
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/components/uart/fsl_adapter_lpuart.c
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/components/flash/mflash/mflash_file.c
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/components/flash/mflash/mcxa/mflash_drv.c
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/utilities/assert/fsl_assert.c
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/utilities/debug_console_lite/fsl_debug_console.c
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/utilities/str/fsl_str.c
+            ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/trdc_1/fsl_trdc.c
+    )
+
+    # GNU ld has some strange behaviour to do with weak functions, and does not deal
+    # well with strong functions in static libraries overriding weak functions in
+    # object files. For this reason, the file hardware_init is linked directly to
+    # the s binary as an object file. This issue does not affect armclang, but the
+    # fix is compatible.
+    target_sources(bl2
+    PRIVATE
+        project_template/bl2/hardware_init.c
+    )
+endif()
 
 #========================= tfm_spm ============================================#
 

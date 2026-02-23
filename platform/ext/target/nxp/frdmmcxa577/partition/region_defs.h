@@ -173,7 +173,18 @@ security tier by programing corresponding registers in secure AHB controller. */
 /* Code SRAM area */
 #define S_RAM_CODE_SIZE          (0x4000) /* SRAM X region -  (SRAM A0(8KB), SRAM A1(4KB), SRAM A2 (4KB) - total 16 KB*/
 #define S_RAM_CODE_START         (0x14000000 + RESERVED_RAM_SIZE)
-#define NS_RAM_CODE_START        (0x04000000 + RESERVED_RAM_SIZE) 
+#define NS_RAM_CODE_START        (0x04000000 + RESERVED_RAM_SIZE)
+
+#ifdef BL2
+/* Bootloader regions */
+#define BL2_CODE_START    (S_ROM_ALIAS(FLASH_AREA_BL2_OFFSET))
+#define BL2_CODE_SIZE     (FLASH_AREA_BL2_SIZE)
+#define BL2_CODE_LIMIT    (BL2_CODE_START + BL2_CODE_SIZE - 1)
+
+#define BL2_DATA_START    (S_RAM_ALIAS(S_DATA_OFFSET + RESERVED_RAM_SIZE))
+#define BL2_DATA_SIZE     (S_DATA_SIZE) /* Same ram as of secure size*/
+#define BL2_DATA_LIMIT    (BL2_DATA_START + BL2_DATA_SIZE - 1)
+#endif /* BL2 */
 
 /* Shared data area between bootloader and runtime firmware.
  * Shared data area is allocated at the beginning of the RAM, it is overlapping
