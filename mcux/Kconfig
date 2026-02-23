@@ -26,6 +26,7 @@ menu "TF-M (Trusted Firmware-M)"
             select MCUX_COMPONENT_middleware.tfm.s.platform
             select MCUX_COMPONENT_middleware.tfm.s.platform_common if (!(MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612))
             select MCUX_COMPONENT_middleware.tfm.s.platform_rw61x if (MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612)
+            select MCUX_COMPONENT_middleware.tfm.s.partition_load_attest if (MCUX_COMPONENT_middleware.tfm.partition_init_attest)
             select MCUX_COMPONENT_middleware.tfm.s.partition_load_ps if (MCUX_COMPONENT_middleware.tfm.s.protected_storage)
             select MCUX_COMPONENT_middleware.tfm.s.test.partition_load_ps_tests if (MCUX_COMPONENT_middleware.tfm.s.test.protected_storage)
         config MCUX_COMPONENT_middleware.tfm.s.board
@@ -86,6 +87,13 @@ menu "TF-M (Trusted Firmware-M)"
                 config MCUX_COMPONENT_middleware.tfm.qcbor
                     bool "QCBOR"
             endmenu
+
+            config MCUX_COMPONENT_middleware.tfm.partition_init_attest
+                bool "Initial Attest" 
+                default y if (MCUX_COMPONENT_middleware.tfm.profile_large || MCUX_COMPONENT_middleware.tfm.profile_medium || MCUX_COMPONENT_middleware.tfm.profile_small)
+
+            config MCUX_COMPONENT_middleware.tfm.s.partition_load_attest
+                bool
 
             config MCUX_COMPONENT_middleware.tfm.s.protected_storage
                 bool "Protected Storage" 
@@ -206,15 +214,15 @@ menu "TF-M (Trusted Firmware-M)"
     config MCUX_COMPONENT_middleware.tfm.secure_crypto_clients
         bool "Secure Crypto Clients"
         select MCUX_COMPONENT_middleware.tfm.s.partition_ps if ((MCUX_COMPONENT_middleware.tfm.profile_large || MCUX_COMPONENT_middleware.tfm.profile_medium) || MCUX_COMPONENT_middleware.tfm.s.protected_storage)
-        select MCUX_COMPONENT_middleware.tfm.s.initial_attestation
+        select MCUX_COMPONENT_middleware.tfm.s.initial_attestation if (MCUX_COMPONENT_middleware.tfm.partition_init_attest)
         select MCUX_COMPONENT_middleware.tfm.board_headers
         select MCUX_COMPONENT_middleware.tfm.driver_headers
         select MCUX_COMPONENT_middleware.tfm.common_headers
 
     config MCUX_COMPONENT_middleware.tfm.secure_reg_test_enable
         bool "Secure Regression Suites"
-        select MCUX_COMPONENT_middleware.tfm.s.test.attestation.asymmetric if (MCUX_COMPONENT_middleware.tfm.profile_large || MCUX_COMPONENT_middleware.tfm.profile_medium)
-        select MCUX_COMPONENT_middleware.tfm.s.test.attestation.symmetric if (MCUX_COMPONENT_middleware.tfm.profile_small)
+        select MCUX_COMPONENT_middleware.tfm.s.test.attestation.asymmetric if ((MCUX_COMPONENT_middleware.tfm.profile_large || MCUX_COMPONENT_middleware.tfm.profile_medium) && (MCUX_COMPONENT_middleware.tfm.partition_init_attest))
+        select MCUX_COMPONENT_middleware.tfm.s.test.attestation.symmetric if ((MCUX_COMPONENT_middleware.tfm.profile_small) && (MCUX_COMPONENT_middleware.tfm.partition_init_attest))
         select MCUX_COMPONENT_middleware.tfm.s.test.partition_ps_tests if ((MCUX_COMPONENT_middleware.tfm.profile_large || MCUX_COMPONENT_middleware.tfm.profile_medium) || MCUX_COMPONENT_middleware.tfm.s.test.protected_storage)
         select MCUX_COMPONENT_middleware.tfm.s.test.crypto
         select MCUX_COMPONENT_middleware.tfm.s.test.its
@@ -441,8 +449,8 @@ menu "TF-M (Trusted Firmware-M)"
             config MCUX_COMPONENT_middleware.tfm.ns.test
                 bool "NS Regression Tests Enable"
                 select MCUX_COMPONENT_middleware.tfm.ns.test.its
-                select MCUX_COMPONENT_middleware.tfm.ns.test.attestation.asymmetric if (MCUX_COMPONENT_middleware.tfm.profile_large || MCUX_COMPONENT_middleware.tfm.profile_medium)
-                select MCUX_COMPONENT_middleware.tfm.ns.test.attestation.symmetric if (MCUX_COMPONENT_middleware.tfm.profile_small)
+                select MCUX_COMPONENT_middleware.tfm.ns.test.attestation.asymmetric if ((MCUX_COMPONENT_middleware.tfm.profile_large || MCUX_COMPONENT_middleware.tfm.profile_medium) && (MCUX_COMPONENT_middleware.tfm.partition_init_attest))
+                select MCUX_COMPONENT_middleware.tfm.ns.test.attestation.symmetric if ((MCUX_COMPONENT_middleware.tfm.profile_small)  && (MCUX_COMPONENT_middleware.tfm.partition_init_attest))
                 select MCUX_COMPONENT_middleware.tfm.ns.test.crypto
 
             config MCUX_COMPONENT_middleware.tfm.ns.test.default_app
