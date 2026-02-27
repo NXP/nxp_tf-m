@@ -18,16 +18,19 @@
 #ifndef __FLASH_LAYOUT_H__
 #define __FLASH_LAYOUT_H__
 
-/* Flash layout without BL2:
+/*
+ * Flash layout without BL2
  *
- * 0x00000000
- * 0x00000400 Flash Config Block
- * 0x00001000 Secure code
- * 0x000C0000 Non-Secure code
- * 0x003C0000 Protected Storage area
- * 0x003D0000 Internal Trusted Storage area
- * 0x003E0000 OTP area
- * 0xXXXX_XXXX Unused
+ * start address   Name                        Size
+ *
+ * 0x0800_0000 Start of Flash                 (0x00000400)      1 KB 
+ * 0x0800_0400 Flash Config Block             (0x00000C00)      3 KB
+ * 0x0800_1000 Secure code                    (0x000B_F000)   764 KB
+ * 0x080C_0000 Non-secure code                (0x0030_0000)     3 MB
+ * 0x083C_0000 Protected Storage (PS)         (0x0002_0000)   128 KB
+ * 0x083E_0000 Internal Trusted Storage (ITS) (0x0002_0000)   128 KB
+ * 0x0840_0000 OTP area (end of flash)        (0x0000_0000)     0 KB
+ * 0xXXXX_XXXX Unused (if any gaps remain)
  */
 
 /* This header file is included from linker scatter file as well, where only a limited C constructs are allowed.
