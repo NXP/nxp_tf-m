@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2020-2023, Arm Limited. All rights reserved.
-# Copyright 2023-2025 NXP
+# Copyright 2023-2026 NXP
 # Copyright (c) 2022 Cypress Semiconductor Corporation (an Infineon company)
 # or an affiliate of Cypress Semiconductor Corporation. All rights reserved.
 #
@@ -36,6 +36,7 @@ set(USE_HARDENED_PLATFORM_INIT         ON          CACHE BOOL      "Use hardenin
 set(MCUX_PSA_CRYPTO_DRIVER_ELS_PKC     ON          CACHE BOOL      "Use psa-crypto-driver to use HW acceleration via driver wrappers for RW61x platform")
 set(USE_TFM_EL2GO_DATA_IMPORT_REGION   OFF         CACHE BOOL      "")
 set(USE_TFM_WIFI_FLASH_REGION          OFF         CACHE BOOL      "")
+set(TFM_RW61X_PM_SUPPORT              ON          CACHE BOOL      "Enable PM1/PM2/PM3 power management support via platform IOCTL")
 
 ############################ Mbedcrypto configurations #########################
 set(MBEDCRYPTO_BUILD_TYPE               "${CMAKE_BUILD_TYPE}" CACHE STRING "Build type of Mbed Crypto library")

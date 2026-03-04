@@ -119,6 +119,7 @@ target_compile_definitions(platform_s
         ${HARDENING_COMPILE_DEFINITION}
         CPU_RW612ETA2I
         CPU_RW612ETA1I
+        $<$<BOOL:${TFM_RW61X_PM_SUPPORT}>:TFM_RW61X_PM_SUPPORT>
 )
 
 target_include_directories(platform_s
@@ -207,6 +208,7 @@ target_sources(platform_s
 
         $<$<BOOL:${TFM_PARTITION_PLATFORM}>:${PLATFORM_DIR}/ext/target/nxp/common/plat_test.c>
         $<$<BOOL:${TFM_PARTITION_PLATFORM}>:${PLATFORM_DIR}/ext/target/nxp/common/services/src/tfm_platform_system.c>
+        $<$<AND:$<BOOL:${TFM_PARTITION_PLATFORM}>,$<BOOL:${TFM_RW61X_PM_SUPPORT}>>:${CMAKE_CURRENT_SOURCE_DIR}/power.c>
         # ${NXP_HAL_FILE_PATH}/common/plat_attest_hal.c
 )
 
