@@ -1,6 +1,6 @@
 ;/*
-; * Copyright (c) 2009-2023 Arm Limited
-; * Copyright (c) 2022 Cypress Semiconductor Corporation (an Infineon company)
+; * Copyright (c) 2009-2024 Arm Limited
+; * Copyright (c) 2022-2024 Cypress Semiconductor Corporation (an Infineon company)
 ; * or an affiliate of Cypress Semiconductor Corporation. All rights reserved.
 ; * Copyright 2023, 2025 NXP
 ; *
@@ -43,6 +43,14 @@ MEMORY
   CODE_RAM (rwx) : ORIGIN = S_RAM_CODE_START, LENGTH = S_RAM_CODE_SIZE
 #endif
 }
+
+/* For Cortex-M0+ VTOR: 256-byte vector table is at the offset 0x00 of the image.
+ * To keep that table in one block, the image base must be a multiple of 0x100.
+ * For reference: https://developer.arm.com/documentation/ddi0419/latest/
+ */
+#if defined(__ARM_ARCH_6M__)
+CHECK_ALIGNMENT_256(S_CODE_START)
+#endif
 
 #ifndef TFM_LINKER_VENEERS_START
 #define TFM_LINKER_VENEERS_START ALIGN(TFM_LINKER_VENEERS_ALIGNMENT)
@@ -132,6 +140,31 @@ SECTIONS
     {
         *tfm_psa_rot_partition*:(SORT_BY_ALIGNMENT(.text*))
         *tfm_psa_rot_partition*:(SORT_BY_ALIGNMENT(.rodata*))
+        *tfm_*partition_its.*:(SORT_BY_ALIGNMENT(.text*))
+        *tfm_*partition_its.*:(SORT_BY_ALIGNMENT(.rodata*))
+        *(TFM_SP_ITS_PSA-ROT_ATTR_FN)
+        *tfm_*partition_crypto.*:(SORT_BY_ALIGNMENT(.text*))
+        *tfm_*partition_crypto.*:(SORT_BY_ALIGNMENT(.rodata*))
+        *mbedcrypto.*:(SORT_BY_ALIGNMENT(.text*))
+        *mbedcrypto.*:(SORT_BY_ALIGNMENT(.rodata*))
+        *mbedtls*acceleration.*:(SORT_BY_ALIGNMENT(.text*))
+        *mbedtls*acceleration.*:(SORT_BY_ALIGNMENT(.rodata*))
+        *(TFM_SP_CRYPTO_PSA-ROT_ATTR_FN)
+        *tfm_*partition_platform.*:(SORT_BY_ALIGNMENT(.text*))
+        *tfm_*partition_platform.*:(SORT_BY_ALIGNMENT(.rodata*))
+        *(TFM_SP_PLATFORM_PSA-ROT_ATTR_FN)
+        *tfm_*partition_lds.*:(SORT_BY_ALIGNMENT(.text*))
+        *tfm_*partition_lds.*:(SORT_BY_ALIGNMENT(.rodata*))
+        *(TFM_SP_LDS_PSA-ROT_ATTR_FN)
+        *tfm_*partition_secure_client_service.*:(SORT_BY_ALIGNMENT(.text*))
+        *tfm_*partition_secure_client_service.*:(SORT_BY_ALIGNMENT(.rodata*))
+        *(TFM_SP_SECURE_TEST_PARTITION_PSA-ROT_ATTR_FN)
+        *tfm_*partition_ipc_service.*:(SORT_BY_ALIGNMENT(.text*))
+        *tfm_*partition_ipc_service.*:(SORT_BY_ALIGNMENT(.rodata*))
+        *(TFM_SP_IPC_SERVICE_TEST_PSA-ROT_ATTR_FN)
+        *tfm_*partition_ps_test.*:(SORT_BY_ALIGNMENT(.text*))
+        *tfm_*partition_ps_test.*:(SORT_BY_ALIGNMENT(.rodata*))
+        *(TFM_SP_PS_TEST_PSA-ROT_ATTR_FN)
         *(TFM_*_PSA-ROT_ATTR_FN)
         . = ALIGN(TFM_LINKER_PSA_ROT_LINKER_CODE_ALIGNMENT);
     } > FLASH
@@ -151,6 +184,15 @@ SECTIONS
     {
         *tfm_app_rot_partition*:(SORT_BY_ALIGNMENT(.text*))
         *tfm_app_rot_partition*:(SORT_BY_ALIGNMENT(.rodata*))
+        *tfm_*partition_ps.*:(SORT_BY_ALIGNMENT(.text*))
+        *tfm_*partition_ps.*:(SORT_BY_ALIGNMENT(.rodata*))
+        *(TFM_SP_PS_APP-ROT_ATTR_FN)
+        *tfm_*partition_ipc_client.*:(SORT_BY_ALIGNMENT(.text*))
+        *tfm_*partition_ipc_client.*:(SORT_BY_ALIGNMENT(.rodata*))
+        *(TFM_SP_IPC_CLIENT_TEST_APP-ROT_ATTR_FN)
+        *tfm_*partition_secure_client_2.*:(SORT_BY_ALIGNMENT(.text*))
+        *tfm_*partition_secure_client_2.*:(SORT_BY_ALIGNMENT(.rodata*))
+        *(TFM_SP_SECURE_CLIENT_2_APP-ROT_ATTR_FN)
         *(TFM_*_APP-ROT_ATTR_FN)
         . = ALIGN(TFM_LINKER_APP_ROT_LINKER_CODE_ALIGNMENT);
     } > FLASH
@@ -170,12 +212,14 @@ SECTIONS
         *libflash_drivers*:(SORT_BY_ALIGNMENT(.text*))
         *libflash_drivers*:(SORT_BY_ALIGNMENT(.rodata*))
         KEEP(*(.ramfunc))
-        . = ALIGN(4); /* This alignment is needed to make the section size 4 bytes aligned */
 #if defined(S_RAM_CODE_EXTRA_SECTION_NAME)
         KEEP(*(S_RAM_CODE_EXTRA_SECTION_NAME))
 #endif
-
+        . = ALIGN(4); /* This alignment is needed to make the section size 4 bytes aligned */
     } > CODE_RAM AT > FLASH
+
+    /* Reset current position for subsequent sections */
+    . = LOADADDR(.ER_CODE_SRAM) + SIZEOF(.ER_CODE_SRAM);
 
     ASSERT(S_RAM_CODE_START % 4 == 0, "S_RAM_CODE_START must be divisible by 4")
 
@@ -202,6 +246,7 @@ SECTIONS
         . = ALIGN(4);
         /* preinit data */
         PROVIDE_HIDDEN (__preinit_array_start = .);
+        PROVIDE(__bothinit_array_start = __preinit_array_start);
         KEEP(*(.preinit_array))
         PROVIDE_HIDDEN (__preinit_array_end = .);
 
@@ -211,6 +256,7 @@ SECTIONS
         KEEP(*(SORT(.init_array.*)))
         KEEP(*(.init_array))
         PROVIDE_HIDDEN (__init_array_end = .);
+        PROVIDE(__bothinit_array_end = __init_array_end);
 
         . = ALIGN(4);
         /* finit data */
@@ -226,24 +272,24 @@ SECTIONS
         /* Copy interrupt vectors from flash to RAM */
         LONG (__vectors_start__)                            /* From */
         LONG (__ram_vectors_start__)                        /* To   */
-        LONG ((__vectors_end__ - __vectors_start__) / 4)    /* Size */
+        LONG ((__vectors_end__ - __vectors_start__) / 4)    /* Size, aligment checked after the section */
 #endif
         LONG (LOADADDR(.TFM_DATA))
         LONG (ADDR(.TFM_DATA))
-        LONG (SIZEOF(.TFM_DATA) / 4)
+        LONG (SIZEOF(.TFM_DATA) / 4)    /* Aligment checked after the section */
 
         LONG (LOADADDR(.TFM_PSA_ROT_LINKER_DATA))
         LONG (ADDR(.TFM_PSA_ROT_LINKER_DATA))
-        LONG (SIZEOF(.TFM_PSA_ROT_LINKER_DATA) / 4)
+        LONG (SIZEOF(.TFM_PSA_ROT_LINKER_DATA) / 4)    /* Aligment checked after the section */
 
         LONG (LOADADDR(.TFM_APP_ROT_LINKER_DATA))
         LONG (ADDR(.TFM_APP_ROT_LINKER_DATA))
-        LONG (SIZEOF(.TFM_APP_ROT_LINKER_DATA) / 4)
+        LONG (SIZEOF(.TFM_APP_ROT_LINKER_DATA) / 4)    /* Aligment checked after the section */
 
 #if defined (S_RAM_CODE_START)
         LONG (LOADADDR(.ER_CODE_SRAM))
         LONG (ADDR(.ER_CODE_SRAM))
-        LONG (SIZEOF(.ER_CODE_SRAM) / 4)
+        LONG (SIZEOF(.ER_CODE_SRAM) / 4)    /* Aligment checked after the section */
 #endif
         __copy_table_end__ = .;
 
@@ -252,14 +298,15 @@ SECTIONS
         __zero_table_start__ = .;
         LONG (ADDR(.TFM_BSS))
         LONG (SIZEOF(.TFM_BSS) / 4)
+
         LONG (ADDR(.TFM_PSA_ROT_LINKER_BSS))
-        LONG (SIZEOF(.TFM_PSA_ROT_LINKER_BSS) / 4)
+        LONG (SIZEOF(.TFM_PSA_ROT_LINKER_BSS) / 4)    /* Aligment checked after the section */
 
         LONG (ADDR(.TFM_APP_ROT_LINKER_BSS))
-        LONG (SIZEOF(.TFM_APP_ROT_LINKER_BSS) / 4)
+        LONG (SIZEOF(.TFM_APP_ROT_LINKER_BSS) / 4)    /* Aligment checked after the section */
 #if defined(CONFIG_TFM_PARTITION_META)
         LONG (ADDR(.TFM_SP_META_PTR))
-        LONG (SIZEOF(.TFM_SP_META_PTR) / 4)
+        LONG (SIZEOF(.TFM_SP_META_PTR) / 4)    /* Aligment checked after the section */
 #endif
         __zero_table_end__ = .;
 
@@ -270,6 +317,21 @@ SECTIONS
         *libplatform_s*:*(.rodata*)
         *libtfm_spm*:*(.rodata*)
     } > FLASH
+
+#ifdef RAM_VECTORS_SUPPORT
+    CHECK_ALIGNMENT_4(__vectors_end__ - __vectors_start__)
+#endif
+    CHECK_ALIGNMENT_4(SIZEOF(.TFM_DATA))
+    CHECK_ALIGNMENT_4(SIZEOF(.TFM_PSA_ROT_LINKER_DATA))
+    CHECK_ALIGNMENT_4(SIZEOF(.TFM_APP_ROT_LINKER_DATA))
+#if defined (S_RAM_CODE_START)
+    CHECK_ALIGNMENT_4(SIZEOF(.ER_CODE_SRAM))
+#endif
+    CHECK_ALIGNMENT_4(SIZEOF(.TFM_PSA_ROT_LINKER_BSS))
+    CHECK_ALIGNMENT_4(SIZEOF(.TFM_APP_ROT_LINKER_BSS))
+#if defined(CONFIG_TFM_PARTITION_META)
+    CHECK_ALIGNMENT_4(SIZEOF(.TFM_SP_META_PTR))
+#endif
 
     .TFM_UNPRIV_CODE ALIGN(TFM_LINKER_UNPRIV_CODE_ALIGNMENT) :
     {
@@ -370,8 +432,10 @@ SECTIONS
         __end__ = .;
         PROVIDE(end = .);
         __HeapBase = .;
+        PROVIDE(__heap_start = __HeapBase);
         . += __heap_size__;
         __HeapLimit = .;
+        PROVIDE(__heap_end = __HeapLimit);
         __heap_limit = .; /* Add for _sbrk */
     } > RAM
 #endif
@@ -395,6 +459,12 @@ SECTIONS
     .TFM_APP_ROT_LINKER_DATA ALIGN(TFM_LINKER_APP_ROT_LINKER_DATA_ALIGNMENT) :
     {
         *tfm_app_rot_partition*:(SORT_BY_ALIGNMENT(.data*))
+        *tfm_*partition_ps.*:(SORT_BY_ALIGNMENT(.data*))
+        *(TFM_SP_PS_APP-ROT_ATTR_RW)
+        *tfm_*partition_ipc_client.*:(SORT_BY_ALIGNMENT(.data*))
+        *(TFM_SP_IPC_CLIENT_TEST_APP-ROT_ATTR_RW)
+        *tfm_*partition_secure_client_2.*:(SORT_BY_ALIGNMENT(.data*))
+        *(TFM_SP_SECURE_CLIENT_2_APP-ROT_ATTR_RW)
         *(TFM_*_APP-ROT_ATTR_RW)
         . = ALIGN(4);
     } > RAM AT> FLASH
@@ -406,6 +476,15 @@ SECTIONS
         start_of_TFM_APP_ROT_LINKER = .;
         *tfm_app_rot_partition*:(SORT_BY_ALIGNMENT(.bss*))
         *tfm_app_rot_partition*:*(COMMON)
+        *tfm_*partition_ps.*:(SORT_BY_ALIGNMENT(.bss*))
+        *tfm_*partition_ps.*:*(COMMON)
+        *(TFM_SP_PS_APP-ROT_ATTR_ZI)
+        *tfm_*partition_ipc_client.*:(SORT_BY_ALIGNMENT(.bss*))
+        *tfm_*partition_ipc_client.*:*(COMMON)
+        *(TFM_SP_IPC_CLIENT_TEST_APP-ROT_ATTR_ZI)
+        *tfm_*partition_secure_client_2.*:(SORT_BY_ALIGNMENT(.bss*))
+        *tfm_*partition_secure_client_2.*:*(COMMON)
+        *(TFM_SP_SECURE_CLIENT_2_APP-ROT_ATTR_ZI)
         *(TFM_*_APP-ROT_ATTR_ZI)
         . += (. - start_of_TFM_APP_ROT_LINKER) ? 0 : 4;
         . = ALIGN(TFM_LINKER_APP_ROT_LINKER_DATA_ALIGNMENT);
@@ -456,6 +535,22 @@ SECTIONS
     .TFM_PSA_ROT_LINKER_DATA ALIGN(TFM_LINKER_PSA_ROT_LINKER_DATA_ALIGNMENT) :
     {
         *tfm_psa_rot_partition*:(SORT_BY_ALIGNMENT(.data*))
+        *tfm_*partition_its.*:(SORT_BY_ALIGNMENT(.data*))
+        *(TFM_SP_ITS_PSA-ROT_ATTR_RW)
+        *tfm_*partition_crypto.*:(SORT_BY_ALIGNMENT(.data*))
+        *mbedcrypto.*:(SORT_BY_ALIGNMENT(.data*))
+        *mbedtls*acceleration.*:(SORT_BY_ALIGNMENT(.data*))
+        *(TFM_SP_CRYPTO_PSA-ROT_ATTR_RW)
+        *tfm_*partition_platform.*:(SORT_BY_ALIGNMENT(.data*))
+        *(TFM_SP_PLATFORM_PSA-ROT_ATTR_RW)
+        *tfm_*partition_lds.*:(SORT_BY_ALIGNMENT(.data*))
+        *(TFM_SP_LDS_PSA-ROT_ATTR_RW)
+        *tfm_*partition_secure_client_service.*:(SORT_BY_ALIGNMENT(.data*))
+        *(TFM_SP_SECURE_TEST_PARTITION_PSA-ROT_ATTR_RW)
+        *tfm_*partition_ipc_service.*:(SORT_BY_ALIGNMENT(.data*))
+        *(TFM_SP_IPC_SERVICE_TEST_PSA-ROT_ATTR_RW)
+        *tfm_*partition_ps_test.*:(SORT_BY_ALIGNMENT(.data*))
+        *(TFM_SP_PS_TEST_PSA-ROT_ATTR_RW)
         *(TFM_*_PSA-ROT_ATTR_RW)
         . = ALIGN(4);
     } > RAM AT> FLASH
@@ -467,6 +562,31 @@ SECTIONS
         start_of_TFM_PSA_ROT_LINKER = .;
         *tfm_psa_rot_partition*:(SORT_BY_ALIGNMENT(.bss*))
         *tfm_psa_rot_partition*:*(COMMON)
+        *tfm_*partition_its.*:(SORT_BY_ALIGNMENT(.bss*))
+        *tfm_*partition_its.*:*(COMMON)
+        *(TFM_SP_ITS_PSA-ROT_ATTR_ZI)
+        *tfm_*partition_crypto.*:(SORT_BY_ALIGNMENT(.bss*))
+        *tfm_*partition_crypto.*:*(COMMON)
+        *mbedcrypto.*:(SORT_BY_ALIGNMENT(.bss*))
+        *mbedcrypto.*:*(COMMON)
+        *mbedtls*acceleration.*:(SORT_BY_ALIGNMENT(.bss*))
+        *mbedtls*acceleration.*:*(COMMON)
+        *(TFM_SP_CRYPTO_PSA-ROT_ATTR_ZI)
+        *tfm_*partition_platform.*:(SORT_BY_ALIGNMENT(.bss*))
+        *tfm_*partition_platform.*:*(COMMON)
+        *(TFM_SP_PLATFORM_PSA-ROT_ATTR_ZI)
+        *tfm_*partition_lds.*:(SORT_BY_ALIGNMENT(.bss*))
+        *tfm_*partition_lds.*:*(COMMON)
+        *(TFM_SP_LDS_PSA-ROT_ATTR_ZI)
+        *tfm_*partition_secure_client_service.*:(SORT_BY_ALIGNMENT(.bss*))
+        *tfm_*partition_secure_client_service.*:*(COMMON)
+        *(TFM_SP_SECURE_TEST_PARTITION_PSA-ROT_ATTR_ZI)
+        *tfm_*partition_ipc_service.*:(SORT_BY_ALIGNMENT(.bss*))
+        *tfm_*partition_ipc_service.*:*(COMMON)
+        *(TFM_SP_IPC_SERVICE_TEST_PSA-ROT_ATTR_ZI)
+        *tfm_*partition_ps_test.*:(SORT_BY_ALIGNMENT(.bss*))
+        *tfm_*partition_ps_test.*:*(COMMON)
+        *(TFM_SP_PS_TEST_PSA-ROT_ATTR_ZI)
         *(TFM_*_PSA-ROT_ATTR_ZI)
         . += (. - start_of_TFM_PSA_ROT_LINKER) ? 0 : 4;
         . = ALIGN(TFM_LINKER_PSA_ROT_LINKER_DATA_ALIGNMENT);
