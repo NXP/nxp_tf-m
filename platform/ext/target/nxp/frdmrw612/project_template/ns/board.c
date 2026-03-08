@@ -317,8 +317,8 @@ static bool LoadGdetCfg(power_gdet_data_t *data)
     }
     else
     {
-        /* GDET clock has been characterzed to 64MHz */
-        CLKCTL0->ELS_GDET_CLK_SEL = CLKCTL0_ELS_GDET_CLK_SEL_SEL(2);
+        /* GDET clock set to boot value */
+        CLKCTL0->ELS_GDET_CLK_SEL = data->TRIM0;
     }
 
     if (retval)
@@ -434,4 +434,17 @@ void BOARD_ClockPostConfig(void)
     else
     {
     }
+}
+
+/* RW61x is found some chips could not pull up some GPIO pins which are
+ * MUX with GAC ACOMP if GPIO power domain is 1.8V.
+ * The workaround is enable GAC MUX before using GPIOs (GPIO42-50, GPIO55 and GPIO58-61)
+ * input function
+ */
+void BOARD_ApplyGpioPullUpWorkaround(void)
+{
+    RSTCTL0->PRSTCTL1 &= ~RSTCTL0_PRSTCTL1_GAU_MASK; /* Remove reset GAU. */
+    CLKCTL0->PSCCTL1 |= CLKCTL0_PSCCTL1_GAU_MASK;    /* Enable GAU clock. */
+    GAU_ACOMP->CTRL0 |= ACOMP_CTRL0_EN_MASK;         /* Enable ACOMP0.    */
+    CLKCTL0->PSCCTL1 &= ~CLKCTL0_PSCCTL1_GAU_MASK;   /* Disable GAU clock. */
 }
