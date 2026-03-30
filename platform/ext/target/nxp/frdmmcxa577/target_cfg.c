@@ -235,7 +235,7 @@ static void trdc_configs(void)
 
 }
 
-static void APP_SetTrdcAccessible(uint32_t idx)
+static void app_set_glikey_accessible(uint32_t idx)
 {
     /* Use Glikey to enable modifications of MBC registers: */
 
@@ -731,7 +731,7 @@ int32_t ppc_init_cfg(void)
       AHBSC_FLEXSPI0_REGION1_6_MEM_RULE_FLEXSPI0_REGION_MEM_RULE_RULE3(0x0U);
 
     /* TRDC- MBC0 configs*/
-    APP_SetTrdcAccessible(glikey_index_mbc);
+    app_set_glikey_accessible(glikey_index_mbc);
     trdc_configs();
 
      /* CPU Lock register*/
@@ -771,8 +771,10 @@ int32_t ppc_init_cfg(void)
     SECURE_READ_MODIFY_WRITE_REGISTER(&( AHBSC->MISC_CTRL_REG),
         ~(AHBSC_MISC_CTRL_REG_WRITE_LOCK_MASK                |
           AHBSC_MISC_CTRL_REG_ENABLE_SECURE_CHECKING_MASK    |
-          AHBSC_MISC_CTRL_REG_DISABLE_STRICT_MODE_MASK       |
+          AHBSC_MISC_CTRL_REG_ENABLE_S_PRIV_CHECK_MASK       |
+          AHBSC_MISC_CTRL_REG_ENABLE_NS_PRIV_CHECK_MASK      |
           AHBSC_MISC_CTRL_REG_DISABLE_VIOLATION_ABORT_MASK   |
+          AHBSC_MISC_CTRL_REG_DISABLE_STRICT_MODE_MASK       |
           AHBSC_MISC_CTRL_REG_IDAU_ALL_NS_MASK               ),
          (AHBSC_MISC_CTRL_REG_WRITE_LOCK              (0x2U) |         /* 2 = Writes to this register and to the Memory and Peripheral RULE registers are allowed */
           AHBSC_MISC_CTRL_REG_ENABLE_SECURE_CHECKING  (0x1U) |         /* 1 = Enable Secure Checking (restrictive mode) */
@@ -786,8 +788,10 @@ int32_t ppc_init_cfg(void)
     SECURE_READ_MODIFY_WRITE_REGISTER(&( AHBSC->MISC_CTRL_DP_REG),
         ~(AHBSC_MISC_CTRL_DP_REG_WRITE_LOCK_MASK                |
           AHBSC_MISC_CTRL_DP_REG_ENABLE_SECURE_CHECKING_MASK    |
-          AHBSC_MISC_CTRL_DP_REG_DISABLE_STRICT_MODE_MASK       |
+          AHBSC_MISC_CTRL_DP_REG_ENABLE_S_PRIV_CHECK_MASK       |
+          AHBSC_MISC_CTRL_DP_REG_ENABLE_NS_PRIV_CHECK_MASK      |
           AHBSC_MISC_CTRL_DP_REG_DISABLE_VIOLATION_ABORT_MASK   |
+          AHBSC_MISC_CTRL_DP_REG_DISABLE_STRICT_MODE_MASK       |
           AHBSC_MISC_CTRL_DP_REG_IDAU_ALL_NS_MASK               ),
          (AHBSC_MISC_CTRL_DP_REG_WRITE_LOCK              (0x2U) |      /* 2 = Writes to this register and to the Memory and Peripheral RULE registers are allowed */
           AHBSC_MISC_CTRL_DP_REG_ENABLE_SECURE_CHECKING  (0x1U) |      /* 1 = Enable Secure Checking (restrictive mode) */
