@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2021-2024, Arm Limited. All rights reserved.
- * Copyright 2020-2025 NXP
+ * Copyright 2020-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -247,27 +247,31 @@ void CDOG_DriverIRQHandler(void)
 
     if ((CDOG->FLAGS & CDOG_FLAGS_TO_FLAG_MASK) != 0u)
     {
-        SPMLOG_ERRMSG("Timeout ");
+        SPMLOG_ERRMSG("CDOG Timeout fault occured");
     }
     if ((CDOG->FLAGS & CDOG_FLAGS_MISCOM_FLAG_MASK) != 0u)
     {
-        SPMLOG_ERRMSG("Miscompare ");
+        SPMLOG_ERRMSG("CDOG Miscompare fault occured ");
     }
     if ((CDOG->FLAGS & CDOG_FLAGS_SEQ_FLAG_MASK) != 0u)
     {
-        SPMLOG_ERRMSG("Sequence ");
+        SPMLOG_ERRMSG("CDOG Sequence fault occured ");
     }
     if ((CDOG->FLAGS & CDOG_FLAGS_CNT_FLAG_MASK) != 0u)
     {
-        SPMLOG_ERRMSG("Control ");
+        SPMLOG_ERRMSG("CDOG Control fault occured ");
     }
     if ((CDOG->FLAGS & CDOG_FLAGS_STATE_FLAG_MASK) != 0u)
     {
-        SPMLOG_ERRMSG("State ");
+        SPMLOG_ERRMSG("CDOG State fault occured ");
     }
     if ((CDOG->FLAGS & CDOG_FLAGS_ADDR_FLAG_MASK) != 0u)
     {
-        SPMLOG_ERRMSG("Address ");
+        SPMLOG_ERRMSG("CDOG Address fault occured ");
+    }
+    if ((CDOG->FLAGS & CDOG_FLAGS_POR_FLAG_MASK) != 0u)
+    {
+        SPMLOG_ERRMSG("CDOG POR occured ");
     }
     SPMLOG_ERRMSG("fault occured\r\n");
 
