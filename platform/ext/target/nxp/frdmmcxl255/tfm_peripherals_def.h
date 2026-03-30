@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2019, Arm Limited. All rights reserved.
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -35,6 +35,11 @@ extern "C" {
 #define CTIMER_NS_IRQ_HANDLER   (CTIMER2_IRQHandler)
 #define TFM_TIMER1_IRQ          (CTIMER2_IRQn)                  /* use by tfm_core_test_irq() */
 
+/* CDOG driver configs for platform*/
+#define CDOG                    CDOG0
+#define CDOG_IRQn               CDOG0_IRQn
+#define CDOG_DriverIRQHandler   CDOG0_DriverIRQHandler
+  
 struct platform_data_t;
 
 extern struct platform_data_t tfm_peripheral_std_uart;

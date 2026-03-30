@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2022 Arm Limited. All rights reserved.
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -204,28 +204,28 @@ static void trdc_configs(void)
     
 }
 
-static void APP_SetTrdcAccessible(uint32_t idx)
+static void app_set_glikey_accessible(uint32_t idx)
 {
     /* Use Glikey to enable modifications of MBC registers: */
-  
+
     status_t status = GLIKEY_IsLocked(GLIKEY0);
-    assert(kStatus_GLIKEY_NotLocked == status); 
+    assert(kStatus_GLIKEY_NotLocked == status);
 
     status = GLIKEY_SyncReset(GLIKEY0);
     assert(kStatus_Success == status);
-    
+
     status = GLIKEY_StartEnable(GLIKEY0, idx);
     assert(kStatus_Success == status);
-    
+
     status = GLIKEY_ContinueEnable(GLIKEY0, GLIKEY_CODEWORD_STEP1);
     assert(kStatus_Success == status);
-    
+
     status = GLIKEY_ContinueEnable(GLIKEY0, GLIKEY_CODEWORD_STEP2);
     assert(kStatus_Success == status);
-    
+
     status = GLIKEY_ContinueEnable(GLIKEY0, GLIKEY_CODEWORD_STEP3);
     assert(kStatus_Success == status);
-    
+
     status = GLIKEY_ContinueEnable(GLIKEY0, GLIKEY_CODEWORD_STEP_EN);
     assert(kStatus_Success == status);
 
@@ -514,7 +514,7 @@ int32_t ppc_init_cfg(void)
       AHBSC_AON_DOMAIN_SRAM_MEM_RULE_RULE7(0x0U);
 
     /* TRDC- MBC0 configs*/
-    APP_SetTrdcAccessible(glikey_index_mbc);
+    app_set_glikey_accessible(glikey_index_mbc);
     trdc_configs();
     
      /* CPU Lock register*/
@@ -545,13 +545,16 @@ int32_t ppc_init_cfg(void)
         (AHBSC_MASTER_SEC_ANTI_POL_REG_DMA0(0x0U) |
          AHBSC_MASTER_SEC_ANTI_POL_REG_DMA1(0x0U) |
          AHBSC_MASTER_SEC_ANTI_POL_REG_PKC(0x3U)));   
-    
+
     /* Update AHB Secure control register */
-    SECURE_READ_MODIFY_WRITE_REGISTER(&( AHBSC__AHBSC0->MISC_CTRL_REG),
+    app_set_glikey_accessible(10);
+    SECURE_READ_MODIFY_WRITE_REGISTER((&( AHBSC__AHBSC0->MISC_CTRL_REG)),
         ~(AHBSC_MISC_CTRL_REG_WRITE_LOCK_MASK                |
           AHBSC_MISC_CTRL_REG_ENABLE_SECURE_CHECKING_MASK    |
-          AHBSC_MISC_CTRL_REG_DISABLE_STRICT_MODE_MASK       |
+          AHBSC_MISC_CTRL_REG_ENABLE_S_PRIV_CHECK_MASK       |
+          AHBSC_MISC_CTRL_REG_ENABLE_NS_PRIV_CHECK_MASK      |
           AHBSC_MISC_CTRL_REG_DISABLE_VIOLATION_ABORT_MASK   |
+          AHBSC_MISC_CTRL_REG_DISABLE_STRICT_MODE_MASK       |
           AHBSC_MISC_CTRL_REG_IDAU_ALL_NS_MASK               ),
          (AHBSC_MISC_CTRL_REG_WRITE_LOCK              (0x2U) |         /* 2 = Writes to this register and to the Memory and Peripheral RULE registers are allowed */
           AHBSC_MISC_CTRL_REG_ENABLE_SECURE_CHECKING  (0x1U) |         /* 1 = Enable Secure Checking (restrictive mode) */
@@ -562,11 +565,13 @@ int32_t ppc_init_cfg(void)
           AHBSC_MISC_CTRL_REG_IDAU_ALL_NS             (0x2U)));        /* 2 = IDAU is enabled (restrictive mode) */
 
     /* Secure control duplicate register */
-    SECURE_READ_MODIFY_WRITE_REGISTER(&( AHBSC__AHBSC0->MISC_CTRL_DP_REG),
+    SECURE_READ_MODIFY_WRITE_REGISTER((&( AHBSC__AHBSC0->MISC_CTRL_DP_REG)),
         ~(AHBSC_MISC_CTRL_DP_REG_WRITE_LOCK_MASK                |
           AHBSC_MISC_CTRL_DP_REG_ENABLE_SECURE_CHECKING_MASK    |
-          AHBSC_MISC_CTRL_DP_REG_DISABLE_STRICT_MODE_MASK       |
+          AHBSC_MISC_CTRL_DP_REG_ENABLE_S_PRIV_CHECK_MASK       |
+          AHBSC_MISC_CTRL_DP_REG_ENABLE_NS_PRIV_CHECK_MASK      |
           AHBSC_MISC_CTRL_DP_REG_DISABLE_VIOLATION_ABORT_MASK   |
+          AHBSC_MISC_CTRL_DP_REG_DISABLE_STRICT_MODE_MASK       |
           AHBSC_MISC_CTRL_DP_REG_IDAU_ALL_NS_MASK               ),
          (AHBSC_MISC_CTRL_DP_REG_WRITE_LOCK              (0x2U) |      /* 2 = Writes to this register and to the Memory and Peripheral RULE registers are allowed */
           AHBSC_MISC_CTRL_DP_REG_ENABLE_SECURE_CHECKING  (0x1U) |      /* 1 = Enable Secure Checking (restrictive mode) */

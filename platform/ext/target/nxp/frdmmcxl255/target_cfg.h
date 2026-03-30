@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2020 Arm Limited
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ extern "C" {
 #define TRDC_ACCESS_CONTROL_POLICY_NS_INDEX          4
 /*${macro:end}*/
 
-  
 /**
  * \brief Holds the data necessary to do isolation for a specific peripheral.
  */
