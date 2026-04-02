@@ -65,17 +65,6 @@ int flash_area_id_to_multi_image_slot(int image_index, int area_id);
  */
 uint8_t flash_area_erased_val(const struct flash_area *fap);
 
-/* Retrieve the flash sector withing given flash area, at a given offset.
- *
- * @param fa        flash area where the sector is taken from.
- * @param off       offset within flash area.
- * @param sector    structure of sector information.
- * Returns 0 on success, -ERANGE if @p off is beyond flash area size,
- *         other negative errno code on failure.
- */
-int flash_area_get_sector(const struct flash_area *fa, uint32_t off,
-                          struct flash_sector *sector);
-
 static inline uint8_t flash_area_get_id(const struct flash_area *fa)
 {
     return fa->fa_id;
