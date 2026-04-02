@@ -10,8 +10,8 @@
 **                          MCUXpresso Compiler
 **
 **     Reference manual:    RW61X User manual Rev. 0.95, June 2022
-**     Version:             rev. 3.0, 2025-04-07
-**     Build:               b250519
+**     Version:             rev. 1.0, 2021-03-16
+**     Build:               b231201
 **
 **     Abstract:
 **         Provides a system configuration function and a global variable that
@@ -19,7 +19,7 @@
 **         the oscillator (PLL) that is part of the microcontroller device.
 **
 **     Copyright 2016 Freescale Semiconductor, Inc.
-**     Copyright 2016-2025 NXP
+**     Copyright 2016-2023 NXP
 **     SPDX-License-Identifier: BSD-3-Clause
 **
 **     http:                 www.nxp.com
@@ -28,11 +28,6 @@
 **     Revisions:
 **     - rev. 1.0 (2021-03-16)
 **         Initial version.
-**     - rev. 2.0 (2024-10-29)
-**         Change the device header file from single flat file to multiple files based on peripherals,
-**         each peripheral with dedicated header file located in periphN folder.
-**     - rev. 3.0 (2025-04-07)
-**         Based on CRR Rev9.1.
 **
 ** ###################################################################
 */
@@ -40,7 +35,7 @@
 /*!
  * @file RW612
  * @version 1.0
- * @date 2025-05-19
+ * @date 2023-12-01
  * @brief Device specific configuration file for RW612 (header file)
  *
  * Provides a system configuration function and a global variable that contains
