@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2021-2023, Arm Limited. All rights reserved.
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -50,6 +50,13 @@ psa_status_t tfm_loader_api_dispatcher(psa_invec in_vec[],
         return PSA_SUCCESS;
     case TFM_LDS_PWR_OFF_DEVICE:
         power_off_device_impl(target_id);
+        return PSA_SUCCESS;
+    case TFM_LDS_CAU_SET_TEMP:
+        return cau_temperature_write_to_firmware_impl();
+    case TFM_LDS_CAU_GET_TEMP:
+        return cau_get_temperature_impl();
+    case TFM_LDS_CAU_TEM_ENABLE:
+        cau_temperature_enable_impl();
         return PSA_SUCCESS;
     default:
         return PSA_ERROR_NOT_SUPPORTED;
