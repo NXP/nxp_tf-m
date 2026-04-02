@@ -30,17 +30,15 @@ target_sources(platform_ns
         pin_mux.c
         Driver_USART.c
         Native_Driver/system_RW612.c
-
-        Native_Driver/drivers/common/fsl_common.c
-        Native_Driver/drivers/common/fsl_common_arm.c
-        Native_Driver/drivers/ctimer/fsl_ctimer.c
-        Native_Driver/drivers/flexcomm/fsl_flexcomm.c
-        Native_Driver/drivers/lpc_gpio/fsl_gpio.c
-        Native_Driver/drivers/cache/cache64/fsl_cache.c
-        Native_Driver/drivers/flexspi/fsl_flexspi.c
-        Native_Driver/drivers/trng/fsl_trng.c
-        Native_Driver/drivers/flexcomm/usart/fsl_usart.c
+        Native_Driver/drivers/fsl_usart.c
+        Native_Driver/drivers/fsl_cache.c
         Native_Driver/drivers/fsl_clock.c
+        Native_Driver/drivers/fsl_common.c
+        Native_Driver/drivers/fsl_common_arm.c
+        Native_Driver/drivers/fsl_ctimer.c
+        Native_Driver/drivers/fsl_flexcomm.c
+        Native_Driver/drivers/fsl_flexspi.c
+        Native_Driver/drivers/fsl_gpio.c
         Native_Driver/drivers/fsl_ocotp.c
         Native_Driver/drivers/fsl_power.c
         Native_Driver/drivers/fsl_reset.c
@@ -48,7 +46,7 @@ target_sources(platform_ns
         Native_Driver/components/serial_manager/fsl_component_serial_manager.c
         Native_Driver/components/serial_manager/fsl_component_serial_port_uart.c
         Native_Driver/components/uart/fsl_adapter_usart.c    
-        Native_Driver/utilities/assert/fsl_assert.c
+        Native_Driver/utilities/fsl_assert.c
         Native_Driver/utilities/debug_console/fsl_debug_console.c
         Native_Driver/utilities/str/fsl_str.c
         $<$<BOOL:${TFM_PARTITION_PLATFORM}>:plat_test.c>
@@ -61,21 +59,11 @@ target_include_directories(platform_ns
         ext/cmsis/Include
         ext/cmsis/Include/m-profile
         ext/common
+        ext/driver
         Native_Driver
         Device/Include
         Device/Config
         Native_Driver/drivers
-        Native_Driver/periph
-
-        Native_Driver/drivers/common
-        Native_Driver/drivers/ctimer
-        Native_Driver/drivers/flexcomm
-        Native_Driver/drivers/flexcomm/usart
-        Native_Driver/drivers/lpc_gpio
-        Native_Driver/drivers/cache/cache64
-        Native_Driver/drivers/trng
-        Native_Driver/drivers/flexspi
-        
         Native_Driver/components/els_pkc/src/platforms/rw61x
         Native_Driver/components/els_pkc/src/comps/mcuxClEls/inc
         Native_Driver/components/els_pkc/src/comps/mcuxClBuffer/inc
@@ -95,8 +83,7 @@ target_include_directories(platform_ns
         Native_Driver/components/lists
         Native_Driver/components/serial_manager
         Native_Driver/components/uart
-        Native_Driver/utilities/assert
-        Native_Driver/utilities/debug_console_lite
+        Native_Driver/utilities/debug_console
         Native_Driver/utilities/str
         partition
 )

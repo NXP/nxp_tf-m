@@ -1,16 +1,11 @@
 /*
- *     Copyright 2023,2025 NXP
- *      
+ *     Copyright 2023 NXP
+ *     All rights reserved.
  *
  *     SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include "fsl_iped.h"
-
-/* Component ID definition, used by tools. */
-#ifndef FSL_COMPONENT_ID
-#define FSL_COMPONENT_ID "platform.drivers.iped_rw61x"
-#endif
 
 status_t IPED_SetRegionAddressRange(FLEXSPI_Type *base,
                                     iped_region_t region,

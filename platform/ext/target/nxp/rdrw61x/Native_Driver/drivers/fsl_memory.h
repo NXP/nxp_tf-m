@@ -67,7 +67,6 @@ static inline uint32_t MEMORY_ConvertMemoryMapAddress(uint32_t addr, mem_directi
         {
             if ((paddr >= FSL_MEM_FLEXSPI_AMBA_PC_BEGIN) && (paddr <= FSL_MEM_FLEXSPI_AMBA_PC_END))
             {
-                assert(addr < (UINT32_MAX - FSL_MEM_FLEXSPI_AMBA_OFFSET));
                 dest = addr + FSL_MEM_FLEXSPI_AMBA_OFFSET;
             }
             else
@@ -80,7 +79,6 @@ static inline uint32_t MEMORY_ConvertMemoryMapAddress(uint32_t addr, mem_directi
         {
             if ((paddr >= FSL_MEM_FLEXSPI_AMBA_PS_BEGIN) && (paddr <= FSL_MEM_FLEXSPI_AMBA_PS_END))
             {
-                assert(addr >= FSL_MEM_FLEXSPI_AMBA_OFFSET);
                 dest = addr - FSL_MEM_FLEXSPI_AMBA_OFFSET;
             }
             else
