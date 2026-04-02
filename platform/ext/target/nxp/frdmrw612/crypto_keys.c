@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2017-2022 Arm Limited. All rights reserved.
- * Copyright 2023-2025 NXP
+ * Copyright 2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -175,17 +175,13 @@ exit:
 #endif
 //ST end
 
-static enum tfm_plat_err_t tfm_plat_get_huk(const void *ctx,
-                                            uint8_t *buf, size_t buf_len,
+static enum tfm_plat_err_t tfm_plat_get_huk(uint8_t *buf, size_t buf_len,
                                             size_t *key_len,
                                             psa_key_bits_t *key_bits,
                                             psa_algorithm_t *algorithm,
                                             psa_key_type_t *type)
 {
     enum tfm_plat_err_t err;
-
-    (void)ctx;
-
 #if defined(PSA_CRYPTO_DRIVER_ELS_PKC) && USE_ELS_PKC_HUK
     err = tfm_plat_get_huk_els_pkc(buf, buf_len, key_len);
     if (err != TFM_PLAT_ERR_SUCCESS)
@@ -212,8 +208,7 @@ static enum tfm_plat_err_t tfm_plat_get_huk(const void *ctx,
 }
 
 #ifdef TFM_PARTITION_INITIAL_ATTESTATION
-static enum tfm_plat_err_t tfm_plat_get_iak(const void *ctx,
-                                            uint8_t *buf, size_t buf_len,
+static enum tfm_plat_err_t tfm_plat_get_iak(uint8_t *buf, size_t buf_len,
                                             size_t *key_len,
                                             psa_key_bits_t *key_bits,
                                             psa_algorithm_t *algorithm,
@@ -223,8 +218,6 @@ static enum tfm_plat_err_t tfm_plat_get_iak(const void *ctx,
 #ifndef SYMMETRIC_INITIAL_ATTESTATION
     psa_ecc_family_t curve_type;
 #endif /* SYMMETRIC_INITIAL_ATTESTATION */
-
-    (void)ctx;
 
     err = tfm_plat_otp_read(PLAT_OTP_ID_IAK_LEN,
                             sizeof(size_t), (uint8_t*)key_len);
@@ -305,16 +298,14 @@ static const tfm_plat_builtin_key_descriptor_t g_builtin_keys_desc[] = {
     {.key_id = TFM_BUILTIN_KEY_ID_HUK,
      .slot_number = TFM_BUILTIN_KEY_SLOT_HUK,
      .lifetime = TFM_BUILTIN_KEY_LOADER_LIFETIME,
-     .loader_key_func = tfm_plat_get_huk,
-     .loader_key_ctx = NULL},
+     .loader_key_func = tfm_plat_get_huk},
      /* Would be nice to add EL2GO_CONN_AUTH change via pre-processor*/
     {.key_id = TFM_BUILTIN_KEY_ID_EL2GO_CONN_AUTH,
      .slot_number = 0U,
      .lifetime = PSA_KEY_LIFETIME_FROM_PERSISTENCE_AND_LOCATION(
                         PSA_KEY_LIFETIME_PERSISTENT,
                         PSA_KEY_LOCATION_S50_KEY_GEN_STORAGE),
-     .loader_key_func = NULL,/*tfm_plat_get_el2go_auth*/
-	 .loader_key_ctx = NULL},
+     .loader_key_func = NULL/*tfm_plat_get_el2go_auth*/},
 #ifdef TFM_PARTITION_INITIAL_ATTESTATION
     {.key_id = TFM_BUILTIN_KEY_ID_IAK,
      .slot_number = TFM_BUILTIN_KEY_SLOT_IAK,
@@ -325,8 +316,7 @@ static const tfm_plat_builtin_key_descriptor_t g_builtin_keys_desc[] = {
 #else
      .lifetime = TFM_BUILTIN_KEY_LOADER_LIFETIME,
 #endif /* USE_ELS_PKC_IAK */
-     .loader_key_func = tfm_plat_get_iak,
-	 .loader_key_ctx = NULL},
+     .loader_key_func = tfm_plat_get_iak},
 #endif /* TFM_PARTITION_INITIAL_ATTESTATION */
 };
 
