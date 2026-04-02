@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2023, Arm Limited. All rights reserved.
-# Copyright 2024 NXP
+# Copyright 2024-2025 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -29,7 +29,6 @@ target_sources(platform_ns
         clock_config.c
         pin_mux.c
         Driver_USART.c
-        flash_config.c
         Native_Driver/system_RW612.c
         Native_Driver/drivers/fsl_usart.c
         Native_Driver/drivers/fsl_cache.c
