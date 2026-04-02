@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2016, Freescale Semiconductor, Inc.
- * Copyright 2016-2023, 2026 NXP
+ * Copyright 2016-2023 NXP
  * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -237,9 +237,7 @@ status_t USART_Init(USART_Type *base, const usart_config_t *config, uint32_t src
                 USART_CFG_DATALEN(config->bitCountPerChar) | USART_CFG_LOOP(config->loopback) |
                 USART_CFG_SYNCEN((uint32_t)config->syncMode >> 1) | USART_CFG_SYNCMST((uint8_t)config->syncMode) |
                 USART_CFG_CLKPOL(config->clockPolarity) | USART_CFG_MODE32K(config->enableMode32k) |
-                USART_CFG_CTSEN(config->enableHardwareFlowControl) | USART_CFG_ENABLE_MASK |
-                USART_CFG_OESEL(config->enable485ControlOutput) | USART_CFG_OEPOL(config->enableActiveHighRts) |
-                USART_CFG_OETA(config->extendRtsOutput);
+                USART_CFG_CTSEN(config->enableHardwareFlowControl) | USART_CFG_ENABLE_MASK;
 
     /* Setup baudrate */
     if (config->enableMode32k)
@@ -339,9 +337,6 @@ void USART_GetDefaultConfig(usart_config_t *config)
     config->enableContinuousSCLK      = false;
     config->clockPolarity             = kUSART_RxSampleOnFallingEdge;
     config->enableHardwareFlowControl = false;
-    config->enable485ControlOutput    = false;
-    config->enableActiveHighRts       = false;
-    config->extendRtsOutput           = false;
 #if defined(FSL_FEATURE_USART_HAS_FIFORXTIMEOUTCFG) && FSL_FEATURE_USART_HAS_FIFORXTIMEOUTCFG
     config->rxTimeout.enable                = false;
     config->rxTimeout.resetCounterOnEmpty   = true;

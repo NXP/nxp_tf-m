@@ -414,19 +414,9 @@ _Pragma("diag_suppress=Pm120")
 #define SDK_L2CACHE_ALIGN(var) SDK_ALIGN(var, FSL_FEATURE_L2CACHE_LINESIZE_BYTE)
 #endif
 
-/*! Macro to change a value to a given size aligned value (rounded up) */
+/*! Macro to change a value to a given size aligned value */
 #define SDK_SIZEALIGN(var, alignbytes) \
     ((unsigned int)((var) + ((alignbytes)-1U)) & (unsigned int)(~(unsigned int)((alignbytes)-1U)))
-
-/*! Macro to change a value to a given size aligned value (rounded up), the wrapper of SDK_SIZEALIGN */
-#define SDK_SIZEALIGN_UP(var, alignbytes)  SDK_SIZEALIGN(var, alignbytes)
-
-/*! Macro to change a value to a given size aligned value (rounded down) */
-#define SDK_SIZEALIGN_DOWN(var, alignbytes) \
-    ((unsigned int)(var) & (unsigned int)(~(unsigned int)((alignbytes)-1U)))
-
-/*! Macro to check if a value is aligned to a given size */
-#define SDK_IS_ALIGNED(var, alignbytes) (((unsigned int)(var) & ((unsigned int)(alignbytes) - 1U)) == 0U)
 /*! @} */
 
 /*!
@@ -606,32 +596,19 @@ _Pragma("diag_suppress=Pm120")
 /*!
  * @name Ram Function
  * @{
- */
-
-/*!
- * @def MCUX_RAMFUNC
- * Function attribute to place function in RAM. For example, to place
- * function my_func in ram, use like:
- * @code
- * MCUX_RAMFUNC my_func
- * @endcode
- */
-#if (defined(__ICCARM__))
-#define MCUX_RAMFUNC __ramfunc
-#elif (defined(__CC_ARM) || defined(__ARMCC_VERSION))
-#define MCUX_RAMFUNC __attribute__((noinline)) __attribute__((section(".ramfunc")))
-#elif (defined(__GNUC__)) || defined(DOXYGEN_OUTPUT)
-#define MCUX_RAMFUNC __attribute__((noinline)) __attribute__((long_call, section(".ramfunc")))
-#else
-#error Toolchain not supported.
-#endif /* defined(__ICCARM__) */
-
-/*!
+ *
  * @def RAMFUNCTION_SECTION_CODE(func)
  * Place function in ram.
  */
-#define RAMFUNCTION_SECTION_CODE(func) MCUX_RAMFUNC func
-
+#if (defined(__ICCARM__))
+#define RAMFUNCTION_SECTION_CODE(func) func @"RamFunction"
+#elif (defined(__CC_ARM) || defined(__ARMCC_VERSION))
+#define RAMFUNCTION_SECTION_CODE(func) __attribute__((section("RamFunction"))) func
+#elif (defined(__GNUC__)) || defined(DOXYGEN_OUTPUT)
+#define RAMFUNCTION_SECTION_CODE(func) __attribute__((section("RamFunction"))) func
+#else
+#error Toolchain not supported.
+#endif /* defined(__ICCARM__) */
 /*! @} */
 
 /*!
@@ -683,8 +660,8 @@ _Pragma("diag_suppress=Pm120")
 #endif
 
 #if defined(FSL_FEATURE_IRQSTEER_EXT_INT_MAX_NUM) && (FSL_FEATURE_IRQSTEER_EXT_INT_MAX_NUM > 0) && defined(FSL_FEATURE_IRQSTEER_IRQ_START_INDEX) && (FSL_FEATURE_IRQSTEER_IRQ_START_INDEX > 0)
-void IRQSTEER_EnableInterrupt(int32_t irqsteerInstIdx, IRQn_Type interrupt);
-void IRQSTEER_DisableInterrupt(int32_t irqsteerInstIdx, IRQn_Type interrupt);
+void IRQSTEER_EnableInterrupt(int32_t instIdx, IRQn_Type irq);
+void IRQSTEER_DisableInterrupt(int32_t instIdx, IRQn_Type irq);
 #endif
 
 /*******************************************************************************
@@ -1098,17 +1075,10 @@ static inline bool _SDK_AtomicLocalCompareAndSet1Byte(volatile uint8_t *addr, ui
         s_actual = __LDREXB(addr);
         if (s_actual != expected)
         {
-            /* Workaround for CMSIS 6.1 Issue #264(https://github.com/ARM-software/CMSIS_6/issues/264). */
-#if (defined(__ICCARM__) && (__CM_CMSIS_VERSION  == 0x60001UL))
-          {
-            __ASM volatile("CLREX" ::: "memory");
-          }
-#else
             __CLREX();
-#endif
             return false;
         }
-    } while (0U != (__STREXB((newValue), (addr))));
+    } while (__STREXB((newValue), (addr)));
 
     return true;
     
@@ -1123,17 +1093,10 @@ static inline bool _SDK_AtomicLocalCompareAndSet2Byte(volatile uint16_t *addr, u
         s_actual = __LDREXH(addr);
         if (s_actual != expected)
         {
-            /* Workaround for CMSIS 6.1 Issue #264(https://github.com/ARM-software/CMSIS_6/issues/264). */
-#if (defined(__ICCARM__) && (__CM_CMSIS_VERSION  == 0x60001UL))
-          {
-            __ASM volatile("CLREX" ::: "memory");
-          }
-#else
             __CLREX();
-#endif
             return false;
         }
-    } while (0U != (__STREXH((newValue), (addr))));
+    } while (__STREXH((newValue), (addr)));
 
     return true;
 }
@@ -1147,17 +1110,10 @@ static inline bool _SDK_AtomicLocalCompareAndSet4Byte(volatile uint32_t *addr, u
         s_actual = __LDREXW(addr);
         if (s_actual != expected)
         {
-            /* Workaround for CMSIS 6.1 Issue #264(https://github.com/ARM-software/CMSIS_6/issues/264). */
-#if (defined(__ICCARM__) && (__CM_CMSIS_VERSION  == 0x60001UL))
-          {
-            __ASM volatile("CLREX" ::: "memory");
-          }
-#else
             __CLREX();
-#endif
             return false;
         }
-    } while (0U != (__STREXW((newValue), (addr))));
+    } while (__STREXW((newValue), (addr)));
 
     return true;
 }
@@ -1169,7 +1125,7 @@ static inline uint8_t _SDK_AtomicLocalTestAndSet1Byte(volatile uint8_t *addr, ui
     do
     {
         s_old = __LDREXB(addr);
-    } while (0U != (__STREXB((newValue), (addr))));
+    } while (__STREXB((newValue), (addr)));
 
     return s_old;
 }
@@ -1181,7 +1137,7 @@ static inline uint16_t _SDK_AtomicLocalTestAndSet2Byte(volatile uint16_t *addr, 
     do
     {
         s_old = __LDREXH(addr);
-    } while (0U != (__STREXH((newValue), (addr))));
+    } while (__STREXH((newValue), (addr)));
 
     return s_old;
 }
@@ -1193,7 +1149,7 @@ static inline uint32_t _SDK_AtomicLocalTestAndSet4Byte(volatile uint32_t *addr, 
     do
     {
         s_old = __LDREXW(addr);
-    } while (0U != (__STREXW((newValue), (addr))));
+    } while (__STREXW((newValue), (addr)));
 
     return s_old;
 }
