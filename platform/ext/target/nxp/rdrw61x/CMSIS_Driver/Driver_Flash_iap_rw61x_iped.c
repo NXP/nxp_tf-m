@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013-2018 ARM Limited. All rights reserved.
- * Copyright 2019-2026 NXP
+ * Copyright 2019-2025 NXP
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -1240,27 +1240,21 @@ static int32_t ARM_Flash_ProgramData(uint32_t addr, const void *data, uint32_t c
 
         uint32_t dst_address     = sector_start_addr_phy;
         uint32_t remaining_pages = pages_per_sector;
-
-        /* Switch execution to RAM/ROM and program Flash in blocks of 
-           4 pages (FLASH0_IPED_ALIGNED_PAGE_COUNT). This ensures IPWR_EN is 
-           enabled only once before the write sequence, and after the 4-page 
-           write completes (handled by ROM), IPWR_EN is disabled again before 
-           returning to Flash execution. */
-        while (remaining_pages >= FLASH0_IPED_ALIGNED_PAGE_COUNT)
+        while (remaining_pages > 0)
         {
             TRACE_PAGE_WRITE("program page: 0x%x", dst_address);
-            TRACE_DATA("programmed data", src_pos, page_size*FLASH0_IPED_ALIGNED_PAGE_COUNT);
+            TRACE_DATA("    programmed data", src_pos, page_size);
 
             __disable_irq();
             clear_cache();
-            status_t status = iap_mem_write_blocked(&g_context, dst_address, page_size*FLASH0_IPED_ALIGNED_PAGE_COUNT, src_pos, kMemoryID_FlexspiNor);
+            status_t status = iap_mem_write(&g_context, dst_address, page_size, src_pos, kMemoryID_FlexspiNor);
             ASSERT_OR_EXIT_EN_IRQ(kStatus_Success == status, "iap_mem_write failed: 0x%x", status);
             clear_cache();
             __enable_irq();
 
-            dst_address += page_size*FLASH0_IPED_ALIGNED_PAGE_COUNT;
-            src_pos += page_size*FLASH0_IPED_ALIGNED_PAGE_COUNT;
-            remaining_pages -= FLASH0_IPED_ALIGNED_PAGE_COUNT;
+            dst_address += page_size;
+            src_pos += page_size;
+            remaining_pages -= 1;
         }
 
 #if FLASH0_IPED_METADATA_WRITE_ENABLED
