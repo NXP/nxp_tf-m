@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2022 Arm Limited. All rights reserved.
- * Copyright 2019-2025 NXP
+ * Copyright 2019-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -448,24 +448,22 @@ int32_t ppc_init_cfg(void)
 
     /* Security access rules for AHB peripherals */
     AHB_SECURE_CTRL->AHB_PERIPH1_SLAVE_RULE =
-        (0x30333000U) |                                                                       /* Bits have to be set to '1' according to UM.*/
+        (0x33003300U) |                                                                       /* Bits have to be set to '1' according to UM.*/
         AHB_SECURE_CTRL_AHB_PERIPH1_SLAVE_RULE_CRC_RULE0(TFM_SEC_ACCESS_LVL_USER_NS)       |  /* CRC engine */
         AHB_SECURE_CTRL_AHB_PERIPH1_SLAVE_RULE_DMIC_RULE1(TFM_SEC_ACCESS_LVL_USER_NS)      |  /* DMIC and HWVAD */
-        AHB_SECURE_CTRL_AHB_PERIPH1_SLAVE_RULE_FLEXCOMM4_RULE2(TFM_SEC_ACCESS_LVL_USER_NS) |  /* Flexcomm Interface 4 */
-        AHB_SECURE_CTRL_AHB_PERIPH1_SLAVE_RULE_FLEXCOMM14_RULE6(TFM_SEC_ACCESS_LVL_USER_NS);  /* Flexcomm Interface 14 */
-
+        AHB_SECURE_CTRL_AHB_PERIPH1_SLAVE_RULE_FLEXCOMM14_RULE4(TFM_SEC_ACCESS_LVL_USER_NS)|  /* Flexcomm Interface 14 */
+        AHB_SECURE_CTRL_AHB_PERIPH1_SLAVE_RULE_LCD_RULE5(TFM_SEC_ACCESS_LVL_USER_NS);         /* LCD */
+		
     /* Security access rules for AIPS peripherals */
     AHB_SECURE_CTRL->AIPS_BRIDGE_MEM_RULE0 =
         (0x33303333U) |                                                                       /* Bits have to be set to '1' according to UM.*/
         AHB_SECURE_CTRL_AIPS_BRIDGE_MEM_RULE0_OSPI_AND_OTFAD_RULE4(TFM_SEC_ACCESS_LVL_USER_NS); /* FlexSPI and OTFAD */
 
-    AHB_SECURE_CTRL->AIPS_BRIDGE_MEM_RULE0 =
-        (0x00300330U) |                                                                       /* Bits have to be set to '1' according to UM.*/
-        AHB_SECURE_CTRL_AIPS_BRIDGE_MEM_RULE1_ENET(TFM_SEC_ACCESS_LVL_USER_NS)           |    /* ENET */
+    AHB_SECURE_CTRL->AIPS_BRIDGE_MEM_RULE1 =                                           
+        (0x33300330U) |                                                                       /* Bits have to be set to '1' according to UM.*/
+        AHB_SECURE_CTRL_AIPS_BRIDGE_MEM_RULE1_ENET_RULE0(TFM_SEC_ACCESS_LVL_USER_NS)           |    /* ENET */
         AHB_SECURE_CTRL_AIPS_BRIDGE_MEM_RULE1_OSTIMER_RULE3(TFM_SEC_ACCESS_LVL_USER_NS)  |    /* OSTIMER */
-        AHB_SECURE_CTRL_AIPS_BRIDGE_MEM_RULE1_ROM_CTRL_RULE4(TFM_SEC_ACCESS_LVL_USER_NS) |    /* ROM CTRL */
-        AHB_SECURE_CTRL_AIPS_BRIDGE_MEM_RULE1_MTR_TEST_RULE6(TFM_SEC_ACCESS_LVL_USER_NS) |    /* MTR */
-        AHB_SECURE_CTRL_AIPS_BRIDGE_MEM_RULE1_ATX_TEST_RULE7(TFM_SEC_ACCESS_LVL_USER_NS);     /* ATX */
+        AHB_SECURE_CTRL_AIPS_BRIDGE_MEM_RULE1_ROM_CTRL_RULE4(TFM_SEC_ACCESS_LVL_USER_NS);     /* ROM CTRL */
 
     /* Security access rules for AHB peripherals */
     AHB_SECURE_CTRL->AHB_PERIPH2_SLAVE_RULE =

@@ -1,7 +1,6 @@
 /*
- * Copyright 2022-2024 NXP
- * All rights reserved.
- *
+ * Copyright 2022-2025 NXP
+ *  
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -22,13 +21,13 @@
  ******************************************************************************/
 /* Component ID definition, used by tools. */
 #ifndef FSL_COMPONENT_ID
-#define FSL_COMPONENT_ID "platform.drivers.io_mux"
+#define FSL_COMPONENT_ID "platform.drivers.cns_io_mux"
 #endif
 
 /*! @name Driver version */
 /*@{*/
-/*! @brief IO_MUX driver version 2.2.0. */
-#define FSL_IO_MUX_DRIVER_VERSION (MAKE_VERSION(2, 2, 0))
+/*! @brief IO_MUX driver version 2.2.2. */
+#define FSL_IO_MUX_DRIVER_VERSION (MAKE_VERSION(2, 2, 2))
 /*@}*/
 
 /*!
@@ -1647,6 +1646,7 @@ static inline void IO_MUX_SetPinMux(uint32_t pinLowMask,
 
     if (IO_MUX_FC_MASK(gpioFcSetMask) != 0U)
     {
+        assert(IO_MUX_FC_OFFSET(gpioFcSetMask) <= 6U);
         *(fcBase + IO_MUX_FC_OFFSET(gpioFcSetMask)) |= IO_MUX_FC_MASK(gpioFcSetMask);
     }
 
