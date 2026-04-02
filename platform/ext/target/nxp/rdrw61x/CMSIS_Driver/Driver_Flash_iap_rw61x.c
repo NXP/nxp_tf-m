@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013-2018 ARM Limited. All rights reserved.
- * Copyright 2019-2025 NXP
+ * Copyright 2019-2024 NXP
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -24,11 +24,7 @@
 #include "flash_layout.h"
 #include "fsl_romapi_iap.h"
 #include "fsl_cache.h"
-
-#if !defined(BL2)
 #include "tfm_spm_log.h"
-#endif /* BL2 */
-
 #include "app.h"
 
 #ifndef ARG_UNUSED
