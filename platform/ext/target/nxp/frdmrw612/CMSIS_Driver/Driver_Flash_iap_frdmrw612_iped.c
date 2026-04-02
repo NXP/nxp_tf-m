@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013-2018 ARM Limited. All rights reserved.
- * Copyright 2019-2024 NXP
+ * Copyright 2019-2025 NXP
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -28,8 +28,11 @@
 #include "fsl_romapi_iap.h"
 #include "fsl_cache.h"
 #include "fsl_iped.h"
+#if !defined(BL2)
 #include "tfm_sp_log.h"
+#endif /* !defined(BL2) end*/
 #include "tfm_platform_api.h"
+
 #include "tfm_plat_nv_counters.h"
 
 #include "app.h"
@@ -92,7 +95,7 @@ static const ARM_FLASH_CAPABILITIES DriverCapabilities = {
 #define TRACE_ROLLBACK_PROTECTION(fmt, ...)
 
 #define PLOG_ERROR(fmt, ...)
-
+#if !defined(BL2)
 #define TRACE_ENABLED (0u)
 #if TRACE_ENABLED
 #undef TRACE_SECTOR_WRITE
@@ -114,6 +117,7 @@ static const ARM_FLASH_CAPABILITIES DriverCapabilities = {
 // Uncomment those for enabling printout of error messages
 #undef PLOG_ERROR
 #define PLOG_ERROR(fmt, ...) LOG_ERRFMT(fmt "\n" __VA_OPT__(,) __VA_ARGS__)
+#endif /* !defined(BL2) end*/
 
 #define ASSERT_OR_EXIT(condition, fmt, ...)              \
     {                                                    \
