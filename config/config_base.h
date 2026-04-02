@@ -286,12 +286,14 @@
 #endif
 
 /* Secure Test Partition Configs */
+#ifndef SECURE_TEST_PARTITION_STACK_SIZE
 #ifdef TFM_PARTITION_DPE
 /* DPE tests require larger test partition stack */
 #define SECURE_TEST_PARTITION_STACK_SIZE        0x3000
 #else
 #define SECURE_TEST_PARTITION_STACK_SIZE        0x0F00
-#endif
+#endif /* TFM_PARTITION_DPE */
+#endif /* SECURE_TEST_PARTITION_STACK_SIZE */
 
 /* SPM Configs */
 
@@ -350,6 +352,18 @@
  */
 #ifndef CONFIG_TFM_POST_PARTITION_INIT_HOOK
 #define CONFIG_TFM_POST_PARTITION_INIT_HOOK     0
+#endif
+
+/*
+ * If this option is enabled, tfm_hal_shared_metadata_rw_enable and
+ * tfm_hal_shared_metadata_rw_disable are invoked by SPM immediately before
+ * and after updating the partition metadata pointer.
+ * This ensures SPM has read-write access during metadata updates, while
+ * partitions retain read-only access at all other times for improved isolation
+ * and safety.
+ */
+#ifndef CONFIG_TFM_PARTITION_META_DYNAMIC_ISOLATION
+#define CONFIG_TFM_PARTITION_META_DYNAMIC_ISOLATION 0
 #endif
 
 /* Enable OTP/NV_COUNTERS emulation in RAM */
