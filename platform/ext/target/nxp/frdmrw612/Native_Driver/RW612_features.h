@@ -1,13 +1,13 @@
 /*
 ** ###################################################################
-**     Version:             rev. 2.0, 2025-11-17
-**     Build:               b251204
+**     Version:             rev. 1.0, 2021-03-16
+**     Build:               b240325
 **
 **     Abstract:
 **         Chip specific module features.
 **
 **     Copyright 2016 Freescale Semiconductor, Inc.
-**     Copyright 2016-2025 NXP
+**     Copyright 2016-2024 NXP
 **     SPDX-License-Identifier: BSD-3-Clause
 **
 **     http:                 www.nxp.com
@@ -16,8 +16,6 @@
 **     Revisions:
 **     - rev. 1.0 (2021-03-16)
 **         Initial version.
-**     - rev. 2.0 (2025-11-17)
-**         Update trng/cache64 feature align to shared definition changes
 **
 ** ###################################################################
 */
@@ -162,15 +160,22 @@
 
 /* @brief Cache Line size in byte. */
 #define FSL_FEATURE_CACHE64_CTRL_LINESIZE_BYTE (32)
-/* @brief Cache does not support write buffer. */
-#define FSL_FEATURE_CACHE64_CTRL_HAS_NO_WRITE_BUF (0)
+
+/* CACHE64_POLSEL module features */
+
+/* No feature definitions */
 
 /* CDOG module features */
 
-/* @brief SOC has no reset driver. */
+/* @brief CDOG Has No Reset */
 #define FSL_FEATURE_CDOG_HAS_NO_RESET (1)
 /* @brief CDOG Load default configurations during init function */
 #define FSL_FEATURE_CDOG_NEED_LOAD_DEFAULT_CONF (1)
+
+/* CRC module features */
+
+/* @brief Has data register with name CRC */
+#define FSL_FEATURE_CRC_HAS_CRC_REG (0)
 
 /* CTIMER module features */
 
@@ -232,7 +237,7 @@
 /* @brief Has Additional 1588 Timer Channel Interrupt. */
 #define FSL_FEATURE_ENET_HAS_ADD_1588_TIMER_CHN_INT (0)
 /* @brief Support Interrupt Coalesce for each instance */
-#define FSL_FEATURE_ENET_INSTANCE_HAS_INTERRUPT_COALESCEn(x) (1)
+#define FSL_FEATURE_ENET_INSTANCE_HAS_INTERRUPT_COALESCEn(x) (0)
 /* @brief Queue Size for each instance. */
 #define FSL_FEATURE_ENET_INSTANCE_QUEUEn(x) (1)
 /* @brief Has AVB Support for each instance. */
@@ -245,13 +250,11 @@
 #define FSL_FEATURE_ENET_INSTANCE_HAS_ADD_1588_TIMER_CHN_INTn(x) (0)
 /* @brief Has threshold for the number of frames in the receive FIFO (register bit field RSEM[STAT_SECTION_EMPTY]). */
 #define FSL_FEATURE_ENET_HAS_RECEIVE_STATUS_THRESHOLD (1)
-/* @brief Has transfer clock delay (register bit field ECR[TXC_DLY]). */
+/* @brief Has trasfer clock delay (register bit field ECR[TXC_DLY]). */
 #define FSL_FEATURE_ENET_HAS_RGMII_TXC_DELAY (0)
 /* @brief Has receive clock delay (register bit field ECR[RXC_DLY]). */
 #define FSL_FEATURE_ENET_HAS_RGMII_RXC_DELAY (0)
-/* @brief PTP Timestamp CAPTURE bit always returns 0 when the capture is not over. */
-#define FSL_FEATURE_ENET_TIMESTAMP_CAPTURE_BIT_INVALID (0)
-/* @brief ENET Has Extra Clock Gate (RW610). */
+/* @brief ENET Has Extra Clock Gate.(RW610). */
 #define FSL_FEATURE_ENET_HAS_EXTRA_CLOCK_GATE (1)
 /* @brief ENET support reset. */
 #define FSL_FEATURE_ENET_HAS_RSTCTL (1)
@@ -310,60 +313,22 @@
 
 /* @brief FlexSPI AHB buffer count */
 #define FSL_FEATURE_FLEXSPI_AHB_BUFFER_COUNTn(x) (8)
-/* @brief FlexSPI has no data learn. */
-#define FSL_FEATURE_FLEXSPI_HAS_NO_DATA_LEARN (0)
-/* @brief There is AHBBUSERROREN bit in INTEN register. */
-#define FSL_FEATURE_FLEXSPI_HAS_INTEN_AHBBUSERROREN (0)
-/* @brief There is CLRAHBTX_RXBUF bit in AHBCR register. */
-#define FSL_FEATURE_FLEXSPI_HAS_AHBCR_CLRAHBTX_RXBUF (1)
-/* @brief FLEXSPI has no IP parallel mode. */
-#define FSL_FEATURE_FLEXSPI_HAS_NO_IP_PARALLEL_MODE (1)
-/* @brief FLEXSPI has no AHB parallel mode. */
-#define FSL_FEATURE_FLEXSPI_HAS_NO_AHB_PARALLEL_MODE (1)
-/* @brief FLEXSPI support address shift. */
-#define FSL_FEATURE_FLEXSPI_SUPPORT_ADDRESS_SHIFT (1)
 /* @brief FlexSPI has no MCR0 ARDFEN bit */
 #define FSL_FEATURE_FLEXSPI_HAS_NO_MCR0_ARDFEN (0)
 /* @brief FlexSPI has no MCR0 ATDFEN bit */
 #define FSL_FEATURE_FLEXSPI_HAS_NO_MCR0_ATDFEN (0)
-/* @brief FlexSPI has no MCR0 COMBINATIONEN bit */
-#define FSL_FEATURE_FLEXSPI_HAS_NO_MCR0_COMBINATIONEN (0)
-/* @brief FlexSPI has no FLSHCR4 WMENB bit */
-#define FSL_FEATURE_FLEXSPI_HAS_NO_FLSHCR4_WMENB (0)
-/* @brief FlexSPI has no STS0 DATALEARNPHASEB bit */
-#define FSL_FEATURE_FLEXSPI_HAS_NO_STS0_DATALEARNPHASEB (0)
-/* @brief FlexSPI has no MCR2 SCKBDIFFOPT bit */
-#define FSL_FEATURE_FLEXSPI_HAS_NO_MCR2_SCKBDIFFOPT (0)
-/* @brief FlexSPI AHB RX buffer size (byte) */
-#define FSL_FEATURE_FLEXSPI_AHB_RX_BUFFER_SIZEn(x) (2048)
-/* @brief FlexSPI Array Length */
-#define FSL_FEATURE_FLEXSPI_ARRAY_LEN (1)
-/* @brief FlexSPI has no STS2 BSLVLOCK bit */
-#define FSL_FEATURE_FLEXSPI_HAS_NO_STS2_BSLVLOCK (0)
-/* @brief FlexSPI has no STS2 BREFLOCK bit */
-#define FSL_FEATURE_FLEXSPI_HAS_NO_STS2_BREFLOCK (0)
-/* @brief FlexSPI supports Port A only, do not support Port B. */
-#define FSL_FEATURE_FLEXSPI_NO_SUPPORT_PORTB (0)
-/* @brief FlexSPI LUTKEY is read only. */
-#define FSL_FEATURE_FLEXSPI_LUTKEY_IS_RO (0)
-/* @brief FlexSPI0 and FlexSPI1 have shared IRQ */
-#define FSL_FEATURE_FLEXSPI_HAS_SHARED_IRQ0_IRQ1 (0)
-/* @brief FlexSPI DMA needs multiple DES to transfer */
-#define FSL_FEATURE_FLEXSPI_DMA_MULTIPLE_DES (0)
-/* @brief FlexSPI uses min DQS delay */
-#define FSL_FEATURE_FLEXSPI_DQS_DELAY_MIN (0)
+/* @brief FlexSPI has no IP parallel mode */
+#define FSL_FEATURE_FLEXSPI_HAS_NO_IP_PARALLEL_MODE (1)
+/* @brief FlexSPI has no AHB parallel mode */
+#define FSL_FEATURE_FLEXSPI_HAS_NO_AHB_PARALLEL_MODE (1)
+/* @brief FlexSPI support address shift */
+#define FSL_FEATURE_FLEXSPI_SUPPORT_ADDRESS_SHIFT (1)
 /* @brief FlexSPI support sample clock source selection */
 #define FSL_FEATURE_FLEXSPI_SUPPORT_SEPERATE_RXCLKSRC_PORTB (1)
 /* @brief FlexSPI support sample clock source or source_b selection */
 #define FSL_FEATURE_FLEXSPI_SUPPORT_RXCLKSRC_DIFF (1)
-/* @brief FlexSPI IPED REGION COUNT */
-#define FSL_FEATURE_FLEXSPI_IPED_REGION_COUNT (15)
-/* @brief FlexSPI Has ERRATA052733 */
-#define FSL_FEATURE_FLEXSPI_HAS_ERRATA_052733 (1)
-/* @brief FlexSPI Has ERRATA051426 */
-#define FSL_FEATURE_FLEXSPI_HAS_ERRATA_051426 (0)
-/* @brief FlexSPI has AHBCR RESUMEDISABLE bit */
-#define FSL_FEATURE_FLEXSPI_HAS_RESUMEDISABLE_BIT_CONFIG_SUPPORT (1)
+/* @brief FlexSPI AHB RX buffer size (byte) */
+#define FSL_FEATURE_FLEXSPI_AHB_RX_BUFFER_SIZEn(x) (2048)
 
 /* ADC module features */
 
@@ -383,10 +348,6 @@
 
 /* @brief GPIO has interrupts */
 #define FSL_FEATURE_GPIO_HAS_INTERRUPT (1)
-
-/* I2C module features */
-
-/* No feature definitions */
 
 /* I2S module features */
 
@@ -427,10 +388,6 @@
 /* @brief Powerlib API is different with other LPC series devices. */
 #define FSL_FEATURE_POWERLIB_EXTEND (1)
 
-/* POWERQUAD module features */
-
-/* No feature definitions */
-
 /* RTC module features */
 
 /* @brief RTC has no reset control */
@@ -448,8 +405,6 @@
 #define FSL_FEATURE_SCT_NUMBER_OF_MATCH_CAPTURE (16)
 /* @brief Number of outputs */
 #define FSL_FEATURE_SCT_NUMBER_OF_OUTPUTS (10)
-/* @brief Writing a zero asserts the SCT reset. */
-#define FSL_FEATURE_SCT_WRITE_ZERO_ASSERT_RESET (0)
 
 /* SPI module features */
 
@@ -474,17 +429,10 @@
 #define FSL_FEATURE_TRNG_HAS_NO_TRNG_SBLIM (1)
 /* @brief TRNG supports reset control. */
 #define FSL_FEATURE_TRNG_HAS_RSTCTL (1)
-/* @brief TRNG does not support FOR_CLK mode. */
-#define FSL_FEATURE_TRNG_HAS_NO_TRNG_MCTL_FOR_CLK_MODE (0)
 /* @brief TRNG supports dual oscillator mode. */
 #define FSL_FEATURE_TRNG_HAS_DUAL_OSCILATORS (1)
 /* @brief TRNG supports control pin. */
 #define FSL_FEATURE_TRNG_HAS_CTRL_PIN (1)
-
-/* USART module features */
-
-/* @brief Has FIFO Receive Timeout Configuration (register FIFORXTIMEOUTCFG). */
-#define FSL_FEATURE_USART_HAS_FIFORXTIMEOUTCFG (1)
 
 /* USB module features */
 
@@ -507,10 +455,6 @@
 #define FSL_FEATURE_WWDT_HAS_NO_OSCILLATOR_LOCK (0)
 /* @brief WWDT does not support power down configure. */
 #define FSL_FEATURE_WWDT_HAS_NO_PDCFG (1)
-/* @brief Has LPOSC as clock source. */
-#define FSL_FEATURE_WWDT_HAS_LPOSC_CLOCK_SOURCE (0)
-/* @brief WWDT WDTOF is not set in case of WD reset - get info from PMC instead. */
-#define FSL_FEATURE_WWDT_WDTRESET_FROM_PMC (0)
 
 #endif /* _RW612_FEATURES_H_ */
 

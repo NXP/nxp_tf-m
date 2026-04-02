@@ -1,5 +1,6 @@
 /*
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2024, NXP
+ * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -39,8 +40,8 @@
 
 /*! @name Driver version */
 /*@{*/
-/*! @brief CLOCK driver version 2.3.2. */
-#define FSL_CLOCK_DRIVER_VERSION (MAKE_VERSION(2, 3, 2))
+/*! @brief CLOCK driver version 2.3.0. */
+#define FSL_CLOCK_DRIVER_VERSION (MAKE_VERSION(2, 3, 0))
 /*@}*/
 
 /* Definition for delay API in clock driver, users can redefine it to the real application. */

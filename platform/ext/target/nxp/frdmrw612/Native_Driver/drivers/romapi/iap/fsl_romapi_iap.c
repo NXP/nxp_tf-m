@@ -1,6 +1,6 @@
 /*
  * Copyright 2022,2024 NXP
- *  
+ * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -32,26 +32,6 @@ status_t iap_mem_init(api_core_context_t *coreCtx)
 {
     assert(IAP_API_TREE);
     return IAP_API_TREE->mem_init_api(coreCtx);
-}
-
-AT_QUICKACCESS_SECTION_CODE(status_t iap_mem_write_blocked(
-    api_core_context_t *coreCtx, uint32_t start, uint32_t lengthInBytes, const uint8_t *buf, uint32_t memoryId))
-{
-    assert(IAP_API_TREE);
-
-    FLEXSPI->IPCR2 |= FLEXSPI_IPCR2_IPBLKAHBREQ_MASK;
-    while((FLEXSPI->IPCR2 & FLEXSPI_IPCR2_IPBLKAHBACK_MASK) == 0)
-    {
-    }
-
-    status_t ret = IAP_API_TREE->mem_write(coreCtx, start, lengthInBytes, buf, memoryId);
-
-    FLEXSPI->IPCR2 &= (~ FLEXSPI_IPCR2_IPBLKAHBREQ_MASK);
-    while(FLEXSPI->IPCR2 & FLEXSPI_IPCR2_IPBLKAHBACK_MASK)
-    {
-    }
-
-    return ret;
 }
 
 status_t iap_mem_write(

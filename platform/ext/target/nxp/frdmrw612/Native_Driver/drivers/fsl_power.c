@@ -1,6 +1,6 @@
 /*
- * Copyright 2020-2023, 2026 NXP
- *  
+ * Copyright 2020-2023 NXP
+ * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -52,10 +52,6 @@
         *((volatile uint32_t *)(addr)) = (val); \
     } while (false)
 
-#define POWER_SAVED_GDET_CLOCK_SOURCE (s_gdetCfgData.TRIM0 & CLKCTL0_ELS_GDET_CLK_SEL_SEL_MASK)
-#define POWER_GDET_CLOCK_SOURCE_64MHZ (CLKCTL0_ELS_GDET_CLK_SEL_SEL(2U))
-#define POWER_GDET_CLOCK_SOURCE_32MHZ (CLKCTL0_ELS_GDET_CLK_SEL_SEL(3U))
-
 typedef struct _power_nvic_context
 {
     uint32_t PriorityGroup;
@@ -106,13 +102,6 @@ typedef struct _power_threshold_params
     uint32_t margin;
 } power_threshold_params_t;
 
-typedef struct _bod_config
-{
-    power_bod_callback drop;
-    power_bod_callback recover;
-    void *param;
-} bod_config_t;
-
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -130,7 +119,6 @@ static const uint8_t s_droTable[19] = {0x40U, 0x43U, 0x46U, 0x48U, 0x4CU, 0x4FU,
                                        0x5DU, 0x5FU, 0x62U, 0x65U, 0x67U, 0x69U, 0x69U, 0x69U, 0x69U};
 static power_load_gdet_cfg s_gdetCfgloadFunc;
 static power_gdet_data_t s_gdetCfgData;
-static bod_config_t s_bodConfig;
 
 /*******************************************************************************
  * Prototypes
@@ -157,8 +145,6 @@ AT_QUICKACCESS_SECTION_CODE(static void POWER_DelayUs(uint32_t us))
 {
     uint32_t instNum;
 
-    assert(SystemCoreClock < (UINT32_MAX - 999999UL));
-    assert(((UINT32_MAX - 2U) / us) > ((SystemCoreClock + 999999UL) / 1000000UL));
     instNum = ((SystemCoreClock + 999999UL) / 1000000UL) * us;
     POWER_Delay((instNum + 2U) / 3U);
 }
@@ -259,9 +245,6 @@ static void POWER_RestoreNvicState(void)
     irqRegs = (SCnSCB->ICTR & SCnSCB_ICTR_INTLINESNUM_Msk) + 1U;
     irqNum  = irqRegs * 32U;
 
-    assert(irqRegs <= ARRAY_SIZE(s_nvicContext.ISER));
-    assert(irqNum <= ARRAY_SIZE(s_nvicContext.IPR));
-
     NVIC_SetPriorityGrouping(s_nvicContext.PriorityGroup);
 
     for (i = 0U; i < irqRegs; i++)
@@ -336,35 +319,6 @@ void CAPT_PULSE_DriverIRQHandler(void)
     }
 }
 
-void PMIP_DriverIRQHandler(void);
-void PMIP_DriverIRQHandler(void)
-{
-    /* Brown-out Detect (BoD) event occurred */
-    /* Disable the Brown-out Detect interrupt to prevent endless handler. */
-    (void)DisableIRQ(PMIP_IRQn);
-    /* Perform necessary actions or call a user-defined callback */
-    if (s_bodConfig.drop != NULL)
-    {
-        s_bodConfig.drop(s_bodConfig.param);
-    }
-}
-
-void PMIP_CHANGE_DriverIRQHandler(void);
-void PMIP_CHANGE_DriverIRQHandler(void)
-{
-    /* Clear the Brown-out Detect interrupt status */
-    PMU->BOD |= PMU_BOD__1_85_INT_CLR_NEG_MASK;
-    /* BoD recovers in this interrupt handler */
-    if (s_bodConfig.recover != NULL)
-    {
-        s_bodConfig.recover(s_bodConfig.param);
-    }
-
-    /* Enable BoD drop detection again */
-    NVIC_ClearPendingIRQ(PMIP_IRQn);
-    (void)EnableIRQ(PMIP_IRQn);
-}
-
 /**
  * @brief   Check if IRQ is the wakeup source
  * @param   irq   : IRQ number
@@ -373,16 +327,15 @@ void PMIP_CHANGE_DriverIRQHandler(void)
 bool POWER_GetWakeupStatus(IRQn_Type irq)
 {
     uint32_t status;
-    uint32_t irqNum;
+    uint32_t irqNum = (uint32_t)irq;
 
     assert((int32_t)irq >= 0);
-    irqNum = (uint32_t)(int32_t)irq;
 
     if (irq <= HWVAD0_IRQn)
     {
         status = PMU->WAKEUP_PM2_STATUS0 & (1UL << irqNum);
     }
-    else if ((irq <= POWERQUAD_IRQn) && (irq >= RTC_IRQn))
+    else if (irq <= POWERQUAD_IRQn)
     {
         status = PMU->WAKEUP_PM2_STATUS1 & (1UL << (irqNum - 32U));
     }
@@ -436,16 +389,15 @@ bool POWER_GetWakeupStatus(IRQn_Type irq)
  */
 void POWER_ClearWakeupStatus(IRQn_Type irq)
 {
-    uint32_t irqNum;
+    uint32_t irqNum = (uint32_t)irq;
 
     assert((int32_t)irq >= 0);
-    irqNum = (uint32_t)(int32_t)irq;
 
     if (irq <= HWVAD0_IRQn)
     {
         PMU->WAKEUP_PM2_SRC_CLR0 = (1UL << irqNum);
     }
-    else if ((irq <= POWERQUAD_IRQn) && (irq >= RTC_IRQn))
+    else if (irq <= POWERQUAD_IRQn)
     {
         PMU->WAKEUP_PM2_SRC_CLR1 = (1UL << (irqNum - 32U));
     }
@@ -496,16 +448,15 @@ void POWER_ClearWakeupStatus(IRQn_Type irq)
  */
 void POWER_EnableWakeup(IRQn_Type irq)
 {
-    uint32_t irqNum;
+    uint32_t irqNum = (uint32_t)irq;
 
     assert((int32_t)irq >= 0);
-    irqNum = (uint32_t)(int32_t)irq;
 
     if (irq <= HWVAD0_IRQn)
     {
         PMU->WAKEUP_PM2_MASK0 |= (1UL << irqNum);
     }
-    else if ((irq <= POWERQUAD_IRQn) && (irq >= RTC_IRQn))
+    else if (irq <= POWERQUAD_IRQn)
     {
         PMU->WAKEUP_PM2_MASK1 |= (1UL << (irqNum - 32U));
     }
@@ -556,16 +507,15 @@ void POWER_EnableWakeup(IRQn_Type irq)
  */
 void POWER_DisableWakeup(IRQn_Type irq)
 {
-    uint32_t irqNum;
+    uint32_t irqNum = (uint32_t)irq;
 
     assert((int32_t)irq >= 0);
-    irqNum = (uint32_t)(int32_t)irq;
 
     if (irq <= HWVAD0_IRQn)
     {
         PMU->WAKEUP_PM2_MASK0 &= ~(1UL << irqNum);
     }
-    else if ((irq <= POWERQUAD_IRQn) && (irq >= RTC_IRQn))
+    else if (irq <= POWERQUAD_IRQn)
     {
         PMU->WAKEUP_PM2_MASK1 &= ~(1UL << (irqNum - 32U));
     }
@@ -743,12 +693,12 @@ void POWER_ConfigCauInSleep(bool pdCau)
 {
     if (pdCau) /* xtal / cau full pd */
     {
-        CAU->PD_CTRL_ONE_REG |= CAU_PD_CTRL_ONE_REG_SLPBIAS_PD_MASK;
+        CAU->PD_CTRL_ONE_REG |= 0x4U;
         CAU->SLP_CTRL_ONE_REG = 0xCU;
     }
     else
     {
-        CAU->PD_CTRL_ONE_REG &= (uint8_t)((~CAU_PD_CTRL_ONE_REG_SLPBIAS_PD_MASK) & 0xFFU);
+        CAU->PD_CTRL_ONE_REG &= 0xFBU;
         CAU->SLP_CTRL_ONE_REG = 0x9EU;
         CAU->SLP_CTRL_TWO_REG = 0x6AU;
     }
@@ -795,6 +745,9 @@ AT_QUICKACCESS_SECTION_CODE(static void POWER_PrePowerMode(uint32_t mode, const 
     }
     else if (mode >= 3U)
     {
+        /* Turn off the short switch between C18/C11 and V18/V11.
+           In sleep mode, V11 drops to 0.8V */
+        BUCK18->BUCK_CTRL_TWENTY_REG = 0x75U;
         if (mode == 3U)
         {
             POWER_SaveNvicState();
@@ -802,12 +755,6 @@ AT_QUICKACCESS_SECTION_CODE(static void POWER_PrePowerMode(uint32_t mode, const 
             PMU->MEM_CFG = (PMU->MEM_CFG & ~PMU_MEM_CFG_MEM_RET_MASK) | (config->memPdCfg & PMU_MEM_CFG_MEM_RET_MASK);
             PMU->PMIP_BUCK_CTRL = (PMU->PMIP_BUCK_CTRL & ~((uint32_t)kPOWER_Pm3BuckAll)) |
                                   (config->pm3BuckCfg & (uint32_t)kPOWER_Pm3BuckAll);
-            wlanPowerStatus = POWER_WLAN_POWER_STATUS();
-            blePowerStatus  = POWER_BLE_POWER_STATUS();
-            if ((wlanPowerStatus != POWER_WLAN_BLE_POWER_ON) && (blePowerStatus != POWER_WLAN_BLE_POWER_ON))
-            {
-                BUCK18->BUCK_CTRL_ELEVEN_REG |= BUCK18_BUCK_CTRL_ELEVEN_REG_USE_EXT_SUP(1);
-            }
             /* Clear reset status */
             PMU->SYS_RST_CLR = 0x7FU;
         }
@@ -822,10 +769,6 @@ AT_QUICKACCESS_SECTION_CODE(static void POWER_PrePowerMode(uint32_t mode, const 
             {
                 /* pm422, LDO 0.8V, 1.8V */
                 PMU->PMIP_LDO_LVL = PMU_PMIP_LDO_LVL_LDO18_SEL(4) | PMU_PMIP_LDO_LVL_LDO11_SEL(1);
-            }
-            if ((wlanPowerStatus != POWER_WLAN_BLE_POWER_ON) && (blePowerStatus != POWER_WLAN_BLE_POWER_ON))
-            {
-                BUCK18->BUCK_CTRL_ELEVEN_REG |= BUCK18_BUCK_CTRL_ELEVEN_REG_USE_EXT_SUP(1);
             }
             /* Clear reset status */
             PMU->SYS_RST_CLR = 0x7FU;
@@ -868,7 +811,6 @@ AT_QUICKACCESS_SECTION_CODE(static bool POWER_PostPowerMode(uint32_t mode))
         SystemInit();
         POWER_RestoreNvicState();
         initXip();
-        BUCK18->BUCK_CTRL_ELEVEN_REG &= ~(BUCK18_BUCK_CTRL_ELEVEN_REG_USE_EXT_SUP(1));
     }
     else
     {
@@ -1009,10 +951,6 @@ static void POWER_InitVSensorThreshold(uint8_t volt11, uint32_t pack)
     svcMv = (uint32_t)(volt11)*5U + 630U;
     val   = val & ~(SENSOR_CTRL_VSEN_CTRL_1_REG_1_VSEN_MAX_VOLTAGE_THR_MASK |
                   SENSOR_CTRL_VSEN_CTRL_1_REG_1_VSEN_MIN_VOLTAGE_THR_MASK);
-    assert((svcMv * 10U) >= v11.margin);
-    assert((svcMv * 10U) < (UINT32_MAX - v11.margin));
-    assert((UINT32_MAX - v11.param2) > 999999U);
-    assert(((UINT32_MAX - v11.param2 - 999999U) / v11.param1) > (svcMv * 10U + v11.margin));
     val |= SENSOR_CTRL_VSEN_CTRL_1_REG_1_VSEN_MAX_VOLTAGE_THR(
         (v11.param1 * (svcMv * 10U + v11.margin) + v11.param2 + 999999U) / 1000000U);
     val |= SENSOR_CTRL_VSEN_CTRL_1_REG_1_VSEN_MIN_VOLTAGE_THR((v11.param1 * (svcMv * 10U - v11.margin) + v11.param2) /
@@ -1027,10 +965,6 @@ static void POWER_InitVSensorThreshold(uint8_t volt11, uint32_t pack)
     /* Configure threshold */
     val = val & ~(SENSOR_CTRL_VSEN_CTRL_2_REG_1_VSEN_MAX_VOLTAGE_THR_MASK |
                   SENSOR_CTRL_VSEN_CTRL_2_REG_1_VSEN_MIN_VOLTAGE_THR_MASK);
-    assert((1710U * 10U) >= v18.margin);
-    assert((1890U * 10U) < (UINT32_MAX - v18.margin));
-    assert((UINT32_MAX - v18.param2) > 999999U);
-    assert(((UINT32_MAX - v18.param2 - 999999U) / v18.param1) > (1890U * 10U + v18.margin));
     val |= SENSOR_CTRL_VSEN_CTRL_2_REG_1_VSEN_MAX_VOLTAGE_THR(
         (v18.param1 * (1890U * 10U + v18.margin) + v18.param2 + 999999U) / 1000000U);
     val |= SENSOR_CTRL_VSEN_CTRL_2_REG_1_VSEN_MIN_VOLTAGE_THR((v18.param1 * (1710U * 10U - v18.margin) + v18.param2) /
@@ -1045,10 +979,6 @@ static void POWER_InitVSensorThreshold(uint8_t volt11, uint32_t pack)
     /* Configure threshold */
     val = val & ~(SENSOR_CTRL_VSEN_CTRL_3_REG_1_VSEN_MAX_VOLTAGE_THR_MASK |
                   SENSOR_CTRL_VSEN_CTRL_3_REG_1_VSEN_MIN_VOLTAGE_THR_MASK);
-    assert((1850U * 10U) >= v33.margin);
-    assert((3630U * 10U) < (UINT32_MAX - v33.margin));
-    assert((UINT32_MAX - v33.param2) > 999999U);
-    assert(((UINT32_MAX - v33.param2 - 999999U) / v33.param1) > (3630U * 10U + v33.margin));
     val |= SENSOR_CTRL_VSEN_CTRL_3_REG_1_VSEN_MAX_VOLTAGE_THR(
         (v33.param1 * (3630U * 10U + v33.margin) + v33.param2 + 999999U) / 1000000U);
     val |= SENSOR_CTRL_VSEN_CTRL_3_REG_1_VSEN_MIN_VOLTAGE_THR((v33.param1 * (1850U * 10U - v33.margin) + v33.param2) /
@@ -1079,8 +1009,9 @@ void POWER_InitPowerConfig(const power_init_config_t *config)
     iBuck         = config->iBuck;
     gateCauRefClk = config->gateCauRefClk;
 
-    BUCK11->BUCK_CTRL_THREE_REG  = BUCK11_BUCK_CTRL_THREE_REG_SOC_BUCK_RINGOSC_CTRL_MASK;
-    BUCK18->BUCK_CTRL_THREE_REG  = BUCK18_BUCK_CTRL_THREE_REG_SOC_BUCK_RINGOSC_CTRL_MASK;
+    BUCK11->BUCK_CTRL_THREE_REG  = 0x10U;
+    BUCK18->BUCK_CTRL_THREE_REG  = 0x10U;
+    BUCK18->BUCK_CTRL_TWENTY_REG = 0x55U;
 
     SYSCTL0->AUTOCLKGATEOVERRIDE0 = 0U;
     /* Enable RAM dynamic clk gate */
@@ -1298,8 +1229,6 @@ void Power_InitLoadGdetCfg(power_load_gdet_cfg loadFunc, const power_gdet_data_t
 
     s_gdetCfgloadFunc = loadFunc;
     (void)memcpy(&s_gdetCfgData, data, sizeof(power_gdet_data_t));
-    /* Save GDET clock source on startup */
-    s_gdetCfgData.TRIM0  = CLKCTL0->ELS_GDET_CLK_SEL;
     s_gdetCfgData.CFG[3] = POWER_TrimSvc(data->CFG[3], pack);
 }
 
@@ -1312,7 +1241,7 @@ void POWER_InitVoltage(uint32_t dro, uint32_t pack)
     SystemCoreClockUpdate();
 
     /* LPBG trim */
-    BUCK11->BUCK_CTRL_EIGHTEEN_REG &= (uint8_t)((~BUCK11_BUCK_CTRL_EIGHTEEN_REG_LPBG_TRIM_MASK) & 0xFFU);
+    BUCK11->BUCK_CTRL_EIGHTEEN_REG = 0x6U;
 
     if (dro == 0U)
     { /* Boot voltage 1.11V */
@@ -1406,7 +1335,6 @@ void POWER_DisableGDetVSensors(void)
         RSTCTL0->PRSTCTL1 = rstctl1;
     }
 
-    assert(s_gdetSensorContext.disableCount < INT32_MAX);
     s_gdetSensorContext.disableCount++;
 }
 
@@ -1416,7 +1344,6 @@ bool POWER_EnableGDetVSensors(void)
     uint32_t rstctl0, rstctl1;
     bool retval = true;
 
-    assert(s_gdetSensorContext.disableCount > INT32_MIN);
     s_gdetSensorContext.disableCount--;
 
     if (s_gdetSensorContext.disableCount == 0)
@@ -1488,8 +1415,7 @@ bool POWER_EnableGDetVSensors(void)
 uint32_t POWER_TrimSvc(uint32_t gdetTrim, uint32_t pack)
 {
     int32_t x;
-    int32_t y1;
-    int32_t y3 = 0;
+    int32_t y1, y3;
     uint32_t trimSvc = gdetTrim;
     uint32_t clk;
     uint32_t rst;
@@ -1500,39 +1426,27 @@ uint32_t POWER_TrimSvc(uint32_t gdetTrim, uint32_t pack)
         /* A2 */
         /* Autotrim value at [7:0] */
         x = (int32_t)(uint32_t)(gdetTrim & 0xFFUL);
-        if (POWER_SAVED_GDET_CLOCK_SOURCE == POWER_GDET_CLOCK_SOURCE_64MHZ)
+        if (pack == 0U)
         {
-            if (pack == 0U)
-            {
-                /* QFN */
-                y1 = (18 * x * x) + (801 * x) + 437290;
-                y3 = y1 / 10000;
-            }
-            else if (pack == 1U)
-            {
-                /* CSP */
-                y1 = (82 * x * x) - (5171 * x) + 559320;
-                y3 = y1 / 10000;
-            }
-            else
-            {
-                /* BGA */
-                assert(pack == 2U);
-                y1 = (25 * x * x) + (1337 * x) + 381140;
-                y3 = y1 / 10000;
-            }
+            /* QFN */
+            y1 = (18 * x * x) + (801 * x) + 437290;
+            y3 = y1 / 10000;
         }
-        else if (POWER_SAVED_GDET_CLOCK_SOURCE == POWER_GDET_CLOCK_SOURCE_32MHZ)
+        else if (pack == 1U)
         {
-            y1 = (-63 * x * x) + (10961 * x) + 265000;
+            /* CSP */
+            y1 = (82 * x * x) - (5171 * x) + 559320;
             y3 = y1 / 10000;
         }
         else
         {
-            assert(false);
+            /* BGA */
+            assert(pack == 2U);
+            y1 = (25 * x * x) + (1337 * x) + 381140;
+            y3 = y1 / 10000;
         }
 
-        trimSvc = (((uint32_t)y3) & 0xFFU) << 24;
+        trimSvc = ((uint32_t)y3) << 24;
 
         clk = CLKCTL0->PSCCTL0;
         rst = RSTCTL0->PRSTCTL0;
@@ -1546,36 +1460,4 @@ uint32_t POWER_TrimSvc(uint32_t gdetTrim, uint32_t pack)
     }
 
     return trimSvc;
-}
-
-void POWER_EnableBodMonitor(power_bod_callback drop, power_bod_callback recover, void *userParam)
-{
-    /* Set the callback functions */
-    s_bodConfig.drop    = drop;
-    s_bodConfig.recover = recover;
-    s_bodConfig.param   = userParam;
-
-    PMU->BOD = PMU_BOD__1_85_INT_CLR_NEG_MASK;
-    NVIC_ClearPendingIRQ(PMIP_IRQn);
-    NVIC_ClearPendingIRQ(PMIP_CHANGE_IRQn);
-    /* Enable the related IRQs */
-    (void)EnableIRQ(PMIP_IRQn);
-    (void)EnableIRQ(PMIP_CHANGE_IRQn);
-
-    /* Enable Brown-out Detection */
-    PMU->BOD = PMU_BOD_EN_MASK;
-}
-
-void POWER_DisableBodMonitor(void)
-{
-    /* Disable Brown-out Detection and clear interrupt status */
-    PMU->BOD = PMU_BOD__1_85_INT_CLR_NEG_MASK;
-
-    /* Disable the related IRQs */
-    (void)DisableIRQ(PMIP_IRQn);
-    (void)DisableIRQ(PMIP_CHANGE_IRQn);
-    /* Clear the callback functions */
-    s_bodConfig.drop    = NULL;
-    s_bodConfig.recover = NULL;
-    s_bodConfig.param   = NULL;
 }
