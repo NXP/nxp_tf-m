@@ -1,5 +1,5 @@
 /*
- * Copyright 2018, 2022, 2025 NXP
+ * Copyright 2018, 2022 NXP
  * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -115,9 +115,6 @@ void BOARD_InitHardware(void)
 
 void SystemInitHook(void)
 {
-    extern void *__VECTOR_TABLE[];
-    SCB->VTOR = (uint32_t) & (__VECTOR_TABLE[0]);
-
     /* Access for NS part */
     /* Coprocessor Access Control Register */
 #if ((__FPU_PRESENT == 1) && (__FPU_USED == 1))
