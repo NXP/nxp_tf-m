@@ -4,14 +4,14 @@
  * Description:
  * System configuration
  * This file was automatically generated and should not be modified.
- * Configurator Backend 3.60.0
- * device-db 4.33.0.9315
+ * Configurator Backend 3.70.0
+ * device-db 4.34.0.9502
  * ifx-mcuboot-pse84 1.1.0.349
  * ifx-tf-m 2.1.400.14138
- * mtb-dsl-pse8xxgp 1.1.1.824
+ * mtb-dsl-pse8xxgp 1.2.0.895
  *
  *******************************************************************************
- * Copyright 2025 Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2026 Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -482,7 +482,6 @@ const cy_en_prot_region_t M33S_ppc_0_regions[] =
     PROT_PERI0_FAULT_STRUCT1_MAIN,
     PROT_PERI0_SRSS_HIB_DATA,
     PROT_PERI0_PWRMODE_PWRMODE,
-    PROT_PERI0_SCB2,
     PROT_PERI0_DFT, 
 };
 const cy_en_prot_region_t M33_M55_ppc_0_regions[] =
@@ -707,6 +706,7 @@ const cy_en_prot_region_t M33_M55_ppc_0_regions[] =
     PROT_PERI0_TCPWM0_GRP1_CNT23_CNT,
     PROT_PERI0_LPCOMP,
     PROT_PERI0_SCB0,
+    PROT_PERI0_SCB2,
     PROT_PERI0_SCB3,
     PROT_PERI0_SCB4,
     PROT_PERI0_SCB5,

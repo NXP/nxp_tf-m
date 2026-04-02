@@ -43,6 +43,26 @@ install(FILES       ${CMAKE_CURRENT_LIST_DIR}/nspe/CMakeLists.txt
                     ${CMAKE_CURRENT_LIST_DIR}/post_config.cmake
         DESTINATION ${INSTALL_PLATFORM_NS_DIR}/ifx)
 
+# Install config files and remap tfm_config definitions to point to them
+if(DEFINED IFX_PROJECT_CONFIG_PATH)
+        install(FILES ${IFX_PROJECT_CONFIG_PATH}
+                RENAME ifx_project_config.h
+                DESTINATION ${INSTALL_INTERFACE_INC_DIR})
+        target_compile_definitions(tfm_config
+                INTERFACE
+                $<INSTALL_INTERFACE:IFX_PROJECT_CONFIG_PATH="$<INSTALL_PREFIX>/${INSTALL_INTERFACE_INC_DIR}/ifx_project_config.h">)
+endif()
+
+# Install config files and remap psa_crypto_config definitions to point to them
+if(DEFINED CRYPTO_HW_ACCELERATOR_CONFIG)
+        install(FILES ${CRYPTO_HW_ACCELERATOR_CONFIG}
+                RENAME crypto_hw_accelerator_config.h
+                DESTINATION ${INSTALL_INTERFACE_INC_DIR})
+        target_compile_definitions(psa_crypto_config
+                INTERFACE
+                $<INSTALL_INTERFACE:CRYPTO_HW_ACCELERATOR_CONFIG="$<INSTALL_PREFIX>/${INSTALL_INTERFACE_INC_DIR}/crypto_hw_accelerator_config.h">)
+endif()
+
 configure_file(${IFX_COMMON_SOURCE_DIR}/nspe/spe_config.cmake.in
                ${INSTALL_PLATFORM_NS_DIR}/ifx/spe_config.cmake @ONLY)
 
@@ -71,27 +91,15 @@ install(DIRECTORY   ${IFX_COMMON_SOURCE_DIR}/board/nspe
 install(FILES       ${IFX_CONFIG_BSP_PATH}/config_bsp.h
                     ${IFX_CONFIG_BSP_PATH}/config.cmake
         DESTINATION ${INSTALL_PLATFORM_NS_DIR}/board)
+target_compile_definitions(tfm_config
+    INTERFACE
+        $<INSTALL_INTERFACE:IFX_BSP_CONFIG_HEADER_FILE="$<INSTALL_PREFIX>/${INSTALL_PLATFORM_NS_DIR}/board/config_bsp.h">)
 
 install(DIRECTORY   ${IFX_BOARD_PATH}/nspe
                     ${IFX_BOARD_PATH}/shared
         DESTINATION ${INSTALL_PLATFORM_NS_DIR}/board)
 
 ################################## Partitions ##################################
-
-if (TFM_PARTITION_CRYPTO)
-    # Install Crypto configuration for MTB non-secure interface
-    install(FILES       ${TFM_MBEDCRYPTO_CONFIG_CLIENT_PATH}
-            RENAME      tfm_mbedcrypto_config_client.h
-            DESTINATION ${INSTALL_INTERFACE_INC_DIR})
-    install(FILES       ${TFM_MBEDCRYPTO_PSA_CRYPTO_CONFIG_PATH}
-            RENAME      tfm_psa_crypto_config_client.h
-            DESTINATION ${INSTALL_INTERFACE_INC_DIR})
-    if (MBEDTLS_PSA_CRYPTO_PLATFORM_FILE)
-        install(FILES       ${MBEDTLS_PSA_CRYPTO_PLATFORM_FILE}
-                RENAME      tfm_mbedtls_psa_crypto_platform.h
-                DESTINATION ${INSTALL_INTERFACE_INC_DIR})
-    endif()
-endif()
 
 if (TFM_PARTITION_NS_AGENT_MAILBOX)
     install(FILES       ${CMAKE_CURRENT_LIST_DIR}/shared/mailbox/platform_multicore.h
@@ -104,42 +112,31 @@ if (TFM_PARTITION_NS_AGENT_MAILBOX)
 endif()
 
 if (IFX_MTB_MAILBOX)
-    install(FILES       ${CMAKE_SOURCE_DIR}/interface/include/multi_core/tfm_mailbox.h
-                        ${CMAKE_CURRENT_LIST_DIR}/interface/include/multi_core/tfm_ns_mailbox.h
-                        ${CMAKE_CURRENT_LIST_DIR}/interface/include/multi_core/tfm_mailbox_config.h
+    install(FILES       ${CMAKE_CURRENT_LIST_DIR}/interface/include/ifx_mtb_mailbox/ifx_mtb_mailbox.h
                         ${CMAKE_CURRENT_LIST_DIR}/shared/mailbox/ifx_platform_mailbox.h
-                        DESTINATION ${INSTALL_INTERFACE_INC_DIR}/multi_core)
+                        DESTINATION ${INSTALL_INTERFACE_INC_DIR}/ifx_mtb_mailbox)
 
 
-    install(FILES       ${CMAKE_SOURCE_DIR}/interface/src/multi_core/tfm_multi_core_psa_ns_api.c
-                        ${CMAKE_CURRENT_LIST_DIR}/interface/src/multi_core/ifx_mtb_mailbox.c
-            DESTINATION ${INSTALL_INTERFACE_SRC_DIR}/multi_core)
+    install(FILES       ${CMAKE_CURRENT_LIST_DIR}/interface/src/ifx_mtb_mailbox/ifx_mtb_mailbox_psa_ns_api.c
+                        ${CMAKE_CURRENT_LIST_DIR}/interface/src/ifx_mtb_mailbox/ifx_mtb_mailbox.c
+            DESTINATION ${INSTALL_INTERFACE_SRC_DIR}/ifx_mtb_mailbox)
 
     if (IFX_MULTICORE_CM55)
         install(FILES       ${IFX_COMMON_SOURCE_DIR}/spe/services/mailbox/platform_hal_multi_core_cm55.c
-                DESTINATION ${INSTALL_INTERFACE_SRC_DIR}/multi_core)
+                DESTINATION ${INSTALL_INTERFACE_SRC_DIR}/ifx_mtb_mailbox)
     endif()
 endif()
 
 if (TFM_PARTITION_PLATFORM)
     # Platform service headers
     install(FILES       ${CMAKE_CURRENT_LIST_DIR}/interface/include/ifx_platform_api.h
-                        $<$<BOOL:${IFX_MTB_SRF}>:${CMAKE_CURRENT_LIST_DIR}/interface/include/mtb_srf_ipc_custom_packet.h>
             DESTINATION ${INSTALL_INTERFACE_INC_DIR})
 
     # Platform service sources
     install(FILES       ${CMAKE_CURRENT_LIST_DIR}/interface/src/ifx_platform_private.h
                         ${CMAKE_CURRENT_LIST_DIR}/interface/src/ifx_platform_api.c
-                        $<$<BOOL:${IFX_MTB_SRF}>:${CMAKE_CURRENT_LIST_DIR}/interface/src/ifx_mtb_srf.c>
-                        $<$<BOOL:${IFX_MTB_MAILBOX}>:${CMAKE_CURRENT_LIST_DIR}/interface/src/ifx_mtb_srf_relay.c>
             DESTINATION ${INSTALL_INTERFACE_SRC_DIR})
 endif()
-
-# IMPROVEMENT: Ideally Driver_* Files should be used from upstream CMSIS folder
-# as they are installed there any way.
-install(FILES       ${CMSIS_PATH}/CMSIS/Driver/Include/Driver_Common.h
-                    ${CMSIS_PATH}/CMSIS/Driver/Include/Driver_USART.h
-        DESTINATION ${INSTALL_PLATFORM_NS_DIR}/include)
 
 #################################### Tests #####################################
 

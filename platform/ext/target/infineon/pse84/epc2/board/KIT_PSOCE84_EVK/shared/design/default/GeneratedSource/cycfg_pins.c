@@ -4,14 +4,14 @@
  * Description:
  * Pin configuration
  * This file was automatically generated and should not be modified.
- * Configurator Backend 3.60.0
- * device-db 4.33.0.9315
+ * Configurator Backend 3.70.0
+ * device-db 4.34.0.9502
  * ifx-mcuboot-pse84 1.1.0.349
  * ifx-tf-m 2.1.400.14138
- * mtb-dsl-pse8xxgp 1.1.1.824
+ * mtb-dsl-pse8xxgp 1.2.0.895
  *
  *******************************************************************************
- * Copyright 2025 Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2026 Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -298,7 +298,7 @@ const cy_stc_gpio_pin_config_t CYBSP_DEBUG_UART_RX_config =
     .vrefSel = 0UL,
     .vohSel = 0UL,
     .pullUpRes = CY_GPIO_PULLUP_RES_DISABLE,
-    .nonSec = 0,
+    .nonSec = 1,
 };
 const cy_stc_gpio_pin_config_t CYBSP_DEBUG_UART_TX_config =
 {
@@ -316,7 +316,7 @@ const cy_stc_gpio_pin_config_t CYBSP_DEBUG_UART_TX_config =
     .vrefSel = 0UL,
     .vohSel = 0UL,
     .pullUpRes = CY_GPIO_PULLUP_RES_DISABLE,
-    .nonSec = 0,
+    .nonSec = 1,
 };
 const cy_stc_gpio_pin_config_t CYBSP_SDHC_CMD_config =
 {
@@ -737,8 +737,8 @@ const cy_stc_gpio_pin_config_t CYBSP_WIFI_HOST_WAKE_config =
     .outVal = 1,
     .driveMode = CY_GPIO_DM_OD_DRIVESLOW,
     .hsiom = CYBSP_WIFI_HOST_WAKE_HSIOM,
-    .intEdge = CY_GPIO_INTR_DISABLE,
-    .intMask = 0UL,
+    .intEdge = CY_GPIO_INTR_RISING,
+    .intMask = 1UL,
     .vtrip = CY_GPIO_VTRIP_CMOS,
     .slewRate = CY_GPIO_SLEW_FAST,
     .driveSel = CY_GPIO_DRIVE_1_2,

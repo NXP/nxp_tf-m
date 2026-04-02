@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Cypress Semiconductor Corporation (an Infineon company)
+ * Copyright (c) 2023-2026 Cypress Semiconductor Corporation (an Infineon company)
  * or an affiliate of Cypress Semiconductor Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -13,6 +13,7 @@
 #include "utilities.h"
 #include "config_impl.h"
 #include "platform_svc_api.h"
+#include "platform_svc_private.h"
 
 __naked int32_t ifx_call_platform_uart_log(const char *str, uint32_t len, uint32_t core_id)
 {
@@ -34,5 +35,12 @@ __naked int32_t ifx_call_platform_enable_systick(uint32_t enable)
 __naked void ifx_call_platform_system_reset(void)
 {
     __asm volatile("svc     "M2S(IFX_SVC_PLATFORM_SYSTEM_RESET)"     \n"
+                   "bx      lr                                       \n");
+}
+
+__naked psa_status_t ifx_call_platform_original_iovec(psa_handle_t msg_handle,
+                                                      ifx_original_iovec_t *io_vec)
+{
+    __asm volatile("svc     "M2S(IFX_SVC_PLATFORM_ORIGINAL_IOVEC)"   \n"
                    "bx      lr                                       \n");
 }

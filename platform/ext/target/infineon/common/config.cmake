@@ -24,6 +24,14 @@ if ((IFX_SE_IPC_SERVICE_TYPE STREQUAL "FULL") AND (TFM_PARTITION_CRYPTO OR TFM_P
     set(IFX_PARTITION_SE_IPC_SERVICE        ON)
 endif()
 
+# MTB SRF is implemented through IFX Extensions Partition
+if(IFX_MTB_SRF)
+    set(IFX_EXT_SP                          ON          CACHE BOOL      "Whether to enable IFX_EXTENSIONS_PARTITION")
+endif()
+
+# Default value for IFX_EXT_SP
+set(IFX_EXT_SP                              OFF         CACHE BOOL      "Whether to enable IFX_EXTENSIONS_PARTITION")
+
 set(IFX_PRINT_CORE_PREFIX                   OFF         CACHE BOOL      "Enable printing of core prefix in stdout")
 
 set(IFX_MTB_SRF                             OFF         CACHE BOOL      "Enable MTB SRF functionality")
@@ -51,7 +59,7 @@ endif()
 
 if (IFX_ISOLATION_PC_SWITCHING)
     # Protection Context switching uses platform arch hooks
-    set(PLATFORM_ARCH_HOOKS                 OFF)
+    set(PLATFORM_ARCH_HOOKS                 ON)
 endif()
 
 ################################### Drivers ####################################
@@ -92,6 +100,7 @@ set(PLATFORM_EXCEPTION_INFO                 ${IFX_FAULTS_INFO_DUMP} CACHE BOOL  
 
 ################################# Dependencies #################################
 
+set(IFX_MBEDTLS_ACCELERATION_ENABLED         OFF        CACHE BOOL      "Enable crypto accelerator")
 
 ############################# Platform services ################################
 
@@ -99,8 +108,20 @@ set(TFM_EXTRA_MANIFEST_LIST_FILES           ""          CACHE FILEPATH  "Extra m
 
 set(TFM_EXTRA_PARTITION_PATHS               ""          CACHE PATH      "List of extra Secure Partitions directories. An extra Secure Parition folder contains source code, CMakeLists.txt and manifest files")
 
+set(IFX_EXT_SP_PATH                         "${IFX_COMMON_SOURCE_DIR}/spe/services/ifx_ext_sp" CACHE PATH "Path to IFX Extensions Partition")
+
+list(APPEND TFM_EXTRA_PARTITION_PATHS       "${IFX_EXT_SP_PATH}")
+list(APPEND TFM_EXTRA_MANIFEST_LIST_FILES   "${IFX_EXT_SP_PATH}/ifx_ext_sp_top_level_manifest.yaml")
+
 ################################# Advanced options #############################
 
+if (IFX_MBEDTLS_ACCELERATION_ENABLED)
+    if (IFX_MBEDTLS_ACCELERATOR_TYPE STREQUAL "CRYPTOLITE")
+        set(CRYPTO_HW_ACCELERATOR_CONFIG "${IFX_COMMON_SOURCE_DIR}/spe/services/crypto/mbedtls_accel_configs/crypto_hw_cryptolite_config.h" CACHE PATH "Mbed-TLS acceleration library config")
+    elseif(IFX_MBEDTLS_ACCELERATOR_TYPE STREQUAL "MXCRYPTO")
+        set(CRYPTO_HW_ACCELERATOR_CONFIG "${IFX_COMMON_SOURCE_DIR}/spe/services/crypto/mbedtls_accel_configs/crypto_hw_mxcrypto_config.h" CACHE PATH "Mbed-TLS acceleration library config")
+    endif()
+endif()
 
 ################################################################################
 
