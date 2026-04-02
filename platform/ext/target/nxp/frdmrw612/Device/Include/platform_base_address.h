@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2017-2019 Arm Limited. All rights reserved.
- * Copyright 2019-2020, 2022-2026 NXP
+ * Copyright 2019-2020, 2022-2024 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,7 @@
 #define FLASH0_IPED_SIZE             (FLASH_ITS_AREA_SIZE)
 
 #define FLASH0_IPED_SECTOR_SIZE_PHY  (FLASH_AREA_IMAGE_SECTOR_SIZE)
-#define FLASH0_IPED_SECTOR_SIZE_LOG  (((FLASH_AREA_IMAGE_SECTOR_SIZE - FLASH_AREA_PROGRAM_SIZE) / (5 * FLASH_AREA_PROGRAM_SIZE)) * 4 * FLASH_AREA_PROGRAM_SIZE)
-#define FLASH0_IPED_ALIGNED_PAGE_COUNT 4
+#define FLASH0_IPED_SECTOR_SIZE_LOG  ((FLASH_AREA_IMAGE_SECTOR_SIZE - FLASH_AREA_PROGRAM_SIZE) * 4 / 5)
 #define FLASH0_IPED_SECTOR_COUNT     (FLASH_ITS_AREA_SIZE / FLASH0_IPED_SECTOR_SIZE_LOG)
 
 #define FLASH0_IPED_PAGE_SIZE        (FLASH_AREA_PROGRAM_SIZE)   
