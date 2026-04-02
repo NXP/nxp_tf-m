@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2021 Arm Limited. All rights reserved.
- * Copyright 2019-2026 NXP.
+ * Copyright 2019-2025 NXP.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@
  * 0x0076_0000 Protected Storage area          (0x20000)  128 KB 
  * 0x0078_0000 Internal Trusted Storage area   (0x20000)  128 KB 
  * 0x007A_0000 OTP area                         (0x4000)   16 KB
- * 0x0080_0000 WiFi firmware
- * 0x008A_0000 EL2GO blobs
+ * 0x0840_0000 WiFi firmware
+ * 0x084A_0000 EL2GO blobs
  * 0xXXXX_XXXX Unused
  */
  
@@ -45,8 +45,8 @@
  * 0x003A_0000 Protected Storage area (0x20000)  128 KB 
  * 0x003C_0000 Internal Trusted Storage area (0x20000)  128 KB 
  * 0x003E_4000 OTP area (0x4000)  16 KB
- * 0x0080_0000 WiFi firmware
- * 0x008A_0000 EL2GO blobs
+ * 0x0840_0000 WiFi firmware
+ * 0x084A_0000 EL2GO blobs
  * 0xXXXX_XXXX Unused
  */
 
@@ -262,10 +262,10 @@
 #define TFM_OTP_NV_COUNTERS_BACKUP_AREA_ADDR    (TFM_OTP_NV_COUNTERS_AREA_ADDR + TFM_OTP_NV_COUNTERS_AREA_SIZE)
 #define OTP_NV_COUNTERS_WRITE_BLOCK_SIZE        (FLASH_AREA_PROGRAM_SIZE)
 
-#define TFM_WIFI_FIRMWARE_ADDR  (0x08800000)
+#define TFM_WIFI_FIRMWARE_ADDR  (0x08400000)
 #define TFM_WIFI_FIRMWARE_SIZE  (0x000A0000)
 
-#define TFM_EL2GO_NV_DATA_IMPORT_ADDR  (0x088A0000)
+#define TFM_EL2GO_NV_DATA_IMPORT_ADDR  (0x084A0000)
 #define TFM_EL2GO_NV_DATA_IMPORT_SIZE  (0x00060000)
 
 /* Use Flash memory to store Code data */
