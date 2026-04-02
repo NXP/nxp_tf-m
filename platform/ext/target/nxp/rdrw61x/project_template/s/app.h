@@ -1,5 +1,6 @@
 /*
- * Copyright 2024 NXP
+ * Copyright (c) 2015, Freescale Semiconductor, Inc.
+ * Copyright 2016, 2022, 2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -8,7 +9,6 @@
 #define _APP_H_
 
 #include "board.h"
-
 /*******************************************************************************
  * Definitions
  ******************************************************************************/

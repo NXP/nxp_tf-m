@@ -43,11 +43,11 @@ file(DOWNLOAD https://raw.githubusercontent.com/NXPmicro/mcux-sdk/${NXP_SDK_GIT_
 file(DOWNLOAD https://raw.githubusercontent.com/NXPmicro/mcux-sdk/${NXP_SDK_GIT_TAG}/drivers/trng/fsl_trng.c  ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/fsl_trng.c)
 file(DOWNLOAD https://raw.githubusercontent.com/NXPmicro/mcux-sdk/${NXP_SDK_GIT_TAG}/drivers/trng/fsl_trng.h ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/fsl_trng.h)
 
-file(DOWNLOAD https://raw.githubusercontent.com/NXPmicro/mcux-sdk/${NXP_SDK_GIT_TAG}/drivers/flexspi/fsl_flexspi.c  ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/flexspi/fsl_flexspi.c)
-file(DOWNLOAD https://raw.githubusercontent.com/NXPmicro/mcux-sdk/${NXP_SDK_GIT_TAG}/drivers/flexspi/fsl_flexspi.h ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/flexspi/fsl_flexspi.h)
+file(DOWNLOAD https://raw.githubusercontent.com/NXPmicro/mcux-sdk/${NXP_SDK_GIT_TAG}/drivers/flexspi/fsl_flexspi.c  ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/fsl_flexspi.c)
+file(DOWNLOAD https://raw.githubusercontent.com/NXPmicro/mcux-sdk/${NXP_SDK_GIT_TAG}/drivers/flexspi/fsl_flexspi.h ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/fsl_flexspi.h)
 
-file(DOWNLOAD https://raw.githubusercontent.com/NXPmicro/mcux-sdk/${NXP_SDK_GIT_TAG}/drivers/flexspi/fsl_flexspi.c  ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/flexspi/fsl_flexspi.c)
-file(DOWNLOAD https://raw.githubusercontent.com/NXPmicro/mcux-sdk/${NXP_SDK_GIT_TAG}/drivers/flexspi/fsl_flexspi.h ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/flexspi/fsl_flexspi.h)
+file(DOWNLOAD https://raw.githubusercontent.com/NXPmicro/mcux-sdk/${NXP_SDK_GIT_TAG}/drivers/flexspi/fsl_flexspi.c  ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/fsl_flexspi.c)
+file(DOWNLOAD https://raw.githubusercontent.com/NXPmicro/mcux-sdk/${NXP_SDK_GIT_TAG}/drivers/flexspi/fsl_flexspi.h ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/fsl_flexspi.h)
 
 file(DOWNLOAD https://raw.githubusercontent.com/NXPmicro/mcux-sdk/${NXP_SDK_GIT_TAG}/drivers/cache/cache64/fsl_cache.c ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/fsl_cache.c)
 file(DOWNLOAD https://raw.githubusercontent.com/NXPmicro/mcux-sdk/${NXP_SDK_GIT_TAG}/drivers/cache/cache64/fsl_cache.h ${NXP_HAL_FILE_PATH}/common/Native_Driver/drivers/fsl_cache.h)
@@ -76,7 +76,7 @@ file(DOWNLOAD https://raw.githubusercontent.com/NXPmicro/mcux-sdk/${NXP_SDK_GIT_
 file(DOWNLOAD https://raw.githubusercontent.com/NXPmicro/mcux-sdk/${NXP_SDK_GIT_TAG}/utilities/debug_console/str/fsl_str.c ${NXP_HAL_FILE_PATH}/common/Native_Driver/utilities/str/fsl_str.c)
 file(DOWNLOAD https://raw.githubusercontent.com/NXPmicro/mcux-sdk/${NXP_SDK_GIT_TAG}/utilities/debug_console/str/fsl_str.h ${NXP_HAL_FILE_PATH}/common/Native_Driver/utilities/str/fsl_str.h)
 
-file(DOWNLOAD https://raw.githubusercontent.com/NXPmicro/mcux-sdk/${NXP_SDK_GIT_TAG}/utilities/assert/fsl_assert.c ${NXP_HAL_FILE_PATH}/common/Native_Driver/utilities/assert/fsl_assert.c)
+file(DOWNLOAD https://raw.githubusercontent.com/NXPmicro/mcux-sdk/${NXP_SDK_GIT_TAG}/utilities/assert/fsl_assert.c ${NXP_HAL_FILE_PATH}/common/Native_Driver/utilities/fsl_assert.c)
 
 #========================= Pull MCUxpresso NXP SDK devices from https://github.com/NXPmicro/mcux-sdk =========================#
 file(DOWNLOAD https://raw.githubusercontent.com/NXPmicro/mcux-sdk/${NXP_SDK_GIT_TAG}/devices/RW612/fsl_device_registers.h ${NXP_HAL_FILE_PATH}/rdrw61x/Native_Driver/fsl_device_registers.h)

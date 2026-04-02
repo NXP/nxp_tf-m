@@ -1,5 +1,5 @@
 /*
- * Copyright 2024,2025 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -21,11 +21,11 @@
 /* clang-format off */
 /* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
 !!GlobalInfo
-product: Clocks v15.0
+product: Clocks v13.0
 processor: RW612
 package_id: RW612ETA2I
 mcu_data: ksdk2_0
-processor_version: 24.12.10
+processor_version: 15.0.0
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
@@ -103,7 +103,6 @@ settings:
 - {id: TDDR_MCI_ENET_CLK_Config, value: Disabled}
 sources:
 - {id: CAU.XTAL_OSC.outFreq, value: 40 MHz, enabled: true}
-- {id: PMU.XTAL32K.outFreq, value: 32.768 kHz}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
@@ -219,7 +218,6 @@ settings:
 - {id: TDDR_PLL_Init_Config, value: Disabled}
 sources:
 - {id: CAU.XTAL_OSC.outFreq, value: 40 MHz, enabled: true}
-- {id: PMU.XTAL32K.outFreq, value: 32.768 kHz}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 

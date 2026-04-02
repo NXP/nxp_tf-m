@@ -1,5 +1,7 @@
 /*
- * Copyright 2024 NXP
+ * Copyright (c) 2015, Freescale Semiconductor, Inc.
+ * Copyright 2016, 2022 NXP
+ * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -8,15 +10,20 @@
 #include "board.h"
 /*${header:end}*/
 
+/*${variable:start}*/
+
+/*${variable:end}*/
 /*${function:start}*/
 void BOARD_InitHardware(void)
 {
 }
 
-void SystemInitHook(void)
+void SystemInit(void)
 {
-    extern void *__VECTOR_TABLE[];
-    SCB->VTOR = (uint32_t) & (__VECTOR_TABLE[0]);
+}
 
+uint32_t USART3_GetFreq(void)
+{
+    return CLOCK_GetFlexCommClkFreq(3U);
 }
 /*${function:end}*/
