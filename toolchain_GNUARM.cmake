@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-# Copyright (c) 2020-2024, Arm Limited. All rights reserved.
+# Copyright (c) 2020-2024,2026, Arm Limited. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -232,9 +232,13 @@ set(BL1_LINKER_CP_OPTION -mfloat-abi=soft)
 if (CONFIG_TFM_FLOAT_ABI STREQUAL "hard")
     set(COMPILER_CP_FLAG -mfloat-abi=hard)
     set(LINKER_CP_OPTION -mfloat-abi=hard)
+    set(BL2_COMPILER_CP_FLAG -mfloat-abi=hard)
+    set(BL2_LINKER_CP_OPTION -mfloat-abi=hard)
     if (CONFIG_TFM_ENABLE_FP OR CONFIG_TFM_ENABLE_MVE_FP)
         set(COMPILER_CP_FLAG -mfloat-abi=hard -mfpu=${CONFIG_TFM_FP_ARCH})
         set(LINKER_CP_OPTION -mfloat-abi=hard -mfpu=${CONFIG_TFM_FP_ARCH})
+        set(BL2_COMPILER_CP_FLAG -mfloat-abi=hard -mfpu=${CONFIG_TFM_FP_ARCH})
+        set(BL2_LINKER_CP_OPTION -mfloat-abi=hard -mfpu=${CONFIG_TFM_FP_ARCH})
     endif()
 else()
     set(COMPILER_CP_FLAG -mfloat-abi=soft)
