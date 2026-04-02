@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2021 Arm Limited. All rights reserved.
- * Copyright 2019-2025 NXP.
+ * Copyright 2019-2023 NXP.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,69 +18,33 @@
 #ifndef __FLASH_LAYOUT_H__
 #define __FLASH_LAYOUT_H__
 
-/* Flash layout with BL2 (multiple image boot):
- *
- * 0x0000_0000 (0x400) 1 KB
- * 0x0000_0400 Flash Config Block (0xC00) 3 KB
- * 0x0000_1000 BL2 - MCUBoot (0x1F000) 124 KB
- * 0x0002_0000 Secure image     primary slot   (0xA0000)  640 KB ---> must be alinged to 128KB 
- * 0x000C_0000 Non-secure image primary slot   (0x300000)   3 MB
- * 0x003C_0000 Secure image     secondary slot (0xA0000)  640 KB
- * 0x0046_0000 Non-secure image secondary slot (0x300000)   3 MB 
- * 0x0076_0000 Protected Storage area          (0x20000)  128 KB 
- * 0x0078_0000 Internal Trusted Storage area   (0x20000)  128 KB 
- * 0x007A_0000 OTP area                         (0x4000)   16 KB
- * 0x0840_0000 WiFi firmware
- * 0x084A_0000 EL2GO blobs
- * 0xXXXX_XXXX Unused
- */
- 
- 
 /* Flash layout without BL2:
  *
- * 0x0000_0000
- * 0x0000_0400 Flash Config Block
- * 0x0000_1000 Secure code  (0x9F000) 636 KB 
- * 0x000A_0000 Non-Secure code   (0x300000) 3 MB
- * 0x003A_0000 Protected Storage area (0x20000)  128 KB 
- * 0x003C_0000 Internal Trusted Storage area (0x20000)  128 KB 
- * 0x003E_4000 OTP area (0x4000)  16 KB
- * 0x0840_0000 WiFi firmware
- * 0x084A_0000 EL2GO blobs
+ * 0x00000000
+ * 0x00000400 Flash Config Block
+ * 0x00001000 Secure code
+ * 0x000A0000 Non-Secure code
+ * 0x001A0000 Protected Storage area
+ * 0x001C0000 Internal Trusted Storage area
+ * 0x001E0000 OTP area ?
+ * 0x00400000 WiFi firmware
+ * 0x004A0000 EL2GO blobs
  * 0xXXXX_XXXX Unused
  */
-
 
 /* This header file is included from linker scatter file as well, where only a limited C constructs are allowed.
  * Therefore it is not possible to include here the platform_base_address.h to access flash related defines. To resolve
  * this some of the values are redefined here with different names, these are marked with comment.
  */
 
-/* Image header size*/
-#define FLASH_IMAGE_HEADER_SIZE         (0x1000) /* 4 KB*/
-
 /* Size of a Secure and of a Non-secure image */
-#ifdef BL2
-#define FLASH_S_PARTITION_SIZE          0xA0000    /* S partition: 640 kB: 0xA0000 */
-#define FLASH_NS_PARTITION_SIZE         (0x300000) /* NS partition: 3 MB : 0x300000*/
-
-#if (FLASH_S_PARTITION_SIZE > FLASH_NS_PARTITION_SIZE)
-#define FLASH_MAX_PARTITION_SIZE FLASH_S_PARTITION_SIZE
-#else
-#define FLASH_MAX_PARTITION_SIZE FLASH_NS_PARTITION_SIZE
-#endif
-
-#else
+#define FLASH_IMAGE_HEADER_SIZE         (0x1000)
 #define FLASH_S_PARTITION_SIZE          (0xA0000 - FLASH_IMAGE_HEADER_SIZE)  /* S partition: 640 kB - 4KB Offset */
 #define FLASH_NS_PARTITION_SIZE         (0x300000)           /* NS partition: 3 MB*/
-#endif
 
 /* Sector size (erase) */
 #define FLASH_AREA_IMAGE_SECTOR_SIZE    (1024 * 4)          /* Sector (4K-byte)*/
 #define FLASH_AREA_PROGRAM_SIZE         (256)
-
-/* Flash layout info for BL2 bootloader */
-#define FLASH_BASE_ADDRESS              NS_ROM_ALIAS_BASE 
 
 /* FLASH size */
 #define FLASH_TOTAL_SIZE                (1024 * 1024 * 64)  /* 64 MBytes of physical Flash memory */
@@ -88,73 +52,6 @@
 /* RAM size */
 #define RAM_TOTAL_SIZE                  (0x130000)          /* 1.2 MBytes of physical SRAM memory */
 
-#ifdef BL2
-/* Offset and size definitions of the flash partitions that are handled by the
- * bootloader. The image swapping is done between IMAGE_PRIMARY and
- * IMAGE_SECONDARY, SCRATCH is used as a temporary storage during image
- * swapping.
- */
-#define FLASH_AREA_BL2_OFFSET      FLASH_IMAGE_HEADER_SIZE
-#define FLASH_AREA_BL2_SIZE        0x1F000 /* 124 KB  */
-
-
-#if !defined(MCUBOOT_IMAGE_NUMBER) || (MCUBOOT_IMAGE_NUMBER == 1)
-/* Secure + Non-secure image primary slot */
-#define FLASH_AREA_0_ID            (1)
-#define FLASH_AREA_0_OFFSET        (FLASH_AREA_BL2_OFFSET + FLASH_AREA_BL2_SIZE)
-#define FLASH_AREA_0_SIZE          (FLASH_S_PARTITION_SIZE + \
-                                    FLASH_NS_PARTITION_SIZE)
-/* Secure + Non-secure secondary slot */
-#define FLASH_AREA_2_ID            (FLASH_AREA_0_ID + 1)
-#define FLASH_AREA_2_OFFSET        (FLASH_AREA_0_OFFSET + FLASH_AREA_0_SIZE)
-#define FLASH_AREA_2_SIZE          (FLASH_S_PARTITION_SIZE + \
-                                    FLASH_NS_PARTITION_SIZE)
-/* Not used (scratch area), the 'Swap' firmware upgrade operation is not
- * supported on RW61x.
- */
-#define FLASH_AREA_SCRATCH_ID      (FLASH_AREA_2_ID + 1)
-#define FLASH_AREA_SCRATCH_OFFSET  (FLASH_AREA_2_OFFSET + FLASH_AREA_2_SIZE)
-#define FLASH_AREA_SCRATCH_SIZE    (0)
-/* Maximum number of image sectors supported by the bootloader. */
-#define MCUBOOT_MAX_IMG_SECTORS    ((FLASH_S_PARTITION_SIZE + \
-                                     FLASH_NS_PARTITION_SIZE) / \
-                                    FLASH_AREA_IMAGE_SECTOR_SIZE)
-#elif (MCUBOOT_IMAGE_NUMBER == 2)
-/* Secure image primary slot */
-#define FLASH_AREA_0_ID            (1)
-#define FLASH_AREA_0_OFFSET        (FLASH_AREA_BL2_OFFSET + FLASH_AREA_BL2_SIZE)
-#define FLASH_AREA_0_SIZE          (FLASH_S_PARTITION_SIZE)
-/* Non-secure image primary slot */
-#define FLASH_AREA_1_ID            (FLASH_AREA_0_ID + 1)
-#define FLASH_AREA_1_OFFSET        (FLASH_AREA_0_OFFSET + FLASH_AREA_0_SIZE)
-#define FLASH_AREA_1_SIZE          (FLASH_NS_PARTITION_SIZE)
-/* Secure image secondary slot */
-#define FLASH_AREA_2_ID            (FLASH_AREA_1_ID + 1)
-#define FLASH_AREA_2_OFFSET        (FLASH_AREA_1_OFFSET + FLASH_AREA_1_SIZE)
-#define FLASH_AREA_2_SIZE          (FLASH_S_PARTITION_SIZE)
-/* Non-secure image secondary slot */
-#define FLASH_AREA_3_ID            (FLASH_AREA_2_ID + 1)
-#define FLASH_AREA_3_OFFSET        (FLASH_AREA_2_OFFSET + FLASH_AREA_2_SIZE)
-#define FLASH_AREA_3_SIZE          (FLASH_NS_PARTITION_SIZE)
-/* Not used (scratch area), the 'Swap' firmware upgrade operation is not
- * supported on RW61x.
- */
-#define FLASH_AREA_SCRATCH_ID      (FLASH_AREA_3_ID + 1)
-#define FLASH_AREA_SCRATCH_OFFSET  (FLASH_AREA_3_OFFSET + FLASH_AREA_3_SIZE)
-#define FLASH_AREA_SCRATCH_SIZE    (0)
-/* Maximum number of image sectors supported by the bootloader. */
-#define MCUBOOT_MAX_IMG_SECTORS    (FLASH_MAX_PARTITION_SIZE / \
-                                    FLASH_AREA_IMAGE_SECTOR_SIZE)
-#else /* MCUBOOT_IMAGE_NUMBER > 2 */
-#error "Only MCUBOOT_IMAGE_NUMBER 1 and 2 are supported!"
-#endif /* MCUBOOT_IMAGE_NUMBER */
-
-/* Not used, the 'Swap' firmware upgrade operation is not supported on RW61x.
- * The maximum number of status entries supported by the bootloader.
- */
-#define MCUBOOT_STATUS_MAX_ENTRIES (0)
-
-#else /* NO BL2 */
 
 #ifdef SB_FILE /* Use signed Secure Binary (SB) image */
 #define FLASH_SB_TAIL   (0x1000)    /* 4 KB */
@@ -165,14 +62,13 @@
 
 /* Secure + Non-secure image primary slot */
 #define FLASH_AREA_0_ID            (1)
-#define FLASH_AREA_0_OFFSET        (FLASH_IMAGE_HEADER_SIZE)
-#define FLASH_AREA_0_SIZE          (FLASH_S_PARTITION_SIZE + FLASH_NS_PARTITION_SIZE + FLASH_SB_TAIL)
+#define FLASH_AREA_0_OFFSET        (0x0)
+#define FLASH_AREA_0_SIZE          (FLASH_IMAGE_HEADER_SIZE + FLASH_S_PARTITION_SIZE + FLASH_NS_PARTITION_SIZE + FLASH_SB_TAIL)
 
 /* Not used */
 #define FLASH_AREA_SCRATCH_ID      (FLASH_AREA_0_ID + 1)
 #define FLASH_AREA_SCRATCH_OFFSET  (FLASH_AREA_0_OFFSET + FLASH_AREA_0_SIZE)
 #define FLASH_AREA_SCRATCH_SIZE    (0)
-#endif /* BL2 */
 
 
 /* Protected Storage (PS) Service definitions */
