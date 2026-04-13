@@ -67,6 +67,8 @@ extern "C" {
 #define IPC_SERVICE_TEST_MMIOVEC_HANDLE                            (0x40000107U)
 #define IPC_SERVICE_TEST_CLIENT_ID_TRANSLATE_SID                   (0x0000F087U)
 #define IPC_SERVICE_TEST_CLIENT_ID_TRANSLATE_VERSION               (1U)
+#define IPC_SERVICE_TEST_CONNECTION_REFUSED_SID                    (0x0000F089U)
+#define IPC_SERVICE_TEST_CONNECTION_REFUSED_VERSION                (1U)
 
 /******** TFM_SP_IPC_CLIENT_TEST ********/
 #define IPC_CLIENT_TEST_PSA_ACCESS_APP_MEM_SID                     (0x0000F061U)
@@ -110,6 +112,8 @@ extern "C" {
 #define SFN_TEST_STATELESS_HANDLE                                  (0x4000010aU)
 #define SFN_TEST_CONNECTION_BASED_SID                              (0x0000F101U)
 #define SFN_TEST_CONNECTION_BASED_VERSION                          (1U)
+#define SFN_TEST_CONNECTION_REFUSED_SID                            (0x0000F102U)
+#define SFN_TEST_CONNECTION_REFUSED_VERSION                        (1U)
 
 #ifdef __cplusplus
 }

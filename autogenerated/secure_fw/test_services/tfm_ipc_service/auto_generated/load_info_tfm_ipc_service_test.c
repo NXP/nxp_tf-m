@@ -26,7 +26,7 @@
 #include "psa_manifest/tfm_ipc_service_test.h"
 
 #define TFM_SP_IPC_SERVICE_TEST_NDEPS                           (0)
-#define TFM_SP_IPC_SERVICE_TEST_NSERVS                          (8)
+#define TFM_SP_IPC_SERVICE_TEST_NSERVS                          (9)
 #if TFM_ISOLATION_LEVEL == 3
 #define TFM_SP_IPC_SERVICE_TEST_NASSETS                         (0 + 1)
 #else
@@ -172,6 +172,17 @@ const struct partition_tfm_sp_ipc_service_test_load_info_t tfm_sp_ipc_service_te
             .signal                 = IPC_SERVICE_TEST_CLIENT_ID_TRANSLATE_SIGNAL,
 
             .sid                    = 0x0000F087,
+            .flags                  = 0
+                                    | SERVICE_FLAG_NS_ACCESSIBLE
+                                    | SERVICE_VERSION_POLICY_STRICT,
+            .version                = 1,
+        },
+        {
+            .name_strid             = STRING_PTR_TO_STRID("IPC_SERVICE_TEST_CONNECTION_REFUSED"),
+            .sfn                    = 0,
+            .signal                 = IPC_SERVICE_TEST_CONNECTION_REFUSED_SIGNAL,
+
+            .sid                    = 0x0000F089,
             .flags                  = 0
                                     | SERVICE_FLAG_NS_ACCESSIBLE
                                     | SERVICE_VERSION_POLICY_STRICT,

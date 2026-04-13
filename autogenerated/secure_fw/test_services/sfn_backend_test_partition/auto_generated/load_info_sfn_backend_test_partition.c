@@ -26,7 +26,7 @@
 #include "psa_manifest/sfn_backend_test_partition.h"
 
 #define TFM_SFN_PARTITION1_NDEPS                                (0)
-#define TFM_SFN_PARTITION1_NSERVS                               (2)
+#define TFM_SFN_PARTITION1_NSERVS                               (3)
 #if TFM_ISOLATION_LEVEL == 3
 #define TFM_SFN_PARTITION1_NASSETS                              (0 + 1)
 #else
@@ -120,6 +120,18 @@ const struct partition_tfm_sfn_partition1_load_info_t tfm_sfn_partition1_load
             .signal                 = 2,
 #endif
             .sid                    = 0x0000F101,
+            .flags                  = 0
+                                    | SERVICE_FLAG_NS_ACCESSIBLE
+                                    | SERVICE_VERSION_POLICY_RELAXED,
+            .version                = 1,
+        },
+        {
+            .name_strid             = STRING_PTR_TO_STRID("SFN_TEST_CONNECTION_REFUSED"),
+            .sfn                    = ENTRY_TO_POSITION(sfn_test_connection_refused_sfn),
+#if CONFIG_TFM_SPM_BACKEND_IPC == 1
+            .signal                 = 4,
+#endif
+            .sid                    = 0x0000F102,
             .flags                  = 0
                                     | SERVICE_FLAG_NS_ACCESSIBLE
                                     | SERVICE_VERSION_POLICY_RELAXED,

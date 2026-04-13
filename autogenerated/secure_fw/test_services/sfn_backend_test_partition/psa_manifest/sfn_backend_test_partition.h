@@ -19,6 +19,7 @@ extern "C" {
 
 psa_status_t sfn_test_stateless_sfn(const psa_msg_t* msg);
 psa_status_t sfn_test_connection_based_sfn(const psa_msg_t* msg);
+psa_status_t sfn_test_connection_refused_sfn(const psa_msg_t* msg);
 
 
 #ifdef __cplusplus

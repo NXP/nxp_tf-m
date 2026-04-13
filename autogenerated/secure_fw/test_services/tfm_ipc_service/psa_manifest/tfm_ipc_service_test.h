@@ -25,6 +25,7 @@ extern "C" {
 #define IPC_SERVICE_TEST_STATELESS_ROT_SIGNAL                   (0x200)
 #define IPC_SERVICE_TEST_MMIOVEC_SIGNAL                         (0x400)
 #define IPC_SERVICE_TEST_CLIENT_ID_TRANSLATE_SIGNAL             (0x800)
+#define IPC_SERVICE_TEST_CONNECTION_REFUSED_SIGNAL              (0x1000)
 
 
 #ifdef __cplusplus
