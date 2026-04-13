@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023, 2025 NXP
+ * Copyright 2022-2023, 2025-2026 NXP
  *
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -11,7 +11,6 @@
 #ifndef _MCUXCLPSADRIVER_ORACLE_UTILS_
 #define _MCUXCLPSADRIVER_ORACLE_UTILS_
 
-#include <common.h>
 #include <psa/crypto.h>
 
 #include <stdint.h>

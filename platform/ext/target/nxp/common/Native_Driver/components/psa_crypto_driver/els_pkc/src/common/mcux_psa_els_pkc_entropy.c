@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2024 NXP
+ * Copyright 2023-2024, 2026 NXP
  *
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -14,7 +14,6 @@
  */
 
 #include "mbedtls/build_info.h"
-#include "entropy_poll.h"
 
 #if defined(MBEDTLS_MCUX_ENTROPY) && (MBEDTLS_MCUX_ENTROPY == 1)
 

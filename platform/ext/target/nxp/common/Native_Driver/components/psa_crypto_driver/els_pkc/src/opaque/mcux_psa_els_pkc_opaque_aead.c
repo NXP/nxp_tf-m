@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2024 NXP
+ * Copyright 2023-2024, 2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -15,6 +15,7 @@
 #include "mcuxClPsaDriver_Functions.h"
 #include "mcux_psa_els_pkc_opaque_aead.h"
 #include <mbedtls/platform.h>
+#include <string.h>
 #if defined(PSA_CRYPTO_DRIVER_THREAD_EN)
 #include "mcux_psa_els_pkc_common_init.h"
 #endif /* defined(PSA_CRYPTO_DRIVER_THREAD_EN) */
