@@ -74,7 +74,7 @@ void tfm_plat_test_secure_timer_start(void)
     CLOCK_SetClkDiv(CTIMER_CLK_DIVIDE, 1u);
 #endif
 
-#if defined(MCXA577_SERIES)
+#if defined(MCXA577_SERIES) || defined(MCXA287_SERIES)
     CLOCK_SetClockDiv(CTIMER_CLK_DIVIDE, 1u);
 #endif
 
@@ -168,7 +168,7 @@ void tfm_plat_test_non_secure_timer_start(void)
     CLOCK_SetClkDiv(CTIMER_NS_CLK_DIVIDE, 1u);
 #endif
 
-#if defined(MCXA577_SERIES)
+#if defined(MCXA577_SERIES) || defined(MCXA287_SERIES)
     CLOCK_SetClockDiv(CTIMER_NS_CLK_DIVIDE, 1u);
 #endif
 
