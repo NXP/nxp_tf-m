@@ -31,8 +31,8 @@
 #include "tfm_plat_defs.h"
 #include "fsl_clock.h"
 #include "clock_config.h"
-#include "board.h"
 #include "pin_mux.h"
+#include "board.h"
 #include "target_cfg_common.h"
 #include "utilities.h"
 
