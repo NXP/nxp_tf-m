@@ -23,6 +23,7 @@ Message("HAL_NXP path to be used: ${NXP_HAL_FILE_PATH}")
 set(CONFIG_BUILD_WITH_TFM ON)
 set(CONFIG_SOC_SERIES_RW6XX ON)
 set(CONFIG_EXPORT_MCUX_ELS_PKC_TARGETS ON)
+set(CONFIG_MCUX_PSA_CRYPTO_DRIVER_ELS_PKC ON)
 
 #add_t
 set(CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
@@ -223,7 +224,7 @@ target_link_libraries(platform_s
 )
 
 if (MCUX_PSA_CRYPTO_DRIVER_ELS_PKC)
-    add_subdirectory(${NXP_HAL_FILE_PATH}/common/Native_Driver/components/psa_crypto_driver psa_crypto_driver)
+    add_subdirectory(${MBEDCRYPTO_PATH}/../psa_crypto_driver psa_crypto_driver)
     target_link_libraries(platform_s
         PRIVATE
             McuxPsaCryptoDriverElsPkc
