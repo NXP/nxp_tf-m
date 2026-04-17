@@ -424,7 +424,7 @@ int32_t ppc_init_cfg(void)
     AHB_SECURE_CTRL->APB_GRP1_MEM_RULE2 =
         (0x33300300U) |                                                                       /* Bits have to be set to '1' according to UM.*/
         AHB_SECURE_CTRL_APB_GRP1_MEM_RULE2_RTC_RULE0(TFM_SEC_ACCESS_LVL_USER_NS)          |   /* RTC */
-        AHB_SECURE_CTRL_APB_GRP1_MEM_RULE2_PMU_RULE1(TFM_SEC_ACCESS_LVL_PRIV_S)           |   /* PMU — secure to prevent NS PM3 bypass */
+        AHB_SECURE_CTRL_APB_GRP1_MEM_RULE2_PMU_RULE1(TFM_SEC_ACCESS_LVL_USER_NS)          |   /* PMU — Allow access to NS for wifi use case */
         AHB_SECURE_CTRL_APB_GRP1_MEM_RULE2_FLASH_CACHE0_RULE3(TFM_SEC_ACCESS_LVL_USER_NS) |   /* FLASH CACHE0 */
         AHB_SECURE_CTRL_APB_GRP1_MEM_RULE2_FLASH_CACHE1_RULE4(TFM_SEC_ACCESS_LVL_USER_NS);    /* FLASH CACHE1 */
 
