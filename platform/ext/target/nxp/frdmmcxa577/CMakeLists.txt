@@ -159,10 +159,6 @@ target_link_libraries(platform_s
         tfm_sprt
 )
 
-if (MCUX_PSA_CRYPTO_DRIVER_SGI_PKC)
- #TODO link SGI PKC
-endif()
-
 # GNU ld has some strange behaviour to do with weak functions, and does not deal
 # well with strong functions in static libraries overriding weak functions in
 # object files. For this reason, the file hardware_init is linked directly to
@@ -289,7 +285,7 @@ target_sources(tfm_s
 )
 
 # TODO: Use HW acceleration
-if (MCUX_PSA_CRYPTO_DRIVER_SGI_PKC)
+if (CONFIG_PSA_CRYPTO_DRIVER_SGI_PKC)
 if (TFM_PARTITION_CRYPTO)
 
     target_compile_options(platform_crypto_keys

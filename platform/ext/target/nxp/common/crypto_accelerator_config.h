@@ -13,17 +13,11 @@
 extern "C" {
 #endif /* __cplusplus */
 
-//!!!DUMMY FILE !!!
-//So far, all ALT definitions placed in mbedtls_accelerator_config.h
 
 /****************************************************************/
 /* Require built-in implementations based on PSA requirements */
 /****************************************************************/
 
-
-//#ifdef PSA_WANT_ALG_xxx
-//#define MBEDTLS_xxx_ALT
-//#endif /* PSA_WANT_ALG_xxx */
 
 #ifdef CRYPTO_HW_ACCELERATOR
 #include "platform_psa_hw_accel.h"

@@ -133,6 +133,9 @@ typedef union {
     els_pkc_transparent_mac_operation_t transparent_els_pkc_driver_ctx;
     els_pkc_opaque_mac_operation_t opaque_els_pkc_driver_ctx;
 #endif
+#if defined(PSA_CRYPTO_DRIVER_SGI)
+    sgi_mac_operation_t sgi_driver_ctx;
+#endif
 } psa_driver_mac_context_t;
 
 typedef union {
@@ -147,6 +150,9 @@ typedef union {
 #if defined(PSA_CRYPTO_DRIVER_ELS_PKC)
     els_pkc_transparent_aead_operation_t transparent_els_pkc_driver_ctx;
     els_pkc_opaque_aead_operation_t opaque_els_pkc_driver_ctx;
+#endif
+#if defined(PSA_CRYPTO_DRIVER_SGI)
+    sgi_aead_operation_t sgi_driver_ctx;
 #endif
 } psa_driver_aead_context_t;
 

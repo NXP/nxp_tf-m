@@ -17,6 +17,15 @@ extern "C" {
 /* Override built-in implementations based on Platform HW capabilities */
 /***********************************************************************/
 
+
+/* MBEDTLS_ENTROPY_NV_SEED is disabled because this platform uses a
+ * hardware TRNG as the sole entropy source. Persistent NV seed storage
+ * is not required and is intentionally avoided.
+ */
+#ifdef MBEDTLS_ENTROPY_NV_SEED
+#undef MBEDTLS_ENTROPY_NV_SEED
+#endif
+
 /* We have explicitly disabled this Algorithm on top of Medium profile to reduce memory footprint*/
 #if defined(PSA_WANT_ALG_SHA_224)
 #undef PSA_WANT_ALG_SHA_224
