@@ -54,3 +54,4 @@ tfm_s_crypto_clients:
     mcimx93evk: []
     frdmmcxa577: []
     frdmmcxa287: []
+    frdmkw43: []

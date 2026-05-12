@@ -126,7 +126,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s)
 
     # mbedtls3x related config handling
     mcux_remove_macro("-DMBEDTLS_CONFIG_FILE=\\\"mcux_mbedtls_psa_crypto_config.h\\\"")
-    mcux_remove_configuration("-DMBEDTLS_CONFIG_FILE=\\\"mcux_mbedtls_psa_crypto_config.h\\\"")
+    mcux_remove_configuration(CC "-DMBEDTLS_CONFIG_FILE=\\\"mcux_mbedtls_psa_crypto_config.h\\\"")
     mcux_add_source(
         SOURCES 
         tf-m/lib/fih/inc/fih.h
