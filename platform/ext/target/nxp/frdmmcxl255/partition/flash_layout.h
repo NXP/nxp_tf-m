@@ -41,11 +41,19 @@
 
 /* Size of a Secure and of a Non-secure image */
 #if defined(MCU_SDK_REGRESSION)
-#define FLASH_S_PARTITION_SIZE              (160 * 1024)       /* S partition: 152 KB : (0x280000)  */
+#define FLASH_S_PARTITION_SIZE              (160 * 1024)       /* S partition: 160 KB : (0x28000)  */
+#ifdef MCXL255_cm33_SERIES
 #define FLASH_NS_PARTITION_SIZE             (136 * 1024)       /* NS partition: 136 KB : (0x22000)  */
+#elif defined(MCXL254_cm33_SERIES)
+#define FLASH_NS_PARTITION_SIZE             (64 * 1024)       /* NS partition: 64 KB : (0x10000)  */
+#endif
 #else 
-#define FLASH_S_PARTITION_SIZE              (144 * 1024)       /* S partition: 144 KB : (0x240000)  */
+#define FLASH_S_PARTITION_SIZE              (144 * 1024)       /* S partition: 144 KB : (0x24000)  */
+#ifdef MCXL255_cm33_SERIES
 #define FLASH_NS_PARTITION_SIZE             (136 * 1024)       /* NS partition: 136 KB : (0x22000)  */
+#elif defined(MCXL254_cm33_SERIES)
+#define FLASH_NS_PARTITION_SIZE             (64 * 1024)       /* NS partition: 64 KB : (0x10000)  */
+#endif
 #endif
 
 
