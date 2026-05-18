@@ -2482,6 +2482,13 @@ if (CONFIG_MCUX_COMPONENT_middleware.psatest.ns.tgt_dev_apis_nxp_rw61x_configs)
     )
 endif()
 
+if (CONFIG_MCUX_COMPONENT_middleware.psatest.ns.reduce_psatest_config)
+    mcux_add_macro(
+         CC "-DREDUCED_PSA_TESTS\
+            "
+    )
+endif()
+
 if (CONFIG_MCUX_COMPONENT_middleware.psatest.ns.crypto_s200_config)
     mcux_add_macro(
          CC "-DARCH_TEST_SKIP_HASH_CLONE\
