@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2017-2023 Arm Limited. All rights reserved.
- * Copyright 2019-2025 NXP
+ * Copyright 2019-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,13 @@
 #define S_MSP_STACK_SIZE        (0x0001200)
 #define S_PSP_STACK_SIZE        (0x0000800)
 
+#if IS_PHANTOM_1MB_FLASH_352KB_SRAM()
+#define NS_HEAP_SIZE            (0x0001000)
+#define NS_STACK_SIZE           (0x0000800)
+#else
 #define NS_HEAP_SIZE            (0x0004000)
 #define NS_STACK_SIZE           (0x0002000)
+#endif
 
 /* Boot Image is exoected at offset 0 */
 #ifdef BL2
@@ -107,7 +112,8 @@
 #define S_CODE_LIMIT    (S_CODE_START + S_CODE_SIZE - 1)
 
 #define S_DATA_START                    (S_RAM_ALIAS(S_DATA_OFFSET + RESERVED_RAM_SIZE))
-#define S_DATA_SIZE                     (((TOTAL_RAM_SIZE - RESERVED_RAM_SIZE) / 2) - S_DATA_OFFSET)
+/* Allocate first 196KB for tf-m secure*/
+#define S_DATA_SIZE                     (0x30000 - RESERVED_RAM_SIZE)
 #define S_DATA_LIMIT                    (S_DATA_START + S_DATA_SIZE - 1)
 
 /* Size of vector table: 171 interrupt handlers(see g_pfnVectors definition) + 4 bytes MPS initial value ((171*4 + 4) = 688 = 0x2b0) */

@@ -27,9 +27,13 @@
 
 #define S_MSP_STACK_SIZE        (0x0001200)
 #define S_PSP_STACK_SIZE        (0x0000800)
-
+#if IS_PHANTOM_512KB_FLASH_192KB_SRAM()
+#define NS_HEAP_SIZE            (0x0001000)
+#define NS_STACK_SIZE           (0x0000800)
+#else
 #define NS_HEAP_SIZE            (0x0004000)
 #define NS_STACK_SIZE           (0x0002000)
+#endif
 
 /* Boot Image is exoected at offset 0 */
 #ifdef BL2

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2022 Arm Limited. All rights reserved.
- * Copyright 2019-2023, 2025 NXP
+ * Copyright 2019-2023, 2025-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,21 +39,35 @@
  * marked with comment.
  */
 
-/* Size of a Secure and of a Non-secure image */
-#define FLASH_S_PARTITION_SIZE              (0x80000)       /* S partition: 512 kB*/
-#define FLASH_NS_PARTITION_SIZE             (0x80000)       /* NS partition: 512 kB*/
-
 /* Sector size of the embedded flash hardware (erase/program) */
 #define FLASH_AREA_IMAGE_SECTOR_SIZE        (0x2000)           /* 8 KB. Flash memory erase operation granularity. */
 #define FLASH_AREA_PROGRAM_SIZE             (0x2000)                /* Minimum size of program operation */
 
+#define IS_PHANTOM_1MB_FLASH_352KB_SRAM() ( \
+    defined(MCXN546_cm33_core0_SERIES)  || defined(MCXN946_cm33_core0_SERIES) || \
+    defined(MCXN526_cm33_core0_SERIES)  || defined(MCXN536_cm33_core0_SERIES) || \
+    defined(MCXN526T_cm33_core0_SERIES) || defined(MCXN536T_cm33_core0_SERIES) || \
+    defined(MCXN546T_cm33_core0_SERIES) || defined(MCXN556S_cm33_core0_SERIES) || \
+    defined(MCXN556T_cm33_core0_SERIES) || defined(MCXN946T_cm33_core0_SERIES) \
+)
+
+#if IS_PHANTOM_1MB_FLASH_352KB_SRAM()
+/* Size of a Secure and of a Non-secure image */
+#define FLASH_S_PARTITION_SIZE              (0x50000)       /* S partition: 320 kB*/
+#define FLASH_NS_PARTITION_SIZE             (0x50000)       /* NS partition: 320 kB*/
+/* FLASH size */
+#define FLASH_TOTAL_SIZE                    (1 * 1024 * 1024)    /* 1 MB */
+#else
+/* Size of a Secure and of a Non-secure image */
+#define FLASH_S_PARTITION_SIZE              (0x80000)       /* S partition: 512 kB*/
+#define FLASH_NS_PARTITION_SIZE             (0x80000)       /* NS partition: 512 kB*/
 /* FLASH size */
 #define FLASH_TOTAL_SIZE                    (2 * 1024 * 1024)    /* 2 MB */
-                                                            
+#endif
+
 /* Flash layout info for BL2 bootloader */
 #define FLASH_BASE_ADDRESS                  (0x00000000)
-
-#define FLASH_BASE_S                  (0x10000000)
+#define FLASH_BASE_S                        (0x10000000)
 
 #ifdef SB_FILE /* Use signed Secure Binary (SB) image */
 #define FLASH_SB_TAIL   0x2000 /* 8 KB */
@@ -161,10 +175,15 @@
 #define TFM_OTP_NV_COUNTERS_SECTOR_SIZE FLASH_OTP_NV_COUNTERS_SECTOR_SIZE
 #define TFM_OTP_NV_COUNTERS_BACKUP_AREA_ADDR (TFM_OTP_NV_COUNTERS_AREA_ADDR + \
                                               TFM_OTP_NV_COUNTERS_AREA_SIZE)
-
+#if IS_PHANTOM_1MB_FLASH_352KB_SRAM()
+/* Flash Area to keep the EL2GO blobs initially - hardcoding last 224K for this*/
+#define TFM_EL2GO_NV_DATA_IMPORT_ADDR  (0x000C4000)
+#define TFM_EL2GO_NV_DATA_IMPORT_SIZE  (0x00038000)
+#else
 /* Flash Area to keep the EL2GO blobs initially - hardcoding last 256K for this*/
 #define TFM_EL2GO_NV_DATA_IMPORT_ADDR  (0x001C0000)
 #define TFM_EL2GO_NV_DATA_IMPORT_SIZE  (0x00040000)
+#endif
 
 /* CMPA area, from where EL2GO apps can read the UUID*/
 #define TFM_EL2GO_NV_CMPA_ADDR  (0x01100000)
@@ -181,6 +200,10 @@
 #define RESERVED_RAM_SIZE   (0x00004000)  /* Reserved SRAM0(16KB): 8KB Retention RAM. 8KB For PKC */
 
 #define TOTAL_ROM_SIZE      FLASH_TOTAL_SIZE
-#define TOTAL_RAM_SIZE      (0x00068000)     /* RAM 0-6. 416 KB RAM for data*/
 
+#if IS_PHANTOM_1MB_FLASH_352KB_SRAM()
+#define TOTAL_RAM_SIZE      (0x00048000)     /* RAM 0-6. 288 KB RAM for data*/
+#else
+#define TOTAL_RAM_SIZE      (0x00068000)     /* RAM 0-6. 416 KB RAM for data*/
+#endif
 #endif /* __FLASH_LAYOUT_H__ */

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2017-2019 Arm Limited. All rights reserved.
- * Copyright 2019-2023, 2025 NXP
+ * Copyright 2019-2023, 2025-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 #define __PLATFORM_BASE_ADDRESS_H__
 
 #include "platform_regs.h"           /* Platform registers */
-#include "MCXN947_cm33_core0.h"
+#include "fsl_device_registers.h"
 
 /* Internal Flash memory */
 #define FLASH0_BASE_S                 (0x10000000)

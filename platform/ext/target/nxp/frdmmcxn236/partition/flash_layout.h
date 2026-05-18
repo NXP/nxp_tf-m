@@ -39,13 +39,24 @@
  * marked with comment.
  */
 
-/* Size of a Secure and of a Non-secure image */
-#define FLASH_S_PARTITION_SIZE              (288 * 1024)       /* S partition: 288 KB : (0x48000)  */
-#define FLASH_NS_PARTITION_SIZE             (416 * 1024)       /* NS partition: 416 KB : (0x68000)  */
-
 /* Sector size of the embedded flash hardware (erase/program) */
 #define FLASH_AREA_IMAGE_SECTOR_SIZE        (0x2000)           /* 8 KB. Flash memory erase operation granularity. */
 #define FLASH_AREA_PROGRAM_SIZE             (0x2000)           /* Minimum size of program operation */
+
+
+#define IS_PHANTOM_512KB_FLASH_192KB_SRAM() ( \
+    defined(MCXN235_SERIES) \
+)
+
+#if IS_PHANTOM_512KB_FLASH_192KB_SRAM()
+/* Size of a Secure and of a Non-secure image */
+#define FLASH_S_PARTITION_SIZE              (256 * 1024)       /* S partition: 256 KB : (0x40000)  */
+#define FLASH_NS_PARTITION_SIZE             (136 * 1024)       /* NS partition: 160 KB : (0x22000)  */
+#else
+/* Size of a Secure and of a Non-secure image */
+#define FLASH_S_PARTITION_SIZE              (288 * 1024)       /* S partition: 288 KB : (0x48000)  */
+#define FLASH_NS_PARTITION_SIZE             (416 * 1024)       /* NS partition: 416 KB : (0x68000)  */
+#endif
 
 /* FLASH size */
 #define FLASH_TOTAL_SIZE                    (1 * 1024 * 1024)    /* 1 MB */
@@ -161,10 +172,15 @@
 #define TFM_OTP_NV_COUNTERS_SECTOR_SIZE FLASH_OTP_NV_COUNTERS_SECTOR_SIZE
 #define TFM_OTP_NV_COUNTERS_BACKUP_AREA_ADDR (TFM_OTP_NV_COUNTERS_AREA_ADDR + \
                                               TFM_OTP_NV_COUNTERS_AREA_SIZE)
-
+#if IS_PHANTOM_512KB_FLASH_192KB_SRAM()
+/* Flash Area to keep the EL2GO blobs initially - 480KB onwards hardcoding last 224K for this*/
+#define TFM_EL2GO_NV_DATA_IMPORT_ADDR  (0x00078000)
+#define TFM_EL2GO_NV_DATA_IMPORT_SIZE  (0x00008000) /*32 KB*/
+#else
 /* Flash Area to keep the EL2GO blobs initially - hardcoding last 224K for this*/
 #define TFM_EL2GO_NV_DATA_IMPORT_ADDR  (0x000C4000)
 #define TFM_EL2GO_NV_DATA_IMPORT_SIZE  (0x00038000)
+#endif
 
 /* Use Flash memory to store Code data */
 #define S_ROM_ALIAS_BASE    (0x10000000)
@@ -177,6 +193,10 @@
 #define RESERVED_RAM_SIZE   (0x00004000)  /* Reserved SRAM0(16KB): 8KB Retention RAM. 8KB For PKC */
 
 #define TOTAL_ROM_SIZE      FLASH_TOTAL_SIZE
+#if IS_PHANTOM_512KB_FLASH_192KB_SRAM()
+#define TOTAL_RAM_SIZE      (0x00030000)     /* RAM 0-4. 192 KB * 1024 (0x30000) RAM for data*/
+#else
 #define TOTAL_RAM_SIZE      (0x00058000)     /* RAM 0-4. 352 KB * 1024 (0x58000) RAM for data*/
-
+#endif
+	
 #endif /* __FLASH_LAYOUT_H__ */
