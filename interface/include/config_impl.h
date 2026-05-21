@@ -30,9 +30,9 @@
 #if CONFIG_TFM_SPM_BACKEND_IPC == 1
 /* Trustzone NS agent working stack size. */
 #if defined(TFM_FIH_PROFILE_ON) && TFM_ISOLATION_LEVEL == 1
-#define CONFIG_TFM_NS_AGENT_TZ_STACK_SIZE                        1768 //NXP adds 512 bytes
+#define CONFIG_TFM_NS_AGENT_TZ_STACK_SIZE                        1256
 #else
-#define CONFIG_TFM_NS_AGENT_TZ_STACK_SIZE                        1536 //NXP adds 512 bytes
+#define CONFIG_TFM_NS_AGENT_TZ_STACK_SIZE                        1024
 #endif
 
 #if !defined CONFIG_TFM_USE_TRUSTZONE

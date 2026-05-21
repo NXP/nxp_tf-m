@@ -100,11 +100,11 @@
 
 #define S_DATA_START                    (S_RAM_ALIAS(S_DATA_OFFSET))
 
-/* 52 KB ram is for secure application and rest 128-8(reserved shared ram) - 52 KB = 66 KB Ram is available for non-secure apps*/
+/* 44 KB ram is for secure application and rest 128-8(reserved shared ram) - 44 KB = 76 KB Ram is available for non-secure apps*/
 #if defined(MCU_SDK_REGRESSION)
 #define S_DATA_SIZE                     (60 * 1024)
 #else
-#define S_DATA_SIZE                     (52 * 1024)
+#define S_DATA_SIZE                     (44 * 1024)
 #endif
 #define S_DATA_LIMIT    (S_DATA_START + S_DATA_SIZE -   1)
 

@@ -48,7 +48,7 @@
 #endif
 
 /* Sector size of flash hardware (erase/program) */
-#define FLASH_AREA_IMAGE_SECTOR_SIZE        (1*1024)           /* As Only RAM is used, SECTOR size is adjusted to 1 KB. */
+#define FLASH_AREA_IMAGE_SECTOR_SIZE        (1*512)           /* As Only RAM is used, SECTOR size is adjusted to 512 B. */
 #define FLASH_AREA_PROGRAM_SIZE             (128U)             /* 128 B as page size*/
 #define FLASH_AREA_IMAGE_PHRASE_SIZE        (16U)              /* 16 B for write */
 
@@ -94,7 +94,7 @@
 /* Internal Trusted Storage (ITS) Service definitions */
 #define FLASH_ITS_AREA_OFFSET           (FLASH_PS_AREA_OFFSET + \
                                          FLASH_PS_AREA_SIZE)
-#define FLASH_ITS_AREA_SIZE             (0x1000) /* 4 KB */
+#define FLASH_ITS_AREA_SIZE             (0x0C00) /* 3 KB */
 
 /* OTP_definitions */
 #define FLASH_OTP_NV_COUNTERS_AREA_OFFSET (FLASH_ITS_AREA_OFFSET + \

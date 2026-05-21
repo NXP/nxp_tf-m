@@ -15,10 +15,37 @@
 #define CRYPTO_EXT_RNG       1
 #endif
 
-///* The max number of concurrent operations that can be active (allocated) at any time in Crypto */
-//#ifndef CRYPTO_CONC_OPER_NUM
-//#define CRYPTO_CONC_OPER_NUM                   4
-//#endif
+/* The max number of concurrent operations that can be active (allocated) at any time in Crypto */
+#ifndef CRYPTO_CONC_OPER_NUM
+#define CRYPTO_CONC_OPER_NUM                   4
+#endif
+
+/*
+ * Heap size for the crypto backend
+ * CRYPTO_ENGINE_BUF_SIZE needs to be >8KB for EC signing by attest module.
+ */
+#undef CRYPTO_ENGINE_BUF_SIZE
+#define CRYPTO_ENGINE_BUF_SIZE                 0x2040
+
+/* Default size of the internal scratch buffer used for PSA FF IOVec allocations */
+#undef CRYPTO_IOVEC_BUFFER_SIZE
+#define CRYPTO_IOVEC_BUFFER_SIZE               4608
+
+/* The stack size of the Crypto Secure Partition */
+#undef CRYPTO_STACK_SIZE
+#define CRYPTO_STACK_SIZE                      0x1900
+
+/* The maximal number of secure services that are connected or requested at the same time */
+#undef CONFIG_TFM_CONN_HANDLE_MAX_NUM
+#define CONFIG_TFM_CONN_HANDLE_MAX_NUM         5
+
+/* The maximum asset size to be stored in the Internal Trusted Storage */
+#undef ITS_MAX_ASSET_SIZE
+#define ITS_MAX_ASSET_SIZE                     512
+
+/* The maximum number of assets to be stored in the Internal Trusted Storage */
+#undef ITS_NUM_ASSETS
+#define ITS_NUM_ASSETS                         6
 
 #ifdef PLATFORM_NO_FLASH
 /* Enable emulated RAM FS for platforms that don't have flash for Internal Trusted Storage partition */
