@@ -2,8 +2,13 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.board)
+    mcux_add_macro(
+        CC "-DUSE_SGI_HUK\
+        "
+    )
     mcux_add_source(
         SOURCES
+        ./common/crypto_key/sgi_based/crypto_keys.c
         ./frdmmcxa287/target_cfg.c
         ./frdmmcxa287/Device/Source/startup_${board}.c
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/tf-m/platform/ext/target/nxp

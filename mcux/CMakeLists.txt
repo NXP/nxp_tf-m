@@ -412,7 +412,19 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.enable_platform_no_flash)
     )
 endif()
 
-if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.platform_common)
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.platform_default_crypto_keys)
+    mcux_add_source(
+        SOURCES 
+        tf-m/platform/ext/common/template/crypto_keys.c 
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+    mcux_add_include(
+        INCLUDES tf-m/platform/include
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
+endif()
+
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.platform_default_nv_counter)
     mcux_add_macro(
     
         CC "-DPLATFORM_DEFAULT_NV_COUNTERS\
@@ -420,7 +432,6 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.platform_common)
     )
     mcux_add_source(
         SOURCES 
-        tf-m/platform/ext/common/template/crypto_keys.c 
         tf-m/platform/ext/common/template/nv_counters.c
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )

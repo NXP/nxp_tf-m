@@ -23,7 +23,6 @@ menu "TF-M (Trusted Firmware-M)"
             select MCUX_COMPONENT_middleware.tfm.driver_headers
             select MCUX_COMPONENT_middleware.tfm.common_headers
             select MCUX_COMPONENT_middleware.tfm.s.platform
-            select MCUX_COMPONENT_middleware.tfm.s.platform_common if (!(MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612))
             select MCUX_COMPONENT_middleware.tfm.s.platform_rw61x if (MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612)
             select MCUX_COMPONENT_middleware.tfm.s.partition_load_attest if (MCUX_COMPONENT_middleware.tfm.partition_init_attest)
             select MCUX_COMPONENT_middleware.tfm.s.partition_load_ps if (MCUX_COMPONENT_middleware.tfm.s.protected_storage)
@@ -32,9 +31,17 @@ menu "TF-M (Trusted Firmware-M)"
             bool
             select MCUX_COMPONENT_middleware.tfm.board_headers
 
-        config MCUX_COMPONENT_middleware.tfm.s.platform_common
-            bool "Platform Common"
-            depends on !(MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612)
+        config MCUX_COMPONENT_middleware.tfm.s.platform_default_crypto_keys
+            bool "Platform default crypto keys"
+            depends on MCUX_COMPONENT_middleware.tfm.s
+            default y if !(MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612)
+            default n if  (MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612)
+        
+        config MCUX_COMPONENT_middleware.tfm.s.platform_default_nv_counter
+            bool "Platform default nv counter"
+            depends on MCUX_COMPONENT_middleware.tfm.s
+            default y if !(MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612)
+            default n if  (MCUX_HW_DEVICE_RW610 || MCUX_HW_DEVICE_RW612)
 
         config MCUX_COMPONENT_middleware.tfm.s.platform_rw61x
             bool "RW61x Platform"
