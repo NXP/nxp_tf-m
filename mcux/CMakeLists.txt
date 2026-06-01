@@ -379,7 +379,13 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.enable_crypto_cipher_module)
     mcux_add_macro(
          CC "-DPSA_WANT_ALG_CBC_NO_PADDING=1\
              -DPSA_WANT_ALG_CMAC=1\
-             -DPSA_WANT_ALG_DETERMINISTIC_ECDSA=1\
+            "
+    )
+endif()
+
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.enable_deterministic_ecdsa_module)
+    mcux_add_macro(
+         CC "-DPSA_WANT_ALG_DETERMINISTIC_ECDSA=1\
              -DPSA_WANT_KEY_TYPE_ECC_KEY_PAIR=1\
             "
     )

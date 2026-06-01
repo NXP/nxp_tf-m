@@ -40,10 +40,10 @@
 
 /* Size of a Secure and of a Non-secure image */
 #if defined(MCU_SDK_REGRESSION)
-#define FLASH_S_PARTITION_SIZE              (160 * 1024)       /* S partition: 160 KB : (0x28000)  */
+#define FLASH_S_PARTITION_SIZE              (192 * 1024)       /* S partition: 192 KB : (0x30000)  */
 #define FLASH_NS_PARTITION_SIZE             (128 * 1024)       /* NS partition: 128 KB : (0x20000)  */
 #else 
-#define FLASH_S_PARTITION_SIZE              (128 * 1024)       /* S partition: 128 KB : (0x20000)  */
+#define FLASH_S_PARTITION_SIZE              (160 * 1024)       /* S partition: 160 KB : (0x28000)  */
 #define FLASH_NS_PARTITION_SIZE             (128 * 1024)       /* NS partition: 128 KB : (0x20000)  */
 #endif
 

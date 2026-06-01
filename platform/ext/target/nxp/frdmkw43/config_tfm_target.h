@@ -20,6 +20,11 @@
 #define CRYPTO_CONC_OPER_NUM                   4
 #endif
 
+/* Enable PSA Crypto Cipher module */
+#ifndef CRYPTO_CIPHER_MODULE_ENABLED
+#define CRYPTO_CIPHER_MODULE_ENABLED           1
+#endif
+
 /*
  * Heap size for the crypto backend
  * CRYPTO_ENGINE_BUF_SIZE needs to be >8KB for EC signing by attest module.
@@ -33,7 +38,7 @@
 
 /* The stack size of the Crypto Secure Partition */
 #undef CRYPTO_STACK_SIZE
-#define CRYPTO_STACK_SIZE                      0x1900
+#define CRYPTO_STACK_SIZE                      0x2000
 
 /* The maximal number of secure services that are connected or requested at the same time */
 #undef CONFIG_TFM_CONN_HANDLE_MAX_NUM

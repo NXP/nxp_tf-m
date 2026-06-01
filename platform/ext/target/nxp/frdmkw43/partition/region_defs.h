@@ -25,10 +25,10 @@
 #endif
 
 #define S_MSP_STACK_SIZE        (0x0000800)
-#define S_PSP_STACK_SIZE        (0x0000400)
+#define S_PSP_STACK_SIZE        (0x0000600)
 
-#define NS_HEAP_SIZE            (0x0000600)
-#define NS_STACK_SIZE           (0x0000400)
+#define NS_HEAP_SIZE            (0x0001000)
+#define NS_STACK_SIZE           (0x0001000)
 
 /* eFlash MPC granularity is 4 KB on Musca_B1. Alignment
  * of partitions is defined in accordance with this constraint.

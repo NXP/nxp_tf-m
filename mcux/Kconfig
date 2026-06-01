@@ -204,6 +204,10 @@ menu "TF-M (Trusted Firmware-M)"
                 bool "Enable Crypto Cipher Module"
                 default y if (MCUX_COMPONENT_middleware.tfm.profile_medium && MCUX_COMPONENT_middleware.tfm.s)
 
+            config MCUX_COMPONENT_middleware.tfm.enable_deterministic_ecdsa_module
+                bool "Enable Deterministic ECDSA Module"
+                default MCUX_COMPONENT_middleware.tfm.enable_crypto_cipher_module
+
         endmenu
 
         menu "Additional SHA Alg with Medium profile"
