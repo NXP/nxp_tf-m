@@ -277,6 +277,10 @@
 #define S_RAM_ALIAS_BASE    (0x30000000)    /* Shared RAM via the CM33 data bus (secure access). */
 #define NS_RAM_ALIAS_BASE   (0x20000000)    /* Shared RAM via the CM33 data bus (non-secure access). */
 
+/* Defining PSRAM alais base 
+   NS_ROM_ALIAS_BASE + FLASH_TOTAL_SIZE */
+#define NS_PSRAM_ALIAS_BASE (NS_ROM_ALIAS_BASE + FLASH_TOTAL_SIZE)
+
 #define TOTAL_ROM_SIZE      (FLASH_TOTAL_SIZE)
 #define TOTAL_RAM_SIZE      (RAM_TOTAL_SIZE)
 
