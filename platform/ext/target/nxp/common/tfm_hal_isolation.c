@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2020-2024, Arm Limited. All rights reserved.
- * Copyright 2020-2025 NXP
+ * Copyright 2020-2026 NXP
  * Copyright (c) 2024 Cypress Semiconductor Corporation (an Infineon
  * company) or an affiliate of Cypress Semiconductor Corporation. All rights
  * reserved.
@@ -658,6 +658,14 @@ __attribute__((weak)) void sau_and_idau_cfg(void)
     SAU->RBAR = (memory_regions.el2go_cmpa_region_base & SAU_RBAR_BADDR_Msk);
     SAU->RLAR = (memory_regions.el2go_cmpa_region_limit & SAU_RLAR_LADDR_Msk)
 	           | SAU_RLAR_ENABLE_Msk;
+#else
+/* SAU region ID can be re-used here*/
+#ifdef NS_PSRAM_START
+    /* Configures Non secure psram start region */
+    SECURE_WRITE_REGISTER(&(SAU->RNR), 7U);
+    SECURE_WRITE_REGISTER(&(SAU->RBAR), (NS_PSRAM_START & SAU_RBAR_BADDR_Msk));
+    SECURE_WRITE_REGISTER(&(SAU->RLAR), ((NS_PSRAM_LIMIT & SAU_RLAR_LADDR_Msk) | SAU_RLAR_ENABLE_Msk));
+#endif
 #endif /* TFM_EL2GO_CMPA_REGION */
 
     /* Ensure the write is completed and flush pipeline */

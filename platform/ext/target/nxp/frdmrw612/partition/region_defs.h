@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2017-2023 Arm Limited. All rights reserved.
- * Copyright 2024 NXP.
+ * Copyright 2024, 2026 NXP.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,6 +92,9 @@ Offset      Width (Bytes) Field Description
 #define S_RAM_ALIAS(x)      (S_RAM_ALIAS_BASE + (x))
 #define NS_RAM_ALIAS(x)     (NS_RAM_ALIAS_BASE + (x))
 
+/* Define the PSRAM NS alias*/
+#define NS_PSRAM_ALIAS(x)     (NS_PSRAM_ALIAS_BASE + (x))
+
 /* Secure regions */
 #define S_IMAGE_PRIMARY_AREA_OFFSET     (S_IMAGE_PRIMARY_PARTITION_OFFSET + BL2_HEADER_SIZE)
 #define S_CODE_START                    (S_ROM_ALIAS(S_IMAGE_PRIMARY_AREA_OFFSET))
@@ -116,6 +119,11 @@ and assign bit more to non secure region. 1/6th size is reserved for secure inst
 #define NS_DATA_START                   (NS_RAM_ALIAS(S_DATA_OFFSET + S_DATA_SIZE))
 #define NS_DATA_SIZE                    (TOTAL_RAM_SIZE - S_DATA_SIZE - S_DATA_OFFSET)
 #define NS_DATA_LIMIT                   (NS_DATA_START + NS_DATA_SIZE - 1)
+
+#define NS_PSRAM_OFFSET                  (0x00)
+#define NS_PSRAM_START                   (NS_PSRAM_ALIAS(NS_PSRAM_OFFSET))
+#define NS_PSRAM_SIZE                    (0x00800000)
+#define NS_PSRAM_LIMIT                   (NS_PSRAM_START + NS_PSRAM_SIZE - 1)
 
 /* FlexSPI. Each sub-region can be assigned individual security tier by programing corresponding registers
  * in secure AHB controller.

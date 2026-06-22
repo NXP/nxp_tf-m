@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2021 Arm Limited. All rights reserved.
- * Copyright 2024 NXP.
+ * Copyright 2024, 2026 NXP.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -172,6 +172,10 @@
 /* Use SRAM memory to store RW data */
 #define S_RAM_ALIAS_BASE    (0x30000000)    /* Shared RAM via the CM33 data bus (secure access). */
 #define NS_RAM_ALIAS_BASE   (0x20000000)    /* Shared RAM via the CM33 data bus (non-secure access). */
+
+/* Defining PSRAM alais base 
+   NS_ROM_ALIAS_BASE + FLASH_TOTAL_SIZE */
+#define NS_PSRAM_ALIAS_BASE (NS_ROM_ALIAS_BASE + FLASH_TOTAL_SIZE)
 
 #define TOTAL_ROM_SIZE      (FLASH_TOTAL_SIZE)
 #define TOTAL_RAM_SIZE      (RAM_TOTAL_SIZE)
