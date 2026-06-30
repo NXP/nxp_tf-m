@@ -573,7 +573,7 @@ int32_t ppc_init_cfg(void)
     
     /* Security access rules for APB Bridge 0 peripherals. */
     AHBSC0->AHB_PERIPHERAL0_SLAVE_RULE1 =
-        (0x00000000U) |            
+        (0x33333333U) |            
         AHBSC0_AHB_PERIPHERAL0_SLAVE_RULE1_LP_FLEXCOMM0(0x00)  |  
         AHBSC0_AHB_PERIPHERAL0_SLAVE_RULE1_LP_FLEXCOMM1(0x00)  |  
         AHBSC0_AHB_PERIPHERAL0_SLAVE_RULE1_LP_FLEXCOMM2(0x00)  | 

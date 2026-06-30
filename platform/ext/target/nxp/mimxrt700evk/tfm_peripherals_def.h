@@ -23,12 +23,14 @@ extern "C" {
 #define CTIMER                  (CTIMER2)                       /* Timer 2 */
 #define CTIMER_CLK_FREQ         (CLOCK_GetCTimerClkFreq(2U))
 #define CTIMER_CLK_ATTACH       (kFRO0_DIV1_to_CTIMER2)         /* Use 16 MHz clock */
+#define CTIMER_CLK_DIVIDE       (kCLOCK_DivCtimer2Clk)
 #define CTIMER_IRQ_HANDLER      (CTIMER2_IRQHandler)
 #define TFM_TIMER0_IRQ          (CTIMER2_IRQn)                  /* (tfm_core_irq_signal_data_t->irq_line) */
 
 #define CTIMER_NS               (CTIMER3)                       /* Timer 3 */
 #define CTIMER_NS_CLK_FREQ      (CLOCK_GetCTimerClkFreq(3U))
 #define CTIMER_NS_CLK_ATTACH    (kFRO0_DIV1_to_CTIMER3)         /* Use 16 MHz clock */
+#define CTIMER_NS_CLK_DIVIDE    (kCLOCK_DivCtimer3Clk)
 #define CTIMER_NS_IRQ_HANDLER   (CTIMER3_IRQHandler)
 #define TFM_TIMER1_IRQ          (CTIMER3_IRQn)                  /* use by tfm_core_test_irq() */
 

@@ -62,7 +62,7 @@
 #define IMAGE_S_CODE_SIZE   (FLASH_S_PARTITION_SIZE - BL2_HEADER_SIZE - BL2_TRAILER_SIZE)
 #define IMAGE_NS_CODE_SIZE  (FLASH_NS_PARTITION_SIZE - BL2_HEADER_SIZE - BL2_TRAILER_SIZE)
 
-#define CMSE_VENEER_REGION_SIZE     (0x340)
+#define CMSE_VENEER_REGION_SIZE     (0x368)
 
 /* Alias definitions for secure and non-secure areas*/
 #define S_ROM_ALIAS(x)      (S_ROM_ALIAS_BASE + (x))
@@ -84,7 +84,7 @@
 #define S_DATA_LIMIT                    (S_DATA_START + S_DATA_SIZE - 1)
 
 /* Size of vector table: 144 interrupt handlers(see g_pfnVectors definition) + 4 bytes MPS initial value ((144*4 + 4) = 580 --> 0x244) */
-#define S_CODE_VECTOR_TABLE_SIZE        (0x244)
+#define S_CODE_VECTOR_TABLE_SIZE        (0x300)
 
 /* Non-secure regions */
 #define NS_IMAGE_PRIMARY_AREA_OFFSET    (NS_IMAGE_PRIMARY_PARTITION_OFFSET + BL2_HEADER_SIZE)
