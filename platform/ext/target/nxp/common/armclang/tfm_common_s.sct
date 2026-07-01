@@ -46,6 +46,8 @@ LR_CODE S_CODE_START S_CODE_SIZE {
 #ifdef CONFIG_TFM_USE_TRUSTZONE
     ER_VECTORS_FILL +0 EMPTY (S_CODE_VECTOR_TABLE_SIZE - ImageLength(ER_VECTORS)) {
     }
+// NXP
+#if !defined(VENEER_PLACE_IN_SRAM) || (VENEER_PLACE_IN_SRAM == 0)
     /*
      * Place the CMSE Veneers (containing the SG instruction) in a separate
      * 32 bytes aligned region so that the SAU can be programmed to
@@ -61,8 +63,18 @@ LR_CODE S_CODE_START S_CODE_SIZE {
     VENEER_ALIGN +0 ALIGN TFM_LINKER_VENEERS_ALIGNMENT EMPTY 0x0 {
     }
 #endif
-
+#endif
+//NXP
+#if defined(CONFIG_TFM_USE_TRUSTZONE) && defined(VENEER_PLACE_IN_SRAM) && (VENEER_PLACE_IN_SRAM == 1)
+    /*
+     * ER_VENEER is placed in the NSC execution region at NSC_VENEER_START.
+     * ER_VECTORS_FILL is EMPTY and does not consume load space, so force
+     * ER_TFM_CODE to be a root region at its execution address.
+     */
+    ER_TFM_CODE +0 FIXED {
+#else
     ER_TFM_CODE +0 {
+#endif
         *startup*(.text*)
         *libplatform_s* (.text*, .rodata*)
         *libtfm_spm* (+RO)
@@ -170,24 +182,66 @@ LR_CODE S_CODE_START S_CODE_SIZE {
     }
 
 #if defined(S_RAM_CODE_START)
-    /* Flash drivers code that gets copied from Flash */
-    ER_CODE_SRAM S_RAM_CODE_START ALIGN 4 {
+
+#if defined(VENEER_PLACE_IN_SRAM) && (VENEER_PLACE_IN_SRAM == 1)
+
+    /*
+     * RT700 workaround:
+     * Keep ER_CODE_SRAM limited to RAM_VENEER_OFFSET for consistency with
+     * IAR/armgcc layouts. CMSE/NSC veneers themselves are placed at
+     * NSC_VENEER_START, i.e. 0x1000FC00.
+     */
+    ER_CODE_SRAM S_RAM_CODE_START ALIGN 4 RAM_VENEER_OFFSET {
         *libflash_drivers* (+RO)
         * (.ramfunc)
     }
 
+#else
+
+    /*
+     * Default behavior:
+     * Entire S_RAM_CODE_SIZE is available for RAM-executed code.
+     */
+    ER_CODE_SRAM S_RAM_CODE_START ALIGN 4 S_RAM_CODE_SIZE {
+        *libflash_drivers* (+RO)
+        * (.ramfunc)
+    }
+
+#endif
     /* This empty, zero long execution region is here to mark the limit
      * address of the last execution region that is allocated in CODE_SRAM.
      */
     ER_CODE_SRAM_WATERMARK +0 EMPTY 0x0 {
     }
 
-    /* Make sure that the sections allocated in the CODE_SRAM does not exceed
-     * the size of the SRAM available.
+#if defined(VENEER_PLACE_IN_SRAM) && (VENEER_PLACE_IN_SRAM == 1)
+    ScatterAssert(ImageLimit(ER_CODE_SRAM_WATERMARK) <=
+                  S_RAM_CODE_START + RAM_VENEER_OFFSET)
+
+    /*
+     * Match IAR/armgcc model:
+     * CMSE/NSC veneers execute from 0x1000FC00.
      */
+    ER_VENEER NSC_VENEER_START ALIGN TFM_LINKER_VENEERS_ALIGNMENT NSC_VENEER_SLOT_SIZE {
+        *(Veneer$$CMSE)
+    }
+
+    VENEER_ALIGN +0 ALIGN TFM_LINKER_VENEERS_ALIGNMENT EMPTY 0x0 {
+    }
+
+    ER_VENEER_WATERMARK +0 EMPTY 0x0 {
+    }
+
+    ScatterAssert(ImageBase(ER_VENEER) == NSC_VENEER_START)
+    ScatterAssert(ImageLimit(ER_VENEER_WATERMARK) <=
+                  NSC_VENEER_START + NSC_VENEER_SLOT_SIZE)
+
+#else
+
     ScatterAssert(ImageLimit(ER_CODE_SRAM_WATERMARK) <=
                   S_RAM_CODE_START + S_RAM_CODE_SIZE)
 #endif
+#endif /* S_RAM_CODE_START */
 
     PT_RO_END +0 ALIGN TFM_LINKER_PT_RO_ALIGNMENT EMPTY 0x0 {
         /* Position tag */

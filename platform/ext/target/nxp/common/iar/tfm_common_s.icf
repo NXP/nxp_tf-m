@@ -143,19 +143,77 @@ define block TFM_APP_CODE_START with alignment = TFM_LINKER_APP_ROT_LINKER_CODE_
      */
 define block TFM_APP_CODE_END with alignment = TFM_LINKER_APP_ROT_LINKER_CODE_ALIGNMENT, size = 0 { };
 
+
 #if defined(S_RAM_CODE_START)
-    /* Flash drivers code that gets copied from Flash */
+
+    /* Flash drivers / RAM functions copied from load image to secure RAM. */
     initialize by copy {
         ro object *libflash_drivers*,
     };
-
+#if defined(VENEER_PLACE_IN_SRAM) && (VENEER_PLACE_IN_SRAM == 1)
+    /*
+     * RT700 workaround:
+     * Reserve the top NSC_VENEER_SLOT_SIZE bytes of S_RAM_CODE_SIZE
+     * for CMSE veneers.
+     *
+     * ER_CODE_SRAM physical range:
+     *   S_RAM_CODE_START .. S_RAM_CODE_START + RAM_VENEER_OFFSET - 1
+     *
+     * CMSE veneer physical alias:
+     *   S_RAM_VENEER_START
+     *
+     * CMSE veneer NS-callable alias:
+     *   NS_RAM_VENEER_START
+     */
+    define block ER_CODE_SRAM with fixed order,
+                               alignment = 4,
+                               maximum size = RAM_VENEER_OFFSET {
+        rw section .text,
+        rw section .rodata,
+        rw section .textrw,               /* __ramfunc */
+    };
+#else
+    /*
+     * Default behavior: whole S_RAM_CODE_SIZE is available for RAM code.
+     */
     define block ER_CODE_SRAM  with fixed order, alignment = 4, maximum size = S_RAM_CODE_SIZE {
         rw section .text,
         rw section .rodata,
         rw section .textrw,               /* __ramfunc */
     };
+#endif
 
-place at address S_RAM_CODE_START { block ER_CODE_SRAM };
+    place at address S_RAM_CODE_START { block ER_CODE_SRAM };
+
+#if defined(CONFIG_TFM_USE_TRUSTZONE) && defined(VENEER_PLACE_IN_SRAM) && (VENEER_PLACE_IN_SRAM == 1)
+    /*
+     * Match the working TrustZone example:
+     * CMSE/NSC veneers are execution sections at 0x1000FC00.
+     *
+     * They should appear in ELF as:
+     *   SHT_NOBITS 0x1000FC00 Write|Alloc|Exec
+     *
+     * and should NOT create a RAM PT_LOAD.
+     */
+    define block ER_NSC_VENEER_SLOT with fixed order,
+                                      alignment = TFM_LINKER_VENEERS_ALIGNMENT,
+                                      maximum size = NSC_VENEER_SLOT_SIZE {
+        block ER_VENEER,
+        block VENEER_ALIGN,
+    };
+    initialize by copy {
+        section Veneer$$CMSE
+    };
+    keep {
+        section Veneer$$CMSE,
+        block ER_VENEER,
+        block VENEER_ALIGN,
+        block ER_NSC_VENEER_SLOT,
+    };
+    place at address NSC_VENEER_START {
+        block ER_NSC_VENEER_SLOT
+    };
+#endif
 #endif
 
     /**** Base address of secure data area */
@@ -332,8 +390,20 @@ define block SRAM_WATERMARK with size = 0 { };
 define block LR_CODE with fixed order, maximum size = S_CODE_SIZE {
        block ER_VECTORS,
 #ifdef CONFIG_TFM_USE_TRUSTZONE
+#if !defined(VENEER_PLACE_IN_SRAM) || (VENEER_PLACE_IN_SRAM == 0)
+       /*
+        * Default behavior:
+        * CMSE veneers are placed in secure flash.
+        */
        block ER_VENEER,
        block VENEER_ALIGN,
+#else
+       /*
+        * ER_VENEER is intentionally NOT placed in LR_CODE when VENEER_PLACE_IN_SRAM=1.
+        * For FRDMIMXRT700, CMSE veneers are placed at NS_RAM_VENEER_START so that
+        * Non-secure callers branch through the non-secure RAM alias.
+        */
+#endif
 #endif
        block PT_RO_START,
        block ER_TFM_CODE,

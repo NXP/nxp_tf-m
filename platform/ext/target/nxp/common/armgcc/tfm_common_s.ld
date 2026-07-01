@@ -38,8 +38,14 @@ MEMORY
   FLASH    (rx)  : ORIGIN = S_CODE_START, LENGTH = S_CODE_SIZE
   RAM      (rw)  : ORIGIN = S_DATA_START, LENGTH = S_DATA_SIZE
 #if defined(S_RAM_CODE_START)
-  CODE_RAM (rwx) : ORIGIN = S_RAM_CODE_START, LENGTH = S_RAM_CODE_SIZE
+#if defined(VENEER_PLACE_IN_SRAM) && (VENEER_PLACE_IN_SRAM == 1)
+  CODE_RAM     (rwx) : ORIGIN = S_RAM_CODE_START,    LENGTH = RAM_VENEER_OFFSET
+  CODE_RAM_NSC (rwx) : ORIGIN = NSC_VENEER_START,    LENGTH = NSC_VENEER_SLOT_SIZE
+#else
+  CODE_RAM     (rwx) : ORIGIN = S_RAM_CODE_START,    LENGTH = S_RAM_CODE_SIZE
 #endif
+#endif
+
 #ifdef TFM_NCACHE_REGION_ENABLE
   m_ncache (rw) : ORIGIN = 0x30200000, LENGTH = 0x00200000 //NXP
 #endif
@@ -52,6 +58,40 @@ MEMORY
 #ifndef TFM_LINKER_VENEERS_END
 #define TFM_LINKER_VENEERS_END ALIGN(TFM_LINKER_VENEERS_ALIGNMENT)
 #endif
+
+#if defined(VENEER_PLACE_IN_SRAM) && (VENEER_PLACE_IN_SRAM == 1)
+
+#define VENEERS() \
+/* \
+ * RT700 workaround: place CMSE veneers at the non-secure RAM alias. \
+ * \
+ * GCC/ld note: .gnu.sgstubs branches to the real cmse_nonsecure_entry \
+ * function body. Therefore the function body from psa_api_veneers_v80m.o \
+ * must be placed close to .gnu.sgstubs, otherwise ld reports: \
+ * "CMSE stub too far from destination". \
+ */ \
+__veneer_flash_lma = .; \
+.gnu.sgstubs NSC_VENEER_START : AT(__veneer_flash_lma) \
+{ \
+    . = ALIGN(TFM_LINKER_VENEERS_ALIGNMENT); \
+    *(.gnu.sgstubs*) \
+    . = ALIGN(4); \
+    KEEP(*psa_api_veneers_v80m.o(.text*)) \
+    KEEP(*psa_api_veneers_v80m.o(.rodata*)) \
+    KEEP(*psa_api_veneers_v80m.*(.text*)) \
+    KEEP(*psa_api_veneers_v80m.*(.rodata*)) \
+    . = ALIGN(TFM_LINKER_VENEERS_ALIGNMENT); \
+} > CODE_RAM_NSC \
+/* Marker used by TF-M SAU/MPU configuration. */ \
+.sgstubs_end (NOLOAD) : \
+{ \
+    . = ALIGN(TFM_LINKER_VENEERS_ALIGNMENT); \
+} > CODE_RAM_NSC \
+/* Restore FLASH location counter after veneer load image. */ \
+. = __veneer_flash_lma + SIZEOF(.gnu.sgstubs); \
+. = ALIGN(4);
+
+#else
 
 #define VENEERS() \
 /* \
@@ -69,6 +109,8 @@ MEMORY
 .sgstubs_end : TFM_LINKER_VENEERS_END \
 { \
 } > FLASH
+
+#endif
 
 __msp_stack_size__ = S_MSP_STACK_SIZE;
 
@@ -219,7 +261,7 @@ SECTIONS
     Image$$TFM_APP_CODE_END$$Base = .;
 
 #if defined(S_RAM_CODE_START)
-    /* Flash drivers code that gets copied from Flash */
+    /* Flash/RAM code copied from flash to secure RAM. */
     .ER_CODE_SRAM ALIGN(S_RAM_CODE_START, 4) :
     {
         *libflash_drivers*:(SORT_BY_ALIGNMENT(.text*))
@@ -229,6 +271,11 @@ SECTIONS
     } > CODE_RAM AT > FLASH
 
     ASSERT(S_RAM_CODE_START % 4 == 0, "S_RAM_CODE_START must be divisible by 4")
+
+#if defined(VENEER_PLACE_IN_SRAM) && (VENEER_PLACE_IN_SRAM == 1)
+    ASSERT(SIZEOF(.ER_CODE_SRAM) <= RAM_VENEER_OFFSET,
+           "ER_CODE_SRAM overlaps reserved CMSE veneer slot")
+#endif
 
     Image$$ER_CODE_SRAM$$RO$$Base = ADDR(.ER_CODE_SRAM);
     Image$$ER_CODE_SRAM$$RO$$Limit = ADDR(.ER_CODE_SRAM) + SIZEOF(.ER_CODE_SRAM);
@@ -291,10 +338,16 @@ SECTIONS
         LONG (ADDR(.TFM_APP_ROT_LINKER_DATA))
         LONG (SIZEOF(.TFM_APP_ROT_LINKER_DATA) / 4)
 
-#if defined (S_RAM_CODE_START)
+#if defined(S_RAM_CODE_START)
         LONG (LOADADDR(.ER_CODE_SRAM))
         LONG (ADDR(.ER_CODE_SRAM))
         LONG (SIZEOF(.ER_CODE_SRAM) / 4)
+#endif
+
+#if defined(CONFIG_TFM_USE_TRUSTZONE) && defined(VENEER_PLACE_IN_SRAM) && (VENEER_PLACE_IN_SRAM == 1)
+        LONG (LOADADDR(.gnu.sgstubs))
+        LONG (ADDR(.gnu.sgstubs))
+        LONG (SIZEOF(.gnu.sgstubs) / 4)
 #endif
         __copy_table_end__ = .;
 
@@ -682,6 +735,13 @@ SECTIONS
 
 #if defined(TFM_LINKER_VENEERS_SIZE)
     ASSERT ((Image$$VENEER_ALIGN$$Limit - Image$$ER_VENEER$$Base) <= TFM_LINKER_VENEERS_SIZE, "Veneer region overflowed")
+#endif
+
+#if defined(VENEER_PLACE_IN_SRAM) && (VENEER_PLACE_IN_SRAM == 1)
+    ASSERT (Image$$ER_VENEER$$Base == NSC_VENEER_START,
+            "CMSE veneer base is not at NSC_VENEER_START")
+    ASSERT ((Image$$VENEER_ALIGN$$Limit - Image$$ER_VENEER$$Base) <= NSC_VENEER_SLOT_SIZE,
+            "CMSE veneer region exceeds NSC veneer slot")
 #endif
 #endif
 
