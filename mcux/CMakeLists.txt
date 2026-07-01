@@ -594,10 +594,6 @@ endif()
 
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.flash_rt700)
-    mcux_add_macro(
-         CC "-DUSE_XSPI1\
-           "
-    )
     mcux_add_source(
         SOURCES 
         tf-m/platform/ext/target/nxp/common/CMSIS_Driver/Driver_Flash_rt700.c

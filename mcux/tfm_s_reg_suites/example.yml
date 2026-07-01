@@ -1,5 +1,5 @@
 #
-# Copyright 2025 NXP
+# Copyright 2025-2026 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 # yaml-language-server: $schema=../../scripts/data_schema/example_description_schema.json
@@ -45,6 +45,13 @@ tfm_s_reg_suites:
     mcxw23evk: []
     frdmmcxl255@cm33: []
     mimxrt700evk@cm33_core0:
+    - -armgcc@flash_debug
+    - -armgcc@flash_release
+    - -iar@flash_debug
+    - -iar@flash_release
+    - -mdk@flash_debug
+    - -mdk@flash_release
+    frdmimxrt700@cm33_core0:
     - -armgcc@flash_debug
     - -armgcc@flash_release
     - -iar@flash_debug
