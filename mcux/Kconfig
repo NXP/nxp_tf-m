@@ -190,6 +190,16 @@ menu "TF-M (Trusted Firmware-M)"
 
         endmenu
 
+        menu "Platform IOCTL Services"
+            config MCUX_COMPONENT_middleware.tfm.s.romapi
+                bool "S ROMAPI"
+                select MCUX_COMPONENT_driver.romapi
+
+            config MCUX_COMPONENT_middleware.tfm.ns.romapi
+                bool "NS ROMAPI"
+                select MCUX_COMPONENT_driver.romapi
+        endmenu
+
         menu "Serial Comm Drivers"
             config MCUX_COMPONENT_middleware.tfm.lpuart
                 bool "LPUART"

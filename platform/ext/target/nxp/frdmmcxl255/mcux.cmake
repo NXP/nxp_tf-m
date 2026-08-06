@@ -1,4 +1,4 @@
-# Copyright 2025 NXP
+# Copyright 2025-2026 NXP
 # SPDX-License-Identifier: BSD-3-Clause
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.board)
@@ -10,10 +10,26 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.board)
         BOARDS frdmmcxl255
     )
 endif()
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.romapi)
+    mcux_add_source(
+        SOURCES 
+        ./frdmmcxl255/services/src/tfm_flash_ioctl_hal.c
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/tf-m/platform/ext/target/nxp
+        BOARDS frdmmcxl255
+    )
+endif()
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.board)
     mcux_add_source(
         SOURCES 
         ./frdmmcxl255/Device/Source/startup_${board}.c
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/tf-m/platform/ext/target/nxp
+        BOARDS frdmmcxl255
+    )
+endif()
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.romapi)
+    mcux_add_source(
+        SOURCES 
+        ./frdmmcxl255/services/src/tfm_ioctl_ns_api.c
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/tf-m/platform/ext/target/nxp
         BOARDS frdmmcxl255
     )
@@ -42,6 +58,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.board_headers)
         ./frdmmcxl255/
         ./frdmmcxl255/partition 
         ./frdmmcxl255/Device/Include/
+        ./frdmmcxl255/services/include
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/tf-m/platform/ext/target/nxp
         BOARDS frdmmcxl255
     )

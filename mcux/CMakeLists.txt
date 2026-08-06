@@ -629,6 +629,21 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.flash_dummy)
     )
 endif()
 
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.romapi)
+    mcux_add_macro(
+         CC "-DNXP_NS_STORAGE\
+           "
+    )
+endif()
+
+if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.romapi)
+    mcux_add_macro(
+         CC "-DNXP_NS_STORAGE\
+             -DMCUX_ROMAPI_TFM_INTERFACE\
+           "
+    )
+endif()
+
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.lpuart)
     mcux_add_macro(
          CC "-DTFM_LPUART_FEATRUE\

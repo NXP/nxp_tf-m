@@ -31,6 +31,14 @@
 
 extern const struct memory_region_limits memory_regions;
 
+/*  Due to limited SAU regions, a compile error shall be risen, if 
+    `TFM_EL2GO_DATA_IMPORT_REGION` & `NXP_NS_STORAGE ` are enabled,
+    since they share the same RNR! */
+#if defined(TFM_EL2GO_DATA_IMPORT_REGION) && defined(NXP_NS_STORAGE)
+#error "TFM_EL2GO_DATA_IMPORT_REGION and NXP_NS_STORAGE cannot be enabled simultaneously due to shared SAU region"
+#endif
+
+
 /* Define Peripherals NS address range for the platform */
 #define PERIPHERALS_BASE_NS_START (0x40000000)
 #define PERIPHERALS_BASE_NS_END   (0x4FFFFFFF)
@@ -651,6 +659,16 @@ __attribute__((weak)) void sau_and_idau_cfg(void)
     SAU->RLAR = (memory_regions.el2go_data_import_region_limit & SAU_RLAR_LADDR_Msk)
 	           | SAU_RLAR_ENABLE_Msk;
 #endif /* TFM_EL2GO_DATA_IMPORT_REGION */
+
+#ifdef NXP_NS_STORAGE
+    SECURE_WRITE_REGISTER(&(SAU->RNR), 6U);
+    SAU->RBAR = ((NS_ROM_ALIAS_BASE + NXP_FLASH_NS_STORAGE_OFFSET)
+                 & SAU_RBAR_BADDR_Msk);
+    SAU->RLAR = ((NS_ROM_ALIAS_BASE + NXP_FLASH_NS_STORAGE_OFFSET
+                  + NXP_FLASH_NS_STORAGE_SIZE - 1U)
+                 & SAU_RLAR_LADDR_Msk)
+                | SAU_RLAR_ENABLE_Msk;
+#endif /* NXP_NS_STORAGE */
 
 #ifdef TFM_EL2GO_CMPA_REGION
     /* EL2GO data import region */
