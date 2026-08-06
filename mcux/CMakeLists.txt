@@ -634,6 +634,12 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.romapi)
          CC "-DNXP_NS_STORAGE\
            "
     )
+    mcux_add_source(
+        SOURCES
+        tf-m/platform/ext/target/nxp/common/services/src/tfm_flash_ioctl_hal.c
+        tf-m/platform/ext/target/nxp/common/services/include/tfm_flash_ioctl_hal.h
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
+    )
 endif()
 
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.romapi)
@@ -641,6 +647,14 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.romapi)
          CC "-DNXP_NS_STORAGE\
              -DMCUX_ROMAPI_TFM_INTERFACE\
            "
+    )
+    mcux_add_source(
+        SOURCES
+        tf-m/platform/ext/target/nxp/common/services/src/tfm_ioctl_ns_api.c
+        tf-m/platform/ext/target/nxp/common/services/include/fsl_flash_tfm_ns.h
+        tf-m/platform/ext/target/nxp/common/services/include/fsl_romapi_tfm_ns.h
+        tf-m/platform/ext/target/nxp/common/services/include/tfm_ioctl_api.h
+        BASE_PATH ${SdkRootDirPath}/middleware/tfm/
     )
 endif()
 

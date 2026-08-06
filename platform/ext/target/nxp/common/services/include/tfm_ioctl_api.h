@@ -21,15 +21,18 @@ extern "C" {
  */
 enum tfm_platform_ioctl_nxp_request_t {
     TFM_PLATFORM_IOCTL_FLASH_ERASE_SECTOR        = 1, /* erase one or more 8 KB sectors */
-    TFM_PLATFORM_IOCTL_FLASH_PROGRAM             = 2, /* program data (16-byte phrase aligned) */
-    TFM_PLATFORM_IOCTL_FLASH_VERIFY_PROGRAM      = 3, /* verify programmed data */
-    TFM_PLATFORM_IOCTL_FLASH_VERIFY_ERASE_PHRASE = 4, /* verify 16-byte phrases are erased */
-    TFM_PLATFORM_IOCTL_FLASH_VERIFY_ERASE_PAGE   = 5, /* verify 128-byte pages are erased */
-    TFM_PLATFORM_IOCTL_FLASH_VERIFY_ERASE_SECTOR = 6, /* verify 8 KB sectors are erased */
-    TFM_PLATFORM_IOCTL_FLASH_GET_PROPERTY        = 7, /* read a flash property value */
-    TFM_PLATFORM_IOCTL_FLASH_READ                = 8, /* read flash bytes into NS buffer */
-    TFM_PLATFORM_IOCTL_ROMAPI_GET_VERSION        = 9, /* read ROM API version word */
-    TFM_PLATFORM_IOCTL_ROMAPI_RUN_BOOTLOADER     = 10, /* invoke ROM bootloader */
+    TFM_PLATFORM_IOCTL_FLASH_PROGRAM_PHRASE      = 2, /* program data (16-byte phrase aligned) */
+    TFM_PLATFORM_IOCTL_FLASH_PROGRAM_PAGE        = 3, /* program data (128-byte page aligned) */
+    TFM_PLATFORM_IOCTL_FLASH_VERIFY_PROGRAM      = 4, /* verify programmed data */
+    TFM_PLATFORM_IOCTL_FLASH_VERIFY_ERASE_PHRASE = 5, /* verify 16-byte phrases are erased */
+    TFM_PLATFORM_IOCTL_FLASH_VERIFY_ERASE_PAGE   = 6, /* verify 128-byte pages are erased */
+    TFM_PLATFORM_IOCTL_FLASH_VERIFY_ERASE_SECTOR = 7, /* verify 8 KB sectors are erased */
+    TFM_PLATFORM_IOCTL_FLASH_GET_PROPERTY        = 8,  /* read a flash property value */
+    TFM_PLATFORM_IOCTL_FLASH_READ                = 9,  /* read flash bytes into NS buffer */
+    TFM_PLATFORM_IOCTL_FLASH_VERIFY_ERASE_ALL    = 10, /* verify entire flash array is erased (MCXW only) */
+    TFM_PLATFORM_IOCTL_FLASH_VERIFY_ERASE_BLOCK  = 11, /* verify one flash block is erased (MCXW only) */
+    TFM_PLATFORM_IOCTL_ROMAPI_GET_VERSION         = 12, /* read ROM API version word via FLASH_API->version.version */
+    TFM_PLATFORM_IOCTL_ROMAPI_RUN_BOOTLOADER      = 13, /* invoke ROM bootloader with a caller-supplied option word */
 };
 
 /* -----------------------------------------------------------------------
@@ -47,16 +50,32 @@ struct tfm_flash_erase_args_t {
 };
 
 /* -----------------------------------------------------------------------
- * Program
+ * Program (phrase)
  * -------------------------------------------------------------------- */
 
 /*
- * Input argument struct for TFM_PLATFORM_IOCTL_FLASH_PROGRAM.
+ * Input argument struct for TFM_PLATFORM_IOCTL_FLASH_PROGRAM_PHRASE.
  * addr  - flash offset (NS alias), must be phrase-aligned (16 bytes).
  * data  - pointer to source data buffer in NS RAM.
  * size  - number of bytes to write, must be phrase-aligned (16 bytes).
  */
-struct tfm_flash_program_args_t {
+struct tfm_flash_program_phrase_args_t {
+    uint32_t       addr;
+    const uint8_t *data;
+    uint32_t       size;
+};
+
+/* -----------------------------------------------------------------------
+ * Program (page)
+ * -------------------------------------------------------------------- */
+
+/*
+ * Input argument struct for TFM_PLATFORM_IOCTL_FLASH_PROGRAM_PAGE.
+ * addr  - flash offset (NS alias), must be page-aligned (128 bytes).
+ * data  - pointer to source data buffer in NS RAM.
+ * size  - number of bytes to write, must be page-aligned (128 bytes).
+ */
+struct tfm_flash_program_page_args_t {
     uint32_t       addr;
     const uint8_t *data;
     uint32_t       size;
@@ -145,11 +164,60 @@ struct tfm_flash_read_args_t {
 };
 
 /*
- * Output struct shared by both simple status operations.
+ * Output struct shared by simple status operations.
  * result == 0  on success, negative IAP status code on failure.
  */
 struct tfm_flash_op_out_t {
     int32_t result;
+};
+
+/* -----------------------------------------------------------------------
+ * Verify erase all / erase block  (MCXW/KW43 only)
+ * -------------------------------------------------------------------- */
+
+/*
+ * TFM_PLATFORM_IOCTL_FLASH_VERIFY_ERASE_ALL has no input args.
+ * Use tfm_flash_op_out_t as the output struct.
+ */
+
+/*
+ * Input argument struct for TFM_PLATFORM_IOCTL_FLASH_VERIFY_ERASE_BLOCK.
+ * blockaddr - start address of the flash block to verify (block-aligned).
+ */
+struct tfm_flash_verify_erase_block_args_t {
+    uint32_t blockaddr;
+};
+
+/* -----------------------------------------------------------------------
+ * ROM API get version
+ * -------------------------------------------------------------------- */
+
+/*
+ * TFM_PLATFORM_IOCTL_ROMAPI_GET_VERSION has no input args.
+ * Output: tfm_romapi_get_version_out_t.
+ */
+
+/*
+ * Output struct for TFM_PLATFORM_IOCTL_ROMAPI_GET_VERSION.
+ * result  - 0 on success, negative on error.
+ * version - raw ROM API version word from FLASH_API->version.version.
+ */
+struct tfm_romapi_get_version_out_t {
+    int32_t  result;
+    uint32_t version;
+};
+
+/* -----------------------------------------------------------------------
+ * ROM API run bootloader
+ * -------------------------------------------------------------------- */
+
+/*
+ * Input argument struct for TFM_PLATFORM_IOCTL_ROMAPI_RUN_BOOTLOADER.
+ * option - user_app_boot_invoke_option_t.option.U value passed to the
+ *          ROM run_bootloader entry point.
+ */
+struct tfm_romapi_run_bootloader_args_t {
+    uint32_t option;
 };
 
 /* -----------------------------------------------------------------------
@@ -170,7 +238,7 @@ enum tfm_platform_err_t tfm_platform_flash_erase(uint32_t addr,
                                                   int32_t *result);
 
 /**
- * @brief Program data into the NXP_NS_STORAGE region.
+ * @brief Program data into the NXP_NS_STORAGE region (phrase granularity, 16 bytes).
  *
  * @param[in]  addr    Flash offset to write (NS alias, phrase-aligned, multiple of 16 bytes).
  * @param[in]  data    Pointer to data buffer in NS RAM.
@@ -179,10 +247,25 @@ enum tfm_platform_err_t tfm_platform_flash_erase(uint32_t addr,
  *
  * @return TFM_PLATFORM_ERR_SUCCESS or TFM_PLATFORM_ERR_INVALID_PARAM.
  */
-enum tfm_platform_err_t tfm_platform_flash_program(uint32_t       addr,
-                                                    const uint8_t *data,
-                                                    uint32_t       size,
-                                                    int32_t       *result);
+enum tfm_platform_err_t tfm_platform_flash_program_phrase(uint32_t       addr,
+                                                           const uint8_t *data,
+                                                           uint32_t       size,
+                                                           int32_t       *result);
+
+/**
+ * @brief Program data into the NXP_NS_STORAGE region (page granularity, 128 bytes).
+ *
+ * @param[in]  addr    Flash offset to write (NS alias, page-aligned, multiple of 128 bytes).
+ * @param[in]  data    Pointer to data buffer in NS RAM.
+ * @param[in]  size    Number of bytes to write (multiple of 128 bytes).
+ * @param[out] result  IAP status: 0 on success, negative on error.
+ *
+ * @return TFM_PLATFORM_ERR_SUCCESS or TFM_PLATFORM_ERR_INVALID_PARAM.
+ */
+enum tfm_platform_err_t tfm_platform_flash_program_page(uint32_t       addr,
+                                                         const uint8_t *data,
+                                                         uint32_t       size,
+                                                         int32_t       *result);
 
 /**
  * @brief Verify data programmed in the NXP_NS_STORAGE region.
@@ -270,50 +353,47 @@ enum tfm_platform_err_t tfm_platform_flash_read(uint32_t  addr,
                                                  uint32_t  size,
                                                  int32_t  *result);
 
-/* -----------------------------------------------------------------------
- * ROMAPI_GetVersion
- * -------------------------------------------------------------------- */
-
-/*
- * Output struct for TFM_PLATFORM_IOCTL_ROMAPI_GET_VERSION.
- * version - raw 32-bit version word from FLASH_API->version.version.
+/**
+ * @brief Verify that the entire flash array is erased.
+ *
+ * @param[out] result  IAP status: 0 on success, negative on error.
+ *
+ * @return TFM_PLATFORM_ERR_SUCCESS or TFM_PLATFORM_ERR_INVALID_PARAM.
  */
-struct tfm_romapi_version_out_t {
-    uint32_t version;
-};
+enum tfm_platform_err_t tfm_platform_flash_verify_erase_all(int32_t *result);
 
 /**
- * @brief Read the ROM API version via the S-world bootloader tree.
+ * @brief Verify that a flash block is erased.
  *
- * @param[out] version  32-bit version word returned by the ROM driver.
+ * @param[in]  blockaddr  Start address of the flash block (block-aligned).
+ * @param[out] result     IAP status: 0 on success, negative on error.
  *
- * @return TFM_PLATFORM_ERR_SUCCESS or TFM_PLATFORM_ERR_SYSTEM_ERROR.
+ * @return TFM_PLATFORM_ERR_SUCCESS or TFM_PLATFORM_ERR_INVALID_PARAM.
  */
-enum tfm_platform_err_t tfm_platform_romapi_get_version(uint32_t *version);
-
-/* -----------------------------------------------------------------------
- * ROMAPI_RunBootloader
- * -------------------------------------------------------------------- */
-
-/*
- * Input argument struct for TFM_PLATFORM_IOCTL_ROMAPI_RUN_BOOTLOADER.
- * option - user_app_boot_invoke_option_t value cast to uint32_t.
- */
-struct tfm_romapi_run_bootloader_args_t {
-    uint32_t option;
-};
+enum tfm_platform_err_t tfm_platform_flash_verify_erase_block(uint32_t blockaddr,
+                                                               int32_t *result);
 
 /**
- * @brief Invoke the ROM bootloader via the S-world bootloader tree.
+ * @brief Read the ROM API version word via the S-world ROM driver.
  *
- * This call does not return if the bootloader accepts the option.
+ * @param[out] version  Raw version word from FLASH_API->version.version.
+ * @param[out] result   0 on success, negative on error.
  *
- * @param[in] option  user_app_boot_invoke_option_t value cast to uint32_t.
- *
- * @return TFM_PLATFORM_ERR_SUCCESS (only if the bootloader returns, which is
- *         unexpected) or TFM_PLATFORM_ERR_SYSTEM_ERROR.
+ * @return TFM_PLATFORM_ERR_SUCCESS or TFM_PLATFORM_ERR_INVALID_PARAM.
  */
-enum tfm_platform_err_t tfm_platform_romapi_run_bootloader(uint32_t option);
+enum tfm_platform_err_t tfm_platform_romapi_get_version(uint32_t *version,
+                                                         int32_t  *result);
+
+/**
+ * @brief Invoke the ROM bootloader from S-world.
+ *
+ * @param[in]  option  user_app_boot_invoke_option_t.option.U value.
+ * @param[out] result  0 on success, negative on error.
+ *
+ * @return TFM_PLATFORM_ERR_SUCCESS or TFM_PLATFORM_ERR_INVALID_PARAM.
+ */
+enum tfm_platform_err_t tfm_platform_romapi_run_bootloader(uint32_t option,
+                                                            int32_t *result);
 
 #ifdef __cplusplus
 }

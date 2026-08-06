@@ -5,8 +5,8 @@
  *
  */
 
-#ifndef FSL_FLASH_NS_PROXY_H__
-#define FSL_FLASH_NS_PROXY_H__
+#ifndef FSL_FLASH_NS_PROXY_MCXL_MCXA_H__
+#define FSL_FLASH_NS_PROXY_MCXL_MCXA_H__
 
 #include "tfm_ioctl_api.h"
 
@@ -58,7 +58,7 @@ static inline status_t FLASH_EraseSector(flash_config_t *config,
 /*
  * FLASH_ProgramPhrase -- NS proxy.
  *
- * Tunnels the program request to the S partition via IOCTL.
+ * Tunnels the program-phrase request to the S partition via IOCTL.
  * start         - NS-alias flash offset (phrase-aligned, 16-byte multiple).
  * src           - pointer to source data in NS RAM.
  * lengthInBytes - bytes to write (16-byte multiple).
@@ -71,16 +71,19 @@ static inline status_t FLASH_ProgramPhrase(flash_config_t *config,
 {
     int32_t result = -1;
     (void)config;
-    (void)tfm_platform_flash_program(start, src, lengthInBytes, &result);
+    (void)tfm_platform_flash_program_phrase(start, src, lengthInBytes, &result);
     return (status_t)result;
 }
 
 /*
  * FLASH_ProgramPage -- NS proxy.
  *
- * A page on the MCXL255 is 128 bytes.  The proxy maps this to the same IOCTL
- * flash_program request as ProgramPhrase; the S side enforces 16-byte phrase
- * alignment which is satisfied by any 128-byte page boundary.
+ * Tunnels the program-page request to the S partition via IOCTL.
+ * A page on MCXL/MCXA is 128 bytes; the S side enforces 128-byte alignment.
+ * start         - NS-alias flash offset (page-aligned, 128-byte multiple).
+ * src           - pointer to source data in NS RAM.
+ * lengthInBytes - bytes to write (128-byte multiple).
+ * config        - accepted for source compatibility, not used.
  */
 static inline status_t FLASH_ProgramPage(flash_config_t *config,
                                           uint32_t        start,
@@ -89,7 +92,7 @@ static inline status_t FLASH_ProgramPage(flash_config_t *config,
 {
     int32_t result = -1;
     (void)config;
-    (void)tfm_platform_flash_program(start, src, lengthInBytes, &result);
+    (void)tfm_platform_flash_program_page(start, src, lengthInBytes, &result);
     return (status_t)result;
 }
 
@@ -223,43 +226,8 @@ static inline status_t FLASH_Read(flash_config_t *config,
     return (status_t)result;
 }
 
-/*
- * ROMAPI_GetVersion -- NS proxy.
- *
- * Tunnels the ROM API version read to the S partition via IOCTL.
- * The ROM bootloader tree at 0x03007FE0 is in Secure ROM and is not
- * accessible from NS; the S handler reads the version on behalf of NS.
- */
-static inline uint32_t ROMAPI_GetVersion(void)
-{
-    struct tfm_romapi_version_out_t out;
-    (void)tfm_platform_romapi_get_version(&out.version);
-    return out.version;
-}
-
-/*
- * ROMAPI_RunBootloader -- NS proxy.
- *
- * Tunnels the bootloader invocation to the S partition via IOCTL.
- * arg is a pointer to a user_app_boot_invoke_option_t; the option word
- * is extracted and forwarded -- the pointer itself must not be
- * dereferenced by S-world directly.
- */
-static inline void ROMAPI_RunBootloader(void *arg)
-{
-    uint32_t option = 0U;
-    if (arg != NULL)
-    {
-        /* arg points to user_app_boot_invoke_option_t; copy the .U field. */
-        option = *(const uint32_t *)arg;
-    }
-    (void)tfm_platform_romapi_run_bootloader(option);
-    /* If S-world returns (unexpected), loop to prevent NS execution continuing. */
-    while (1) {}
-}
-
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* FSL_FLASH_NS_PROXY_H__ */
+#endif /* FSL_FLASH_NS_PROXY_MCXL_MCXA_H__ */

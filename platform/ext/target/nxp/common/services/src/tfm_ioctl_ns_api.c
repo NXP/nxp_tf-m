@@ -43,16 +43,72 @@ enum tfm_platform_err_t tfm_platform_flash_erase(uint32_t addr,
     return ret;
 }
 
-enum tfm_platform_err_t tfm_platform_flash_program(uint32_t       addr,
-                                                    const uint8_t *data,
-                                                    uint32_t       size,
-                                                    int32_t       *result)
+enum tfm_platform_err_t tfm_platform_flash_verify_erase_all(int32_t *result)
+{
+    enum tfm_platform_err_t ret;
+    psa_outvec              out_vec;
+    struct tfm_flash_op_out_t out;
+
+    if (result == NULL) {
+        return TFM_PLATFORM_ERR_INVALID_PARAM;
+    }
+
+    out_vec.base = (void *)&out;
+    out_vec.len  = sizeof(out);
+
+    out.result = -1;
+
+    ret = tfm_platform_ioctl(
+        (tfm_platform_ioctl_req_t)TFM_PLATFORM_IOCTL_FLASH_VERIFY_ERASE_ALL,
+        NULL, &out_vec);
+
+    *result = out.result;
+
+    return ret;
+}
+
+enum tfm_platform_err_t tfm_platform_flash_verify_erase_block(uint32_t blockaddr,
+                                                               int32_t *result)
+{
+    enum tfm_platform_err_t                     ret;
+    psa_invec                                   in_vec;
+    psa_outvec                                  out_vec;
+    struct tfm_flash_verify_erase_block_args_t  args;
+    struct tfm_flash_op_out_t                   out;
+
+    if (result == NULL) {
+        return TFM_PLATFORM_ERR_INVALID_PARAM;
+    }
+
+    args.blockaddr = blockaddr;
+
+    in_vec.base  = (const void *)&args;
+    in_vec.len   = sizeof(args);
+
+    out_vec.base = (void *)&out;
+    out_vec.len  = sizeof(out);
+
+    out.result = -1;
+
+    ret = tfm_platform_ioctl(
+        (tfm_platform_ioctl_req_t)TFM_PLATFORM_IOCTL_FLASH_VERIFY_ERASE_BLOCK,
+        &in_vec, &out_vec);
+
+    *result = out.result;
+
+    return ret;
+}
+
+enum tfm_platform_err_t tfm_platform_flash_program_phrase(uint32_t       addr,
+                                                           const uint8_t *data,
+                                                           uint32_t       size,
+                                                           int32_t       *result)
 {
     enum tfm_platform_err_t ret;
     psa_invec  in_vec;
     psa_outvec out_vec;
-    struct tfm_flash_program_args_t args;
-    struct tfm_flash_op_out_t       out;
+    struct tfm_flash_program_phrase_args_t args;
+    struct tfm_flash_op_out_t              out;
 
     if (data == NULL || result == NULL) {
         return TFM_PLATFORM_ERR_INVALID_PARAM;
@@ -68,7 +124,40 @@ enum tfm_platform_err_t tfm_platform_flash_program(uint32_t       addr,
     out_vec.base = (void *)&out;
     out_vec.len  = sizeof(out);
 
-    ret = tfm_platform_ioctl((tfm_platform_ioctl_req_t)TFM_PLATFORM_IOCTL_FLASH_PROGRAM,
+    ret = tfm_platform_ioctl((tfm_platform_ioctl_req_t)TFM_PLATFORM_IOCTL_FLASH_PROGRAM_PHRASE,
+                             &in_vec, &out_vec);
+
+    *result = out.result;
+
+    return ret;
+}
+
+enum tfm_platform_err_t tfm_platform_flash_program_page(uint32_t       addr,
+                                                         const uint8_t *data,
+                                                         uint32_t       size,
+                                                         int32_t       *result)
+{
+    enum tfm_platform_err_t ret;
+    psa_invec  in_vec;
+    psa_outvec out_vec;
+    struct tfm_flash_program_page_args_t args;
+    struct tfm_flash_op_out_t            out;
+
+    if (data == NULL || result == NULL) {
+        return TFM_PLATFORM_ERR_INVALID_PARAM;
+    }
+
+    args.addr = addr;
+    args.data = data;
+    args.size = size;
+
+    in_vec.base  = (const void *)&args;
+    in_vec.len   = sizeof(args);
+
+    out_vec.base = (void *)&out;
+    out_vec.len  = sizeof(out);
+
+    ret = tfm_platform_ioctl((tfm_platform_ioctl_req_t)TFM_PLATFORM_IOCTL_FLASH_PROGRAM_PAGE,
                              &in_vec, &out_vec);
 
     *result = out.result;
@@ -290,44 +379,61 @@ enum tfm_platform_err_t tfm_platform_flash_read(uint32_t  addr,
     return ret;
 }
 
-enum tfm_platform_err_t tfm_platform_romapi_get_version(uint32_t *version)
+enum tfm_platform_err_t tfm_platform_romapi_get_version(uint32_t *version,
+                                                         int32_t  *result)
 {
-    enum tfm_platform_err_t          ret;
-    psa_outvec                        out_vec;
-    struct tfm_romapi_version_out_t   out;
+    enum tfm_platform_err_t              ret;
+    psa_outvec                           out_vec;
+    struct tfm_romapi_get_version_out_t  out;
 
-    if (version == NULL) {
+    if (version == NULL || result == NULL) {
         return TFM_PLATFORM_ERR_INVALID_PARAM;
     }
 
-    out.version = 0U;
-
     out_vec.base = (void *)&out;
     out_vec.len  = sizeof(out);
+
+    out.result  = -1;
+    out.version = 0U;
 
     ret = tfm_platform_ioctl(
         (tfm_platform_ioctl_req_t)TFM_PLATFORM_IOCTL_ROMAPI_GET_VERSION,
         NULL, &out_vec);
 
+    *result  = out.result;
     *version = out.version;
 
     return ret;
 }
 
-enum tfm_platform_err_t tfm_platform_romapi_run_bootloader(uint32_t option)
+enum tfm_platform_err_t tfm_platform_romapi_run_bootloader(uint32_t option,
+                                                            int32_t *result)
 {
     enum tfm_platform_err_t                  ret;
-    psa_invec                                 in_vec;
-    struct tfm_romapi_run_bootloader_args_t   args;
+    psa_invec                                in_vec;
+    psa_outvec                               out_vec;
+    struct tfm_romapi_run_bootloader_args_t  args;
+    struct tfm_flash_op_out_t                out;
+
+    if (result == NULL) {
+        return TFM_PLATFORM_ERR_INVALID_PARAM;
+    }
 
     args.option = option;
 
-    in_vec.base = (const void *)&args;
-    in_vec.len  = sizeof(args);
+    in_vec.base  = (const void *)&args;
+    in_vec.len   = sizeof(args);
+
+    out_vec.base = (void *)&out;
+    out_vec.len  = sizeof(out);
+
+    out.result = -1;
 
     ret = tfm_platform_ioctl(
         (tfm_platform_ioctl_req_t)TFM_PLATFORM_IOCTL_ROMAPI_RUN_BOOTLOADER,
-        &in_vec, NULL);
+        &in_vec, &out_vec);
+
+    *result = out.result;
 
     return ret;
 }

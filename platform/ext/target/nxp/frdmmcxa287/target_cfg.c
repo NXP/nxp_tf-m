@@ -305,6 +305,11 @@ int32_t mpc_init_cfg(void)
 
     enable_mem_rule_for_partition(memory_regions.non_secure_partition_base, memory_regions.non_secure_partition_limit);
 
+#ifdef NXP_NS_STORAGE
+    enable_mem_rule_for_partition(NXP_FLASH_NS_STORAGE_OFFSET,
+                                  NXP_FLASH_NS_STORAGE_OFFSET + NXP_FLASH_NS_STORAGE_SIZE - 1U);
+#endif /* NXP_NS_STORAGE */
+
 #ifdef BL2 /* Set secondary image region to NS, when BL2 is enabled */
     /* The regions have to be alligned to 32 kB to cover the AHB Flash Region. */
     assert(memory_regions.secondary_partition_base >= NS_ROM_ALIAS_BASE);

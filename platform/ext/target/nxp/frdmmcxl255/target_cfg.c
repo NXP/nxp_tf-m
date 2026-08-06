@@ -273,9 +273,8 @@ int32_t mpc_init_cfg(void)
     enable_mem_rule_for_partition(memory_regions.non_secure_partition_base, memory_regions.non_secure_partition_limit);
 
 #ifdef NXP_NS_STORAGE
-    enable_mem_rule_for_partition(NS_ROM_ALIAS_BASE + NXP_FLASH_NS_STORAGE_OFFSET,
-                                  NS_ROM_ALIAS_BASE + NXP_FLASH_NS_STORAGE_OFFSET
-                                  + NXP_FLASH_NS_STORAGE_SIZE - 1U);
+    enable_mem_rule_for_partition(NXP_FLASH_NS_STORAGE_OFFSET,
+                                  NXP_FLASH_NS_STORAGE_OFFSET + NXP_FLASH_NS_STORAGE_SIZE - 1U);
 #endif /* NXP_NS_STORAGE */
 
     /* == ROM region == */

@@ -12,9 +12,7 @@
 #include "platform_base_address.h"
 #include "tfm_ioctl_api.h"
 #include <arm_cmse.h>
-
-#include "fsl_romapi.h"
-
+#include "tfm_flash_ioctl_hal.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -26,11 +24,8 @@ static bool           s_flash_init_done = false;
 static enum tfm_platform_err_t ensure_flash_init(void)
 {
     if (!s_flash_init_done) {
-        status_t status;
-
         (void)memset(&s_flash_config, 0, sizeof(s_flash_config));
-        status = FLASH_Init(&s_flash_config);
-        if (status != (status_t)0 /* kStatus_Success */) {
+        if (FLASH_Init(&s_flash_config) != (status_t)0) {
             return TFM_PLATFORM_ERR_SYSTEM_ERROR;
         }
         s_flash_init_done = true;
@@ -73,9 +68,11 @@ handle_flash_erase(const psa_invec *in_vec, psa_outvec *out_vec)
     out  = (struct tfm_flash_op_out_t *)out_vec->base;
     out->result = -1;
 
-    /* Sector-alignment checks (8 KB). */
-    if ((args->addr % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0U ||
-        (args->size % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0U) {
+    /* Sector-alignment check against the real hardware erase granularity.
+     * HAL_FLASH_ERASE_SECTOR_SIZE is always 8 KB. On KW43/MCXW this differs
+     * from FLASH_AREA_IMAGE_SECTOR_SIZE (512 B, RAM-backed ITS/PS). */
+    if ((args->addr % HAL_FLASH_ERASE_SECTOR_SIZE) != 0U ||
+        (args->size % HAL_FLASH_ERASE_SECTOR_SIZE) != 0U) {
         return TFM_PLATFORM_ERR_INVALID_PARAM;
     }
 
@@ -88,8 +85,8 @@ handle_flash_erase(const psa_invec *in_vec, psa_outvec *out_vec)
         return init_ret;
     }
 
-    status = FLASH_EraseSector(&s_flash_config, args->addr, args->size,
-                                (uint32_t)kFLASH_ApiEraseKey);
+    status = hal_flash_erase_sector(&s_flash_config, args->addr, args->size,
+                                     (uint32_t)kFLASH_ApiEraseKey);
     if (status != (status_t)0) {
         out->result = (int32_t)status;
         return TFM_PLATFORM_ERR_SYSTEM_ERROR;
@@ -100,19 +97,19 @@ handle_flash_erase(const psa_invec *in_vec, psa_outvec *out_vec)
 }
 
 static enum tfm_platform_err_t
-handle_flash_program(const psa_invec *in_vec, psa_outvec *out_vec)
+handle_flash_program_phrase(const psa_invec *in_vec, psa_outvec *out_vec)
 {
-    const struct tfm_flash_program_args_t *args;
-    struct tfm_flash_op_out_t             *out;
-    enum tfm_platform_err_t                init_ret;
-    status_t                               status;
+    const struct tfm_flash_program_phrase_args_t *args;
+    struct tfm_flash_op_out_t                    *out;
+    enum tfm_platform_err_t                       init_ret;
+    status_t                                      status;
 
-    if ((in_vec  == NULL) || (in_vec->len  != sizeof(struct tfm_flash_program_args_t)) ||
+    if ((in_vec  == NULL) || (in_vec->len  != sizeof(struct tfm_flash_program_phrase_args_t)) ||
         (out_vec == NULL) || (out_vec->len != sizeof(struct tfm_flash_op_out_t))) {
         return TFM_PLATFORM_ERR_INVALID_PARAM;
     }
 
-    args = (const struct tfm_flash_program_args_t *)in_vec->base;
+    args = (const struct tfm_flash_program_phrase_args_t *)in_vec->base;
     out  = (struct tfm_flash_op_out_t *)out_vec->base;
     out->result = -1;
 
@@ -124,7 +121,7 @@ handle_flash_program(const psa_invec *in_vec, psa_outvec *out_vec)
                                  CMSE_MPU_NONSECURE | CMSE_MPU_READ) == NULL) {
         return TFM_PLATFORM_ERR_INVALID_PARAM;
     }
-    
+
     /* Phrase-alignment checks (16 bytes). */
     if ((args->addr % FLASH_AREA_IMAGE_PHRASE_SIZE) != 0U ||
         (args->size % FLASH_AREA_IMAGE_PHRASE_SIZE) != 0U) {
@@ -140,9 +137,60 @@ handle_flash_program(const psa_invec *in_vec, psa_outvec *out_vec)
         return init_ret;
     }
 
-    status = FLASH_ProgramPhrase(&s_flash_config, args->addr,
-                                  (uint8_t *)args->data,
-                                  args->size);
+    status = hal_flash_program_phrase(&s_flash_config, args->addr,
+                                       args->data, args->size);
+    if (status != (status_t)0) {
+        out->result = (int32_t)status;
+        return TFM_PLATFORM_ERR_SYSTEM_ERROR;
+    }
+
+    out->result = 0;
+    return TFM_PLATFORM_ERR_SUCCESS;
+}
+
+static enum tfm_platform_err_t
+handle_flash_program_page(const psa_invec *in_vec, psa_outvec *out_vec)
+{
+    const struct tfm_flash_program_page_args_t *args;
+    struct tfm_flash_op_out_t                  *out;
+    enum tfm_platform_err_t                     init_ret;
+    status_t                                    status;
+
+    if ((in_vec  == NULL) || (in_vec->len  != sizeof(struct tfm_flash_program_page_args_t)) ||
+        (out_vec == NULL) || (out_vec->len != sizeof(struct tfm_flash_op_out_t))) {
+        return TFM_PLATFORM_ERR_INVALID_PARAM;
+    }
+
+    args = (const struct tfm_flash_program_page_args_t *)in_vec->base;
+    out  = (struct tfm_flash_op_out_t *)out_vec->base;
+    out->result = -1;
+
+    if (args->data == NULL) {
+        return TFM_PLATFORM_ERR_INVALID_PARAM;
+    }
+
+    if (cmse_check_address_range((void *)args->data, args->size,
+                                 CMSE_MPU_NONSECURE | CMSE_MPU_READ) == NULL) {
+        return TFM_PLATFORM_ERR_INVALID_PARAM;
+    }
+
+    /* Page-alignment checks (128 bytes). */
+    if ((args->addr % FLASH_AREA_PROGRAM_SIZE) != 0U ||
+        (args->size % FLASH_AREA_PROGRAM_SIZE) != 0U) {
+        return TFM_PLATFORM_ERR_INVALID_PARAM;
+    }
+
+    if (!ns_storage_range_valid(args->addr, args->size)) {
+        return TFM_PLATFORM_ERR_INVALID_PARAM;
+    }
+
+    init_ret = ensure_flash_init();
+    if (init_ret != TFM_PLATFORM_ERR_SUCCESS) {
+        return init_ret;
+    }
+
+    status = hal_flash_program_page(&s_flash_config, args->addr,
+                                     args->data, args->size);
     if (status != (status_t)0) {
         out->result = (int32_t)status;
         return TFM_PLATFORM_ERR_SYSTEM_ERROR;
@@ -198,9 +246,9 @@ handle_flash_verify_program(const psa_invec *in_vec, psa_outvec *out_vec)
         return init_ret;
     }
 
-    status = FLASH_VerifyProgram(&s_flash_config, args->addr, args->size,
-                                  args->expected_data,
-                                  &failed_address, &failed_data);
+    status = hal_flash_verify_program(&s_flash_config, args->addr, args->size,
+                                       args->expected_data,
+                                       &failed_address, &failed_data);
     out->result         = (int32_t)status;
     out->failed_address = failed_address;
     out->failed_data    = failed_data;
@@ -238,7 +286,7 @@ handle_flash_verify_erase_phrase(const psa_invec *in_vec, psa_outvec *out_vec)
         return init_ret;
     }
 
-    status = FLASH_VerifyErasePhrase(&s_flash_config, args->addr, args->size);
+    status = hal_flash_verify_erase_phrase(&s_flash_config, args->addr, args->size);
     out->result = (int32_t)status;
 
     if (status != (status_t)0) {
@@ -274,7 +322,7 @@ handle_flash_verify_erase_page(const psa_invec *in_vec, psa_outvec *out_vec)
         return init_ret;
     }
 
-    status = FLASH_VerifyErasePage(&s_flash_config, args->addr, args->size);
+    status = hal_flash_verify_erase_page(&s_flash_config, args->addr, args->size);
     out->result = (int32_t)status;
 
     if (status != (status_t)0) {
@@ -301,9 +349,11 @@ handle_flash_verify_erase_sector(const psa_invec *in_vec, psa_outvec *out_vec)
     out  = (struct tfm_flash_op_out_t *)out_vec->base;
     out->result = -1;
 
-    /* Sector-alignment checks (8 KB). */
-    if ((args->addr % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0U ||
-        (args->size % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0U) {
+    /* Sector-alignment check against the real hardware erase granularity.
+     * HAL_FLASH_ERASE_SECTOR_SIZE is always 8 KB. On KW43/MCXW this differs
+     * from FLASH_AREA_IMAGE_SECTOR_SIZE (512 B, RAM-backed ITS/PS). */
+    if ((args->addr % HAL_FLASH_ERASE_SECTOR_SIZE) != 0U ||
+        (args->size % HAL_FLASH_ERASE_SECTOR_SIZE) != 0U) {
         return TFM_PLATFORM_ERR_INVALID_PARAM;
     }
 
@@ -316,7 +366,7 @@ handle_flash_verify_erase_sector(const psa_invec *in_vec, psa_outvec *out_vec)
         return init_ret;
     }
 
-    status = FLASH_VerifyEraseSector(&s_flash_config, args->addr, args->size);
+    status = hal_flash_verify_erase_sector(&s_flash_config, args->addr, args->size);
     out->result = (int32_t)status;
 
     if (status != (status_t)0) {
@@ -350,9 +400,9 @@ handle_flash_get_property(const psa_invec *in_vec, psa_outvec *out_vec)
         return init_ret;
     }
 
-    status = FLASH_GetProperty(&s_flash_config,
-                                (flash_property_tag_t)args->which_property,
-                                &value);
+    status = hal_flash_get_property(&s_flash_config,
+                                     (flash_property_tag_t)args->which_property,
+                                     &value);
     out->result = (int32_t)status;
     out->value  = value;
 
@@ -402,7 +452,34 @@ handle_flash_read(const psa_invec *in_vec, psa_outvec *out_vec)
         return init_ret;
     }
 
-    status = FLASH_Read(&s_flash_config, args->addr, dest, args->size);
+    status = hal_flash_read(&s_flash_config, args->addr, dest, args->size);
+    out->result = (int32_t)status;
+
+    if (status != (status_t)0) {
+        return TFM_PLATFORM_ERR_SYSTEM_ERROR;
+    }
+
+    return TFM_PLATFORM_ERR_SUCCESS;
+}
+
+/* -------------------------------------------------------------------------
+ * MCXW/KW43-only handlers
+ * ---------------------------------------------------------------------- */
+
+static enum tfm_platform_err_t
+handle_flash_verify_erase_all(psa_outvec *out_vec)
+{
+    struct tfm_flash_op_out_t *out;
+    status_t                   status;
+
+    if (out_vec == NULL || out_vec->len != sizeof(struct tfm_flash_op_out_t)) {
+        return TFM_PLATFORM_ERR_INVALID_PARAM;
+    }
+
+    out = (struct tfm_flash_op_out_t *)out_vec->base;
+    out->result = -1;
+
+    status = hal_flash_verify_erase_all();
     out->result = (int32_t)status;
 
     if (status != (status_t)0) {
@@ -413,39 +490,88 @@ handle_flash_read(const psa_invec *in_vec, psa_outvec *out_vec)
 }
 
 static enum tfm_platform_err_t
-handle_romapi_get_version(psa_outvec *out_vec)
+handle_flash_verify_erase_block(const psa_invec *in_vec, psa_outvec *out_vec)
 {
-    struct tfm_romapi_version_out_t *out;
+    const struct tfm_flash_verify_erase_block_args_t *args;
+    struct tfm_flash_op_out_t                        *out;
+    enum tfm_platform_err_t                           init_ret;
+    status_t                                          status;
 
-    if ((out_vec == NULL) || (out_vec->len != sizeof(struct tfm_romapi_version_out_t))) {
+    if ((in_vec  == NULL) || (in_vec->len  != sizeof(struct tfm_flash_verify_erase_block_args_t)) ||
+        (out_vec == NULL) || (out_vec->len != sizeof(struct tfm_flash_op_out_t))) {
         return TFM_PLATFORM_ERR_INVALID_PARAM;
     }
 
-    out = (struct tfm_romapi_version_out_t *)out_vec->base;
-    out->version = FLASH_API->version.version;
+    args = (const struct tfm_flash_verify_erase_block_args_t *)in_vec->base;
+    out  = (struct tfm_flash_op_out_t *)out_vec->base;
+    out->result = -1;
+
+    init_ret = ensure_flash_init();
+    if (init_ret != TFM_PLATFORM_ERR_SUCCESS) {
+        return init_ret;
+    }
+
+    status = hal_flash_verify_erase_block(&s_flash_config, args->blockaddr);
+    out->result = (int32_t)status;
+
+    if (status != (status_t)0) {
+        return TFM_PLATFORM_ERR_SYSTEM_ERROR;
+    }
+
+    return TFM_PLATFORM_ERR_SUCCESS;
+}
+
+/* -------------------------------------------------------------------------
+ * ROM API handlers
+ * ---------------------------------------------------------------------- */
+
+static enum tfm_platform_err_t
+handle_romapi_get_version(psa_outvec *out_vec)
+{
+    struct tfm_romapi_get_version_out_t *out;
+    enum tfm_platform_err_t              init_ret;
+
+    if (out_vec == NULL || out_vec->len != sizeof(struct tfm_romapi_get_version_out_t)) {
+        return TFM_PLATFORM_ERR_INVALID_PARAM;
+    }
+
+    out = (struct tfm_romapi_get_version_out_t *)out_vec->base;
+    out->result  = -1;
+    out->version = 0U;
+
+    init_ret = ensure_flash_init();
+    if (init_ret != TFM_PLATFORM_ERR_SUCCESS) {
+        return init_ret;
+    }
+
+    out->result  = 0;
+    out->version = hal_romapi_get_version(&s_flash_config);
 
     return TFM_PLATFORM_ERR_SUCCESS;
 }
 
 static enum tfm_platform_err_t
-handle_romapi_run_bootloader(const psa_invec *in_vec)
+handle_romapi_run_bootloader(const psa_invec *in_vec, psa_outvec *out_vec)
 {
     const struct tfm_romapi_run_bootloader_args_t *args;
-    user_app_boot_invoke_option_t                  option;
+    struct tfm_flash_op_out_t                     *out;
 
-    if ((in_vec == NULL) || (in_vec->len != sizeof(struct tfm_romapi_run_bootloader_args_t))) {
+    if ((in_vec  == NULL) || (in_vec->len  != sizeof(struct tfm_romapi_run_bootloader_args_t)) ||
+        (out_vec == NULL) || (out_vec->len != sizeof(struct tfm_flash_op_out_t))) {
         return TFM_PLATFORM_ERR_INVALID_PARAM;
     }
 
-    args        = (const struct tfm_romapi_run_bootloader_args_t *)in_vec->base;
-    option.option.U = args->option;
+    args = (const struct tfm_romapi_run_bootloader_args_t *)in_vec->base;
+    out  = (struct tfm_flash_op_out_t *)out_vec->base;
+    out->result = -1;
 
-    /* This call transfers control to the ROM bootloader and does not return
-     * under normal circumstances. */
-    ROM_API->run_bootloader((void *)&option);
+    out->result = hal_romapi_run_bootloader(args->option);
 
-    /* Should never reach here. */
-    return TFM_PLATFORM_ERR_SYSTEM_ERROR;
+    if (out->result != 0) {
+        return TFM_PLATFORM_ERR_NOT_SUPPORTED;
+    }
+
+    return TFM_PLATFORM_ERR_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------
@@ -461,8 +587,11 @@ tfm_platform_hal_ioctl_board(tfm_platform_ioctl_req_t request,
     case TFM_PLATFORM_IOCTL_FLASH_ERASE_SECTOR:
         return handle_flash_erase(in_vec, out_vec);
 
-    case TFM_PLATFORM_IOCTL_FLASH_PROGRAM:
-        return handle_flash_program(in_vec, out_vec);
+    case TFM_PLATFORM_IOCTL_FLASH_PROGRAM_PHRASE:
+        return handle_flash_program_phrase(in_vec, out_vec);
+
+    case TFM_PLATFORM_IOCTL_FLASH_PROGRAM_PAGE:
+        return handle_flash_program_page(in_vec, out_vec);
 
     case TFM_PLATFORM_IOCTL_FLASH_VERIFY_PROGRAM:
         return handle_flash_verify_program(in_vec, out_vec);
@@ -482,11 +611,17 @@ tfm_platform_hal_ioctl_board(tfm_platform_ioctl_req_t request,
     case TFM_PLATFORM_IOCTL_FLASH_READ:
         return handle_flash_read(in_vec, out_vec);
 
+    case TFM_PLATFORM_IOCTL_FLASH_VERIFY_ERASE_ALL:
+        return handle_flash_verify_erase_all(out_vec);
+
+    case TFM_PLATFORM_IOCTL_FLASH_VERIFY_ERASE_BLOCK:
+        return handle_flash_verify_erase_block(in_vec, out_vec);
+
     case TFM_PLATFORM_IOCTL_ROMAPI_GET_VERSION:
         return handle_romapi_get_version(out_vec);
 
     case TFM_PLATFORM_IOCTL_ROMAPI_RUN_BOOTLOADER:
-        return handle_romapi_run_bootloader(in_vec);
+        return handle_romapi_run_bootloader(in_vec, out_vec);
 
     default:
         break;

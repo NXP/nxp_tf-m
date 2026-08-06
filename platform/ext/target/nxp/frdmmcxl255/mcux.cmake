@@ -11,10 +11,8 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.board)
     )
 endif()
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.s.romapi)
-    mcux_add_source(
-        SOURCES 
-        ./frdmmcxl255/services/src/tfm_flash_ioctl_hal.c
-        BASE_PATH ${SdkRootDirPath}/middleware/tfm/tf-m/platform/ext/target/nxp
+    mcux_add_macro(
+        CC "-DROMAPI_PROXY_HAL_MCXL"
         BOARDS frdmmcxl255
     )
 endif()
@@ -28,9 +26,14 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.board)
 endif()
 if (CONFIG_MCUX_COMPONENT_middleware.tfm.ns.romapi)
     mcux_add_source(
-        SOURCES 
-        ./frdmmcxl255/services/src/tfm_ioctl_ns_api.c
+        SOURCES
+        ./common/services/include/fsl_flash_ns_proxy_mcxl_mcxa.h
+        ./common/services/include/fsl_romapi_ns_proxy_mcxl_mcxa.h
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/tf-m/platform/ext/target/nxp
+        BOARDS frdmmcxl255
+    )
+    mcux_add_macro(
+        CC "-DROMAPI_PROXY_HAL_MCXL"
         BOARDS frdmmcxl255
     )
 endif()
@@ -58,7 +61,7 @@ if (CONFIG_MCUX_COMPONENT_middleware.tfm.board_headers)
         ./frdmmcxl255/
         ./frdmmcxl255/partition 
         ./frdmmcxl255/Device/Include/
-        ./frdmmcxl255/services/include
+        ./common/services/include
         BASE_PATH ${SdkRootDirPath}/middleware/tfm/tf-m/platform/ext/target/nxp
         BOARDS frdmmcxl255
     )

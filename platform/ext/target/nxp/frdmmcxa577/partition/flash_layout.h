@@ -277,4 +277,14 @@
 #define TOTAL_ROM_SIZE      FLASH_TOTAL_SIZE
 #define TOTAL_RAM_SIZE      (0x000A0000 - RESERVED_RAM_SIZE)     /* RAM (640 - 16) = 632 KB RAM for data */
 
+/* NXP NS Storage area - dedicated flash region for NS application data access via IOCTL.
+ * This region is placed at the end of flash and is accessible from NS world
+ * through the TF-M platform IOCTL service (tfm_platform_flash_erase / tfm_platform_flash_program).
+ * Guard with NXP_NS_STORAGE to allow opt-in per application build.
+ */
+#ifdef NXP_NS_STORAGE
+#define NXP_FLASH_NS_STORAGE_SIZE   (0x00008000)  /* 32 KB (4 sectors) */
+#define NXP_FLASH_NS_STORAGE_OFFSET (NS_ROM_ALIAS_BASE + FLASH_TOTAL_SIZE - NXP_FLASH_NS_STORAGE_SIZE)
+#endif /* NXP_NS_STORAGE */
+
 #endif /* __FLASH_LAYOUT_H__ */

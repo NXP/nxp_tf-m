@@ -662,11 +662,9 @@ __attribute__((weak)) void sau_and_idau_cfg(void)
 
 #ifdef NXP_NS_STORAGE
     SECURE_WRITE_REGISTER(&(SAU->RNR), 6U);
-    SAU->RBAR = ((NS_ROM_ALIAS_BASE + NXP_FLASH_NS_STORAGE_OFFSET)
-                 & SAU_RBAR_BADDR_Msk);
-    SAU->RLAR = ((NS_ROM_ALIAS_BASE + NXP_FLASH_NS_STORAGE_OFFSET
-                  + NXP_FLASH_NS_STORAGE_SIZE - 1U)
-                 & SAU_RLAR_LADDR_Msk)
+    SAU->RBAR = ((NXP_FLASH_NS_STORAGE_OFFSET) & SAU_RBAR_BADDR_Msk);
+    SAU->RLAR = ((NXP_FLASH_NS_STORAGE_OFFSET + NXP_FLASH_NS_STORAGE_SIZE - 1U)
+                  & SAU_RLAR_LADDR_Msk)
                 | SAU_RLAR_ENABLE_Msk;
 #endif /* NXP_NS_STORAGE */
 
