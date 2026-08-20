@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2022 Arm Limited. All rights reserved.
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,15 +51,16 @@
 #if IS_PHANTOM_512KB_FLASH_192KB_SRAM()
 /* Size of a Secure and of a Non-secure image */
 #define FLASH_S_PARTITION_SIZE              (256 * 1024)       /* S partition: 256 KB : (0x40000)  */
-#define FLASH_NS_PARTITION_SIZE             (136 * 1024)       /* NS partition: 160 KB : (0x22000)  */
+#define FLASH_NS_PARTITION_SIZE             (128 * 1024)       /* NS partition: 128 KB : (0x20000)  */
+/* FLASH size */
+#define FLASH_TOTAL_SIZE                    (1 * 512 * 1024)   /* 512 KB */
 #else
 /* Size of a Secure and of a Non-secure image */
 #define FLASH_S_PARTITION_SIZE              (288 * 1024)       /* S partition: 288 KB : (0x48000)  */
 #define FLASH_NS_PARTITION_SIZE             (416 * 1024)       /* NS partition: 416 KB : (0x68000)  */
-#endif
-
 /* FLASH size */
-#define FLASH_TOTAL_SIZE                    (1 * 1024 * 1024)    /* 1 MB */
+#define FLASH_TOTAL_SIZE                    (1 * 1024 * 1024)  /* 1 MB */
+#endif
                                                             
 /* Flash layout info for BL2 bootloader */
 #define FLASH_BASE_ADDRESS                  (0x00000000)
