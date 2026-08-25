@@ -68,7 +68,8 @@
 #define FLASH_TOTAL_SIZE   (1 * 256 * 1024)    /* 256 KB flash */
 #endif
 
-#define FLASH_RESERVED_CMPA_REGION (8 * 1024) /* Reserved for CMPA region */
+#define FLASH_RESERVED_CMPA_REGION  (1 * 8 * 1024) /* Reserved for CMPA region */
+#define FLASH_RESERVED_SI_REGION    (13 * 8 * 1024) /* Reserved for Secure Installer region (~97kB)*/
 
 /* Flash layout info for BL2 bootloader */
 #define FLASH_BASE_ADDRESS                  (0x00000000)
@@ -215,8 +216,9 @@
  * Guard with NXP_NS_STORAGE to allow opt-in per application build.
  */
 #ifdef NXP_NS_STORAGE
-#define NXP_FLASH_NS_STORAGE_SIZE   (0x00008000)  /* 32 KB (4 sectors) */
-#define NXP_FLASH_NS_STORAGE_OFFSET (NS_ROM_ALIAS_BASE + FLASH_TOTAL_SIZE -  FLASH_RESERVED_CMPA_REGION - NXP_FLASH_NS_STORAGE_SIZE)                             
+#define NXP_FLASH_NS_STORAGE_SIZE   (2 * 8 * 1024) 
+#define NXP_FLASH_NS_STORAGE_OFFSET (NS_ROM_ALIAS_BASE + FLASH_TOTAL_SIZE - FLASH_RESERVED_CMPA_REGION - \
+                                     FLASH_RESERVED_SI_REGION - NXP_FLASH_NS_STORAGE_SIZE)                             
 #endif /* NXP_NS_STORAGE */
 
 #endif /* __FLASH_LAYOUT_H__ */
