@@ -67,9 +67,16 @@
 #define FLASH_MAX_PARTITION_SIZE FLASH_NS_PARTITION_SIZE
 #endif
 #else /* NO BL2 */
+
+#if defined(MCU_SDK_REGRESSION)
+/* Size of a Secure and of a Non-secure image */
+#define FLASH_S_PARTITION_SIZE              (224 * 1024)       /* S partition: 224 KB : (0x38000)  */
+#define FLASH_NS_PARTITION_SIZE             (192 * 1024)       /* NS partition: 192 KB : (0x30000)  */
+#else
 /* Size of a Secure and of a Non-secure image */
 #define FLASH_S_PARTITION_SIZE              (192 * 1024)       /* S partition: 192 KB : (0x30000)  */
 #define FLASH_NS_PARTITION_SIZE             (192 * 1024)       /* NS partition: 192 KB : (0x30000)  */
+#endif /* MCU_SDK_REGRESSION */
 #endif /* BL2 */
 
 /* Sector size of flash hardware (erase/program) */
