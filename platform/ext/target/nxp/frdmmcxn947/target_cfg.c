@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2022 Arm Limited. All rights reserved.
- * Copyright 2019-2025 NXP
+ * Copyright 2019-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -342,11 +342,10 @@ int32_t ppc_init_cfg(void)
         AHBSC_AIPS_BRIDGE_GROUP0_MEM_RULE0_TRO0(0x0U);                                  
 
     AHBSC->AIPS_BRIDGE_GROUP0_MEM_RULE1 =
-        (0x30300033U) |
+        (0x33300033U) |
         AHBSC_AIPS_BRIDGE_GROUP0_MEM_RULE1_LPTMR0(0x0U) |                      
         AHBSC_AIPS_BRIDGE_GROUP0_MEM_RULE1_LPTMR1(0x0U) |                    
-        AHBSC_AIPS_BRIDGE_GROUP0_MEM_RULE1_RTC(0x0U) |                    
-        AHBSC_AIPS_BRIDGE_GROUP0_MEM_RULE1_FMU_TEST(0x0U);
+        AHBSC_AIPS_BRIDGE_GROUP0_MEM_RULE1_RTC(0x0U);
  
     AHBSC->AIPS_BRIDGE_GROUP0_MEM_RULE2 =
         (0x00000000U) |        
