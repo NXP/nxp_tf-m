@@ -136,7 +136,7 @@
 #define NS_CODE_LIMIT   (NS_CODE_START + NS_CODE_SIZE - 1)
 
 #define NS_DATA_START                   (NS_RAM_ALIAS(S_DATA_OFFSET + RESERVED_RAM_SIZE + S_DATA_SIZE))
-#define NS_DATA_SIZE                    (TOTAL_RAM_SIZE - RESERVED_RAM_SIZE - S_DATA_SIZE - S_DATA_OFFSET)
+#define NS_DATA_SIZE                    (TOTAL_RAM_SIZE - S_DATA_SIZE - S_DATA_OFFSET)
 #define NS_DATA_LIMIT                   (NS_DATA_START + NS_DATA_SIZE - 1)
 
 /* Flash is divided into 32 kB sub-regions. Each sub-region can be assigned individual

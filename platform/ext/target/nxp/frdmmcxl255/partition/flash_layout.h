@@ -204,7 +204,7 @@
 
 #ifdef MCXL255_cm33_SERIES  
 /*Totla ram is 128 KB*/
-#define TOTAL_RAM_SIZE      (0x00020000 - RESERVED_RAM_SIZE )  /* RAM (128- 8) KB RAM for data (without TCM for code)*/
+#define TOTAL_RAM_SIZE      (0x00020000 - RESERVED_RAM_SIZE - RESERVED_RAM_PKC_SIZE)  /* RAM (128 - 8 - 8) KB RAM for data (without TCM for code)*/
 #elif defined(MCXL254_cm33_SERIES) 
 /*Totla ram is 64 KB*/
 #define TOTAL_RAM_SIZE      (0x00010000)                       /* RAM (64) KB RAM for data, ECC is disabled*/
