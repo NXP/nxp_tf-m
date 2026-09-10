@@ -70,7 +70,7 @@ void tfm_plat_test_secure_timer_start(void)
     CLOCK_SetClkDiv(kCLOCK_DivCtimer2Clk, 1u, true);
 #endif
     
-#if defined(CPU_MCXN947VDF_cm33_core0) || defined(CPU_MCXN547VDF_cm33_core0) || defined(CPU_MCXN236VDF)
+#if defined(CPU_MCXN947VDF_cm33_core0) || defined(CPU_MCXN947TVDF_cm33_core0) || defined(CPU_MCXN547VDF_cm33_core0) || defined(CPU_MCXN236VDF)
     CLOCK_SetClkDiv(CTIMER_CLK_DIVIDE, 1u);
 #endif
 
@@ -168,7 +168,7 @@ void tfm_plat_test_non_secure_timer_start(void)
     ctimer_match_config_t matchConfig;
     ctimer_config_t config;
 
-#if defined(CPU_MCXN947VDF_cm33_core0) || defined(MIMXRT798S_cm33_core0_SERIES) || defined(CPU_MIMXRT798SGVKB_cm33_core0)
+#if defined(CPU_MCXN947VDF_cm33_core0) || defined(CPU_MCXN947TVDF_cm33_core0) || defined(MIMXRT798S_cm33_core0_SERIES) || defined(CPU_MIMXRT798SGVKB_cm33_core0)
     CLOCK_SetClkDiv(CTIMER_NS_CLK_DIVIDE, 1u);
 #endif
 
