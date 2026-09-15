@@ -19,7 +19,7 @@
  */
 
 #include "Driver_Common.h"
-#include "RW612.h"
+#include "fsl_device_registers.h"
 #include "fsl_common.h"
 #include "target_cfg.h"
 #include "Driver_Flash.h"
